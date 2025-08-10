@@ -70,6 +70,19 @@ document.addEventListener("DOMContentLoaded", () => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i];
   };
 
+  const getImageDimensions = (url) => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        resolve(`${img.width} × ${img.height}`);
+      };
+      img.onerror = () => {
+        resolve("Unknown");
+      };
+      img.src = url;
+    });
+  };
+
   const copyToClipboard = (text, button) => {
     navigator.clipboard
       .writeText(text)
@@ -115,7 +128,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       imageGrid = document.createElement("div");
       imageGrid.className =
-        currentViewMode === "thumbnail" ? "image-grid" : "image-list";
+        currentViewMode === "thumbnail" ? "image-grid" : "image-list active";
       elements.browserContainer.appendChild(imageGrid);
     } else {
       imageGrid = elements.browserContainer.querySelector(
@@ -142,10 +155,25 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
+    // Add list header for list view
+    if (currentViewMode === "list" && files.length > 0) {
+      const listHeader = document.createElement("div");
+      listHeader.className = "image-list-header";
+      listHeader.innerHTML = `
+        <div>Name</div>
+        <div></div>
+        <div>Dimensions</div>
+        <div>Size</div>
+        <div>Date</div>
+        <div>Actions</div>
+      `;
+      imageGrid.appendChild(listHeader);
+    }
+
     // Render files
-    files.forEach((file) => {
-      const fileElement = document.createElement("div");
-      if (currentViewMode === "thumbnail") {
+    if (currentViewMode === "thumbnail") {
+      files.forEach((file) => {
+        const fileElement = document.createElement("div");
         fileElement.className = "image-card";
         fileElement.innerHTML = `
           <div class="image-thumbnail">
@@ -156,25 +184,62 @@ document.addEventListener("DOMContentLoaded", () => {
             <div class="filesize">${formatBytes(file.size)}</div>
           </div>
         `;
-      } else {
-        fileElement.className = "image-list-item";
-        fileElement.innerHTML = `
-          <div class="image-list-thumbnail">
-            <img src="${file.url}" alt="${file.name}" loading="lazy" />
-          </div>
-          <div class="image-list-name">${file.name}</div>
-          <div class="image-list-size">${formatBytes(file.size)}</div>
-          <div class="image-list-date">${new Date(
-            file.lastModified
-          ).toLocaleDateString()}</div>
-        `;
-      }
+        
+        fileElement.addEventListener("click", () => {
+          openPreviewModal(file);
+        });
 
-      fileElement.addEventListener("click", () => {
-        openPreviewModal(file);
+        imageGrid.appendChild(fileElement);
       });
-      imageGrid.appendChild(fileElement);
-    });
+    } else {
+      // List view - render asynchronously to get dimensions
+      files.forEach(async (file) => {
+        const fileElement = document.createElement("div");
+        fileElement.className = "image-list-item";
+        
+        // Get dimensions asynchronously
+        const dimensions = await getImageDimensions(file.url);
+        
+        fileElement.innerHTML = `
+          <div class="image-list-name" title="${file.name}">${file.name}</div>
+          <div class="image-list-thumbnail">
+            <img src="${file.url}" alt="${file.name}" loading="lazy" class="list-thumbnail" />
+          </div>
+          <div class="image-list-dimensions">${dimensions}</div>
+          <div class="image-list-size">${formatBytes(file.size)}</div>
+          <div class="image-list-date">${new Date(file.lastModified).toLocaleDateString()}</div>
+          <div class="image-list-actions">
+            <button class="image-list-copy-btn" title="Copy URL">Copy URL</button>
+            <button class="image-list-view-btn" title="View">View</button>
+            <button class="image-list-delete-btn" title="Delete">Delete</button>
+          </div>
+        `;
+
+        // Add event listeners
+        const copyBtn = fileElement.querySelector('.image-list-copy-btn');
+        const viewBtn = fileElement.querySelector('.image-list-view-btn');
+        const deleteBtn = fileElement.querySelector('.image-list-delete-btn');
+
+        copyBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          copyToClipboard(file.url, copyBtn);
+        });
+
+        viewBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          openPreviewModal(file);
+        });
+
+        deleteBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (confirm(`Are you sure you want to delete "${file.name}"?`)) {
+            deleteImage(file);
+          }
+        });
+
+        imageGrid.appendChild(fileElement);
+      });
+    }
 
     // Show empty message if no content
     if (
@@ -434,7 +499,7 @@ document.addEventListener("DOMContentLoaded", () => {
         );
         return;
       }
-      elements.uploadModal.style.display = "block";
+      elements.uploadModal.style.display = "flex";
     });
   }
 

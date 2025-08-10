@@ -824,8 +824,16 @@ select {
     padding: 1rem;
 }
 
+#upload-modal.modal {
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+
 #upload-modal[style*="display: flex"] {
-    display: flex;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
 }
 
 #upload-modal .modal-content {
@@ -961,8 +969,8 @@ select {
 }
 
 .list-thumbnail {
-    width: 50px;
-    height: 50px;
+    max-width: 150px;
+    max-height: 150px;
     object-fit: cover;
     border-radius: 4px;
     border: 1px solid #dee2e6;
