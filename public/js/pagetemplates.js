@@ -23,8 +23,12 @@ document.addEventListener("DOMContentLoaded", () => {
     addCategoryBtn: G("add-category-btn"),
     newCategoryName: G("new-category-name"),
     categoryList: G("category-list"),
+    fullscreenToggle: G("fullscreen-toggle"),
+    fullscreenIcon: G("fullscreen-icon"),
+    fullscreenText: G("fullscreen-text"),
   };
   let htmlEditor;
+  let isFullscreen = false;
 
   logger.info("🚀 PAGE TEMPLATES JS LOADING");
   logger.info(
@@ -90,43 +94,48 @@ document.addEventListener("DOMContentLoaded", () => {
   function setCodeMirrorHeight() {
     if (htmlEditor) {
       try {
-        // Use viewport-based sizing for better responsiveness
-        const viewportHeight = window.innerHeight;
-        const editorContainer = document.querySelector(".editor-container");
-
-        if (editorContainer && editorContainer.offsetParent) {
-          // Get the position of the editor container relative to viewport
-          const containerRect = editorContainer.getBoundingClientRect();
-          let availableHeight = viewportHeight - containerRect.top - 120; // Leave margin at bottom
-
-          // Minimum and maximum constraints
-          availableHeight = Math.max(
-            300,
-            Math.min(availableHeight, viewportHeight * 0.8)
-          );
-
-          // Apply the height
-          htmlEditor.setSize(null, availableHeight + "px");
+        if (isFullscreen) {
+          // In fullscreen mode, use most of the viewport
+          const fullscreenHeight = window.innerHeight - 100;
+          htmlEditor.setSize(null, fullscreenHeight + "px");
           htmlEditor.refresh();
-
-          // Force a re-render after a short delay
-          setTimeout(() => {
-            if (htmlEditor) {
-              htmlEditor.refresh();
-            }
-          }, 50);
-
-          logger.info("📐 CodeMirror height set to:", availableHeight + "px");
+          logger.info("📐 CodeMirror fullscreen height set to:", fullscreenHeight + "px");
         } else {
-          // Fallback if container not visible
-          logger.info("⚠️ Editor container not visible, using fallback height");
-          htmlEditor.setSize(null, "400px");
-          htmlEditor.refresh();
+          // Use viewport-based sizing for better responsiveness
+          const viewportHeight = window.innerHeight;
+          const editorContainer = document.querySelector(".editor-container");
+
+          if (editorContainer && editorContainer.offsetParent) {
+            // Get the position of the editor container relative to viewport
+            const containerRect = editorContainer.getBoundingClientRect();
+            let availableHeight = viewportHeight - containerRect.top - 120; // Leave margin at bottom
+
+            // Minimum and maximum constraints - removed max constraint for larger height
+            availableHeight = Math.max(300, availableHeight);
+
+            // Apply the height
+            htmlEditor.setSize(null, availableHeight + "px");
+            htmlEditor.refresh();
+
+            // Force a re-render after a short delay
+            setTimeout(() => {
+              if (htmlEditor) {
+                htmlEditor.refresh();
+              }
+            }, 50);
+
+            logger.info("📐 CodeMirror height set to:", availableHeight + "px");
+          } else {
+            // Fallback if container not visible - use larger height
+            logger.info("⚠️ Editor container not visible, using fallback height");
+            htmlEditor.setSize(null, "1500px");
+            htmlEditor.refresh();
+          }
         }
       } catch (error) {
         console.error("❌ Error setting CodeMirror height:", error);
-        // Fallback height
-        htmlEditor.setSize(null, "400px");
+        // Fallback height - use larger height
+        htmlEditor.setSize(null, "1500px");
         htmlEditor.refresh();
       }
     }
@@ -135,6 +144,32 @@ document.addEventListener("DOMContentLoaded", () => {
   // Alias function for compatibility
   function resizeCodeMirror() {
     setCodeMirrorHeight();
+  }
+
+  // Fullscreen functionality
+  function toggleFullscreen() {
+    const editorContainer = document.querySelector("#editor-container");
+    
+    if (!isFullscreen) {
+      // Enter fullscreen
+      isFullscreen = true;
+      editorContainer.classList.add("editor-fullscreen");
+      els.fullscreenIcon.className = "fas fa-compress";
+      els.fullscreenText.textContent = "Exit Fullscreen";
+      logger.info("📺 Entering fullscreen mode");
+    } else {
+      // Exit fullscreen
+      isFullscreen = false;
+      editorContainer.classList.remove("editor-fullscreen");
+      els.fullscreenIcon.className = "fas fa-expand";
+      els.fullscreenText.textContent = "Fullscreen";
+      logger.info("📺 Exiting fullscreen mode");
+    }
+    
+    // Resize CodeMirror after fullscreen toggle
+    setTimeout(() => {
+      setCodeMirrorHeight();
+    }, 100);
   }
 
   // --- UI State Management ---
@@ -572,6 +607,11 @@ document.addEventListener("DOMContentLoaded", () => {
     if (target.classList.contains("delete-cat-btn"))
       handleDeleteCategory(target.dataset.id);
   });
+
+  // Fullscreen toggle handler
+  if (els.fullscreenToggle) {
+    els.fullscreenToggle.addEventListener("click", toggleFullscreen);
+  }
 
   // --- Window Resize Handler for CodeMirror ---
   let resizeTimeout;

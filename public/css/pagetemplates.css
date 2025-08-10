@@ -162,3 +162,55 @@
   display: flex !important;
   flex-direction: column !important;
 }
+
+/* Fullscreen Editor Styles */
+.editor-fullscreen {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  height: 100vh !important;
+  background: white !important;
+  z-index: 9999 !important;
+  padding: 20px !important;
+  overflow-y: auto !important;
+}
+
+.editor-fullscreen #template-form {
+  height: 100% !important;
+  max-height: none !important;
+}
+
+.editor-fullscreen .CodeMirror {
+  height: calc(100vh - 250px) !important;
+  min-height: calc(100vh - 250px) !important;
+}
+
+/* Minimize description textarea in fullscreen */
+.editor-fullscreen #template-description {
+  height: 40px !important;
+  min-height: 40px !important;
+  max-height: 40px !important;
+  resize: none !important;
+  overflow-y: hidden !important;
+}
+
+/* Hide scrollbars when in fullscreen for cleaner look */
+.editor-fullscreen::-webkit-scrollbar {
+  width: 8px;
+}
+
+.editor-fullscreen::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.editor-fullscreen::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.editor-fullscreen::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
