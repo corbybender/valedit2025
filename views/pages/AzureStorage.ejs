@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard</title>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link href="/public/css/dashboard.css" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/AzureStorage.css" />
+  </head>
+  <body>
+    <div class="dashboard-container">
+      <!-- Sidebar -->
+      <%- include('../partials/sidebar') %>
+
+      <!-- Main Content -->
+      <div class="main-content">
+        <!-- Header -->
+        <%- include('../partials/header') %>
+
+        <!-- Content -->
+        <main class="content">
+          <section class="card">
+            <h2>Upload New File</h2>
+            <form id="upload-form">
+              <div class="form-group">
+                <label for="file-input">Select File:</label
+                ><input type="file" id="file-input" name="file" required />
+              </div>
+              <div class="form-group">
+                <label for="folder-select">Upload to Folder:</label
+                ><select id="folder-select" name="folder">
+                  <option value="docs">/docs/</option>
+                  <option value="images">/images/</option>
+                </select>
+              </div>
+              <button type="submit">Upload</button>
+            </form>
+            <div id="upload-status" class="status-message"></div>
+          </section>
+
+          <div class="file-lists">
+            <section class="card">
+              <h2>📁 /docs/</h2>
+              <div class="table-container">
+                <table id="docs-table">
+                  <thead>
+                    <tr>
+                      <th>Filename</th>
+                      <th>Last Modified</th>
+                      <th>Size</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="docs-list"></tbody>
+                </table>
+              </div>
+              <div id="docs-status" class="status-message"></div>
+            </section>
+
+            <section class="card">
+              <h2>🖼️ /images/</h2>
+              <div class="table-container">
+                <table id="images-table">
+                  <thead>
+                    <tr>
+                      <th>Filename</th>
+                      <th>Last Modified</th>
+                      <th>Size</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="images-list"></tbody>
+                </table>
+              </div>
+              <div id="images-status" class="status-message"></div>
+            </section>
+          </div>
+        </main>
+
+        <div id="edit-modal" class="modal">
+          <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h3>Edit File: <span id="modal-filename"></span></h3>
+            <form id="edit-form">
+              <input type="hidden" id="edit-blob-name" /><textarea
+                id="edit-textarea"
+              ></textarea
+              ><button type="submit">Save Changes</button>
+            </form>
+            <div id="edit-status" class="status-message"></div>
+          </div>
+        </div>
+        <div id="replace-modal" class="modal">
+          <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h3>Replace File: <span id="replace-modal-filename"></span></h3>
+            <form id="replace-form">
+              <input type="hidden" id="replace-blob-name" />
+              <div class="form-group">
+                <label for="replace-file-input">Select New File:</label
+                ><input
+                  type="file"
+                  id="replace-file-input"
+                  name="file"
+                  required
+                />
+              </div>
+              <button type="submit">Upload and Replace</button>
+            </form>
+            <div id="replace-status" class="status-message"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <footer><button id="refresh-button">Refresh Lists</button></footer>
+    <script src="/public/js/frontend-logger.js"></script>
+    <script src="/js/AzureStorage.js"></script>
+    <script src="/public/js/dashboard.js"></script>
+  </body>
+</html>

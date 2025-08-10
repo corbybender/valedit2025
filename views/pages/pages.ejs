@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link href="/public/css/dashboard.css" rel="stylesheet" />
+    <link href="/public/css/pages.css" rel="stylesheet" />
+  </head>
+  <body>
+    <div class="dashboard-container">
+      <!-- Sidebar -->
+      <%- include('../partials/sidebar') %>
+
+      <!-- Main Content -->
+      <div class="main-content">
+        <!-- Header -->
+        <%- include('../partials/header') %>
+
+        <!-- Content -->
+        <main
+          class="content bg-white p-8 rounded-lg shadow-lg w-full max-w-12xl"
+        >
+          <header class="border-b pb-4 mb-6 flex justify-between items-center">
+            <div>
+              <h1 class="text-3xl font-bold text-gray-800">
+                Pages for <%= website.Domain %>
+              </h1>
+            </div>
+            <a href="/buildpage" class="add-new-btn">
+              <i class="fas fa-plus mr-2"></i> Add New Page
+            </a>
+          </header>
+
+          <div class="flex justify-between gap-4 mb-6">
+            <div class="relative w-64">
+              <span class="absolute inset-y-0 right-0 flex items-center pr-3">
+                <i class="fas fa-search text-gray-400"></i>
+              </span>
+              <input
+                type="text"
+                id="page-search-input"
+                placeholder="Search for a page..."
+                class="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+            <div class="relative min-w-48">
+              <select
+                id="page-sort-select"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white"
+              >
+                <option value="title" <%= currentSort === 'title' ? 'selected' : '' %>>Sort by Title</option>
+                <option value="lastmodified" <%= currentSort === 'lastmodified' ? 'selected' : '' %>>Sort by Last Modified</option>
+                <option value="created" <%= currentSort === 'created' ? 'selected' : '' %>>Sort by Created Date</option>
+              </select>
+            </div>
+          </div>
+          <div id="pages-accordion-container">
+            <%- include('../partials/page-tree-accordion', { pages: pageTree })
+            %>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <script src="/public/js/frontend-logger.js"></script>
+    <script src="/public/js/sidebar.js"></script>
+    <script src="/public/js/dashboard.js"></script>
+    <script src="/public/js/pages.js"></script>
+  </body>
+</html>

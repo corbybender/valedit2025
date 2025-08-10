@@ -1,0 +1,177 @@
+/* pagetemplates.css - Updated for current project */
+
+body {
+    font-family: 'Inter', sans-serif;
+}
+
+/* --- Notification Styles --- */
+#notification-container {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 1050; /* Ensure it's above the modal */
+}
+.toast-notification {
+    padding: 1rem 1.5rem;
+    margin-bottom: 0.5rem;
+    border-radius: 0.5rem;
+    color: white;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    opacity: 0;
+    transform: translateY(-20px);
+    transition: all 0.3s ease-in-out;
+}
+.toast-notification.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+.toast-notification.success { background-color: #10B981; } /* green-500 */
+.toast-notification.error { background-color: #EF4444; } /* red-500 */
+
+/* --- Accordion and List Styles --- */
+.accordion-header {
+    transition: background-color 0.2s ease-in-out;
+}
+.accordion-icon {
+    transition: transform 0.3s ease-in-out;
+}
+.accordion-header.open .accordion-icon {
+    transform: rotate(180deg);
+}
+.template-list-item {
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-size: 0.875rem;
+}
+.template-list-item:hover {
+    background-color: #f3f4f6; /* gray-100 */
+}
+.template-list-item.active {
+    background-color: #eff6ff; /* blue-50 */
+    color: #1d4ed8; /* blue-700 */
+    font-weight: 600;
+}
+
+/* --- CodeMirror Editor --- */
+.CodeMirror {
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    font-size: 14px;
+    height: 100%;
+}
+
+/* Make CodeMirror responsive */
+.CodeMirror-scroll {
+    min-height: 300px;
+}
+
+/* --- Modal Styles --- */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    transition: opacity 0.3s ease;
+}
+.modal-overlay.hidden {
+    display: none;
+}
+.modal-container {
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    width: 100%;
+    max-width: 500px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+}
+.modal-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.modal-body {
+    padding: 1.5rem;
+    overflow-y: auto;
+}
+.category-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+}
+.category-item:hover {
+    background-color: #f9fafb;
+}
+.category-item-actions button {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    border-radius: 0.25rem;
+}
+
+/* --- Responsive Design --- */
+@media (max-width: 1024px) {
+    .grid-cols-1.lg\\:grid-cols-3 {
+        grid-template-columns: 1fr;
+    }
+    
+    .lg\\:col-span-1,
+    .lg\\:col-span-2 {
+        grid-column: span 1;
+    }
+}
+
+/* --- Form Styling Enhancements --- */
+.form-input:focus {
+    outline: none;
+    ring: 2px;
+    ring-color: #3b82f6;
+    border-color: #3b82f6;
+}
+
+/* --- Button Hover Effects --- */
+button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+/* --- Loading States --- */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test Notifications</title>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link href="/public/css/dashboard.css" rel="stylesheet" />
+    <style>
+      body {
+        padding: 20px;
+        font-family: Arial, sans-serif;
+        background: #f8fafc;
+      }
+      .test-container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      .test-button {
+        margin: 10px;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        color: white;
+        font-size: 14px;
+        font-weight: 500;
+      }
+      .success {
+        background: #28a745;
+      }
+      .error {
+        background: #dc3545;
+      }
+      .warning {
+        background: #ffc107;
+        color: black;
+      }
+      .info {
+        background: #17a2b8;
+      }
+
+      /* Mock header for testing */
+      .header {
+        background: white;
+        padding: 15px 20px;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        border-radius: 8px;
+      }
+      .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+      .font-controls {
+        display: flex;
+        align-items: center;
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 2px;
+        gap: 1px;
+      }
+      .font-control-btn {
+        background: transparent;
+        border: none;
+        padding: 8px 10px;
+        border-radius: 6px;
+        cursor: pointer;
+        color: #6c757d;
+      }
+      .debug-info {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-top: 20px;
+        font-family: monospace;
+        font-size: 12px;
+      }
+      .debug-info p {
+        margin: 5px 0;
+      }
+      .debug-info .success {
+        color: #28a745;
+      }
+      .debug-info .error {
+        color: #dc3545;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="test-container">
+      <h1>🔔 Notification System Test</h1>
+      <p>
+        This page tests the notification system without requiring
+        authentication.
+      </p>
+
+      <!-- Mock header to test bell icon creation -->
+      <div class="header">
+        <h2>Mock Header</h2>
+        <div class="header-actions">
+          <div class="font-controls">
+            <button class="font-control-btn" title="Decrease Font Size">
+              <i class="fas fa-search-minus"></i>
+            </button>
+            <button class="font-control-btn" title="Increase Font Size">
+              <i class="fas fa-search-plus"></i>
+            </button>
+          </div>
+          <!-- Notification Bell -->
+          <div class="notification-bell-container">
+            <button
+              id="notification-bell"
+              class="notification-bell-btn"
+              title="Notifications"
+            >
+              <i class="fas fa-bell"></i>
+              <span
+                class="notification-badge"
+                id="notification-badge"
+                style="display: none"
+                >0</span
+              >
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notification container -->
+      <div id="notificationContainer" class="notification-container"></div>
+
+      <h3>Test Visual Notifications</h3>
+      <p>Click these buttons to test the visual notification banners:</p>
+      <button class="test-button success" onclick="testSuccess()">
+        ✅ Test Success
+      </button>
+      <button class="test-button error" onclick="testError()">
+        ❌ Test Error
+      </button>
+      <button class="test-button warning" onclick="testWarning()">
+        ⚠️ Test Warning
+      </button>
+      <button class="test-button info" onclick="testInfo()">
+        ℹ️ Test Info
+      </button>
+
+      <h3>Test Bell Icon</h3>
+      <p>
+        The bell icon should appear in the header above. If you see it, click it
+        to test the dropdown.
+      </p>
+
+      <h3>Debug Information</h3>
+      <div id="debug-info" class="debug-info">
+        <p>Loading debug information...</p>
+      </div>
+    </div>
+
+    <script src="/public/js/frontend-logger.js"></script>
+    <script src="/public/js/notifications.js"></script>
+    <script>
+      logger.info("🔔 Test page loaded");
+
+      function testSuccess() {
+        logger.info("Testing success notification");
+        showNotification("This is a success notification! 🎉", "success");
+      }
+
+      function testError() {
+        logger.info("Testing error notification");
+        showNotification("This is an error notification! ❌", "error");
+      }
+
+      function testWarning() {
+        logger.info("Testing warning notification");
+        showNotification("This is a warning notification! ⚠️", "warning");
+      }
+
+      function testInfo() {
+        logger.info("Testing info notification");
+        showNotification("This is an info notification! ℹ️", "info");
+      }
+
+      // Debug info - check after a delay to ensure everything is loaded
+      setTimeout(() => {
+        const debugDiv = document.getElementById("debug-info");
+        const bellContainer = document.querySelector(
+          ".notification-bell-container"
+        );
+        const notificationContainer = document.getElementById(
+          "notificationContainer"
+        );
+        const headerActions = document.querySelector(".header-actions");
+
+        debugDiv.innerHTML = `
+                <p><strong>🔍 Debug Information:</strong></p>
+                <p class="${
+                  window.NOTIFICATIONS_JS_LOADED ? "success" : "error"
+                }">
+                    notifications.js file loaded: ${!!window.NOTIFICATIONS_JS_LOADED}
+                </p>
+                <p class="${
+                  typeof NotificationManager !== "undefined"
+                    ? "success"
+                    : "error"
+                }">
+                    NotificationManager class exists: ${
+                      typeof NotificationManager !== "undefined"
+                    }
+                </p>
+                <p class="${
+                  typeof notificationManager !== "undefined"
+                    ? "success"
+                    : "error"
+                }">
+                    notificationManager instance exists: ${
+                      typeof notificationManager !== "undefined"
+                    }
+                </p>
+                <p class="${
+                  typeof showNotification !== "undefined" ? "success" : "error"
+                }">
+                    showNotification function exists: ${
+                      typeof showNotification !== "undefined"
+                    }
+                </p>
+                <p class="${!!bellContainer ? "success" : "error"}">
+                    Bell icon container exists: ${!!bellContainer}
+                </p>
+                <p class="${!!notificationContainer ? "success" : "error"}">
+                    Notification container exists: ${!!notificationContainer}
+                </p>
+                <p class="${!!headerActions ? "success" : "error"}">
+                    Header actions container exists: ${!!headerActions}
+                </p>
+                <p>Bell container HTML: ${
+                  bellContainer ? bellContainer.outerHTML : "Not found"
+                }</p>
+            `;
+      }, 2000);
+
+      // Test notification on page load
+      setTimeout(() => {
+        logger.info("🔔 Auto-testing notification system");
+        const debugDiv = document.getElementById("debug-info");
+
+        if (typeof showNotification === "function") {
+          showNotification(
+            "Notification system loaded successfully! 🚀",
+            "success"
+          );
+          debugDiv.innerHTML +=
+            '<p class="success">✅ Auto-test notification triggered</p>';
+        } else {
+          console.error("showNotification function not available");
+          debugDiv.innerHTML +=
+            '<p class="error">❌ showNotification function not available</p>';
+
+          // Create a fallback notification to test if the issue is with the function or the display
+          const fallback = document.createElement("div");
+          fallback.style.cssText = `
+            position: fixed; top: 20px; right: 20px; z-index: 10000;
+            background: #dc3545; color: white; padding: 12px 20px;
+            border-radius: 4px; font-family: Arial, sans-serif;
+          `;
+          fallback.textContent = "FALLBACK: showNotification not working!";
+          document.body.appendChild(fallback);
+          setTimeout(() => fallback.remove(), 5000);
+        }
+      }, 1000);
+    </script>
+  </body>
+</html>

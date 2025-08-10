@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      Build Page<% if (typeof currentWorkingSite !== 'undefined' &&
+      currentWorkingSite && currentWorkingSite.WebsiteName) { %> - <%=
+      currentWorkingSite.WebsiteName %><% } %>
+    </title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script
+      src="https://cdn.tiny.cloud/1/egjys2r4mraz8fil5sblqnip4wwsiyo5dqw6oll840hk4h8x/tinymce/5/tinymce.min.js"
+      referrerpolicy="origin"
+    ></script>
+
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link href="/public/css/dashboard.css" rel="stylesheet" />
+    <link href="/public/css/buildpage.css" rel="stylesheet" />
+    <link href="/public/css/AzureStorage.css" rel="stylesheet" />
+    <script src="/public/js/notifications.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    <script>
+      // Make data available to buildpage.js
+      const initialPageData = <%- JSON.stringify(typeof pageData !== 'undefined' ? pageData : null).replace(/<\/script>/g, '<\\/script>') %>;
+      const currentWebsite = <%- JSON.stringify(typeof currentWorkingSite !== 'undefined' ? currentWorkingSite : null) %>;
+      const currentWorkingSite = <%- JSON.stringify(typeof currentWorkingSite !== 'undefined' ? currentWorkingSite : null) %>;
+    </script>
+  </head>
+  <body>
+    <div class="dashboard-container">
+      <!-- Sidebar -->
+      <%- include('../partials/sidebar') %>
+
+      <!-- Main Content -->
+      <div class="main-content">
+        <!-- Header -->
+        <%- include('../partials/header') %>
+
+        <!-- Content -->
+        <main
+          class="content bg-white p-8 rounded-lg shadow-lg w-full max-w-12xl"
+        >
+          <!-- Check if user has selected a working site -->
+          <% if (typeof currentWorkingSite === 'undefined' ||
+          !currentWorkingSite || !currentWorkingSite.CurrentWorkingSite) { %>
+          <div style="text-align: center; padding: 50px">
+            <h2 style="color: #666; margin-bottom: 20px">
+              No Website Selected
+            </h2>
+            <p style="margin-bottom: 30px">
+              You need to select a website before you can build pages.
+            </p>
+            <a
+              href="/websites"
+              style="
+                background: #007bff;
+                color: white;
+                padding: 12px 24px;
+                text-decoration: none;
+                border-radius: 6px;
+              "
+            >
+              Select a Website
+            </a>
+          </div>
+          <% } else { %>
+
+          <div id="image-preview-popup"><img src="" alt="Preview" /></div>
+          <div id="editor-modal">
+            <div class="modal-content">
+              <h3>Edit Content Block</h3>
+
+              <!-- Main Toolbar -->
+              <div class="main-editor-toolbar">
+                <button id="insert-image-btn" type="button" class="toolbar-btn">
+                  <i class="fas fa-image"></i> Insert Image from Azure Storage
+                </button>
+
+                <div class="block-name-container">
+                  <label for="block-name-input">Block Name:</label>
+                  <input
+                    type="text"
+                    id="block-name-input"
+                    placeholder="Enter a name for this block instance"
+                  />
+                </div>
+              </div>
+
+              <!-- Tab Navigation -->
+              <div class="editor-tabs">
+                <button class="tab-button active" data-tab="html">
+                  <i class="fab fa-html5"></i> HTML
+                </button>
+                <button class="tab-button" data-tab="css">
+                  <i class="fab fa-css3-alt"></i> CSS
+                </button>
+                <button class="tab-button" data-tab="js">
+                  <i class="fab fa-js-square"></i> JavaScript
+                </button>
+              </div>
+
+              <!-- Tab Content -->
+              <div class="tab-content-container">
+                <!-- HTML Tab -->
+                <div class="tab-content active" id="html-tab">
+                  <textarea
+                    id="html-editor"
+                    placeholder="Enter HTML content..."
+                  ></textarea>
+                </div>
+
+                <!-- CSS Tab -->
+                <div class="tab-content" id="css-tab">
+                  <div class="editor-toolbar">
+                    <button
+                      type="button"
+                      class="toolbar-btn"
+                      title="Add common CSS reset"
+                    >
+                      <i class="fas fa-magic"></i> CSS Reset
+                    </button>
+                    <button
+                      type="button"
+                      class="toolbar-btn"
+                      title="Add responsive breakpoints"
+                    >
+                      <i class="fas fa-mobile-alt"></i> Responsive
+                    </button>
+                  </div>
+                  <textarea
+                    id="css-editor"
+                    placeholder="Enter CSS styles..."
+                  ></textarea>
+                </div>
+
+                <!-- JavaScript Tab -->
+                <div class="tab-content" id="js-tab">
+                  <div class="editor-toolbar">
+                    <button
+                      type="button"
+                      class="toolbar-btn"
+                      title="Add jQuery document ready"
+                    >
+                      <i class="fab fa-js"></i> jQuery Ready
+                    </button>
+                    <button
+                      type="button"
+                      class="toolbar-btn"
+                      title="Add event listener template"
+                    >
+                      <i class="fas fa-mouse-pointer"></i> Event Listener
+                    </button>
+                  </div>
+                  <textarea
+                    id="js-editor"
+                    placeholder="Enter JavaScript code..."
+                  ></textarea>
+                </div>
+              </div>
+
+              <div class="modal-actions">
+                <button id="cancel-edit">Cancel</button>
+                <button id="save-block-changes">Save Changes</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Image Picker Modal -->
+          <div id="image-picker-modal" class="modal">
+            <div class="modal-content image-picker-content">
+              <div class="modal-header">
+                <h3>Select Image from Azure Storage</h3>
+                <button id="image-picker-close" class="close-button">
+                  &times;
+                </button>
+              </div>
+
+              <div class="image-picker-controls">
+                <div class="breadcrumb-container">
+                  <div id="image-picker-breadcrumb" class="breadcrumb"></div>
+                </div>
+                <div class="picker-browser-controls">
+                  <input
+                    type="search"
+                    id="image-picker-search"
+                    placeholder="Search images..."
+                    aria-label="Search images"
+                  />
+                  <div class="picker-view-toggle">
+                    <button
+                      id="picker-thumbnail-view"
+                      class="view-toggle-btn active"
+                      title="Thumbnail View"
+                    >
+                      <i class="fas fa-th"></i>
+                    </button>
+                    <button
+                      id="picker-list-view"
+                      class="view-toggle-btn"
+                      title="List View"
+                    >
+                      <i class="fas fa-list"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div id="image-picker-browser" class="image-picker-browser"></div>
+
+              <div class="image-picker-footer">
+                <div id="image-picker-status" class="status-message"></div>
+                <div class="modal-actions">
+                  <button id="image-picker-cancel">Cancel</button>
+                  <button id="image-picker-select" disabled>
+                    Select Image
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- New Shared Block Modal -->
+          <div id="new-shared-block-modal" class="modal">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h3>Create New Shared Block</h3>
+                <button id="new-shared-block-close" class="close-button">
+                  &times;
+                </button>
+              </div>
+
+              <div class="modal-body">
+                <div class="form-group">
+                  <label for="shared-block-name">Block Name:</label>
+                  <input
+                    type="text"
+                    id="shared-block-name"
+                    placeholder="Enter a name for this shared block"
+                    required
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label for="shared-block-description"
+                    >Description (optional):</label
+                  >
+                  <textarea
+                    id="shared-block-description"
+                    placeholder="Enter a description for this shared block"
+                    rows="3"
+                  ></textarea>
+                </div>
+
+                <!-- Tab Navigation -->
+                <div class="editor-tabs">
+                  <button class="tab-button active" data-tab="shared-html">
+                    <i class="fab fa-html5"></i> HTML
+                  </button>
+                  <button class="tab-button" data-tab="shared-css">
+                    <i class="fab fa-css3-alt"></i> CSS
+                  </button>
+                  <button class="tab-button" data-tab="shared-js">
+                    <i class="fab fa-js-square"></i> JavaScript
+                  </button>
+                </div>
+
+                <!-- Tab Content -->
+                <div class="tab-content-container">
+                  <!-- HTML Tab -->
+                  <div class="tab-content active" id="shared-html-tab">
+                    <textarea
+                      id="shared-html-editor"
+                      placeholder="Enter HTML content..."
+                    ></textarea>
+                  </div>
+
+                  <!-- CSS Tab -->
+                  <div class="tab-content" id="shared-css-tab">
+                    <textarea
+                      id="shared-css-editor"
+                      placeholder="Enter CSS styles..."
+                    ></textarea>
+                  </div>
+
+                  <!-- JavaScript Tab -->
+                  <div class="tab-content" id="shared-js-tab">
+                    <textarea
+                      id="shared-js-editor"
+                      placeholder="Enter JavaScript code..."
+                    ></textarea>
+                  </div>
+                </div>
+              </div>
+
+              <div class="modal-actions">
+                <button id="cancel-new-shared-block">Cancel</button>
+                <button id="save-new-shared-block">Create Shared Block</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="builder-container">
+            <div class="template-sidebar">
+              <h3>Content Library</h3>
+
+              <!-- Empty Content Block Section -->
+              <div class="empty-block-section">
+                <h4>Basic Blocks</h4>
+                <div class="empty-block-container">
+                  <div
+                    class="empty-content-block"
+                    draggable="true"
+                    data-block-type="empty"
+                    title="Drag to canvas to create an empty content block"
+                  >
+                    <div class="empty-block-icon">
+                      <i class="fas fa-plus-circle"></i>
+                    </div>
+                    <div class="empty-block-label">Empty Content Block</div>
+                    <div class="empty-block-description">
+                      Start with a blank content block
+                    </div>
+                  </div>
+
+                  <div
+                    class="empty-content-block"
+                    draggable="true"
+                    data-block-type="javascript"
+                    title="Drag to canvas to create a JavaScript block"
+                  >
+                    <div class="empty-block-icon">
+                      <i class="fab fa-js-square"></i>
+                    </div>
+                    <div class="empty-block-label">JavaScript Block</div>
+                    <div class="empty-block-description">
+                      Start with a JavaScript-focused block
+                    </div>
+                  </div>
+
+                  <div
+                    class="empty-content-block"
+                    draggable="true"
+                    data-block-type="css"
+                    title="Drag to canvas to create a CSS block"
+                  >
+                    <div class="empty-block-icon">
+                      <i class="fab fa-css3-alt"></i>
+                    </div>
+                    <div class="empty-block-label">CSS Block</div>
+                    <div class="empty-block-description">
+                      Start with a CSS-focused block
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Shared Content Blocks Section -->
+              <div class="shared-blocks-section">
+                <div class="shared-blocks-header">
+                  <h4>Shared Content Blocks</h4>
+                  <button
+                    id="new-shared-block-btn"
+                    class="new-shared-block-btn"
+                    title="Create New Shared Block"
+                  >
+                    <i class="fas fa-plus"></i> New Shared
+                  </button>
+                </div>
+                <div class="shared-blocks-dropdown">
+                  <select id="shared-blocks-selector">
+                    <option value="">Select a shared block...</option>
+                  </select>
+                </div>
+                <div
+                  id="shared-blocks-container"
+                  class="shared-blocks-container"
+                >
+                  <!-- Shared content blocks will be populated here -->
+                </div>
+              </div>
+
+              <div class="filter-controls">
+                <label for="template-set-filter">Template Set:</label>
+                <select id="template-set-filter">
+                  <option value="all">Show All</option>
+                  <% if (typeof templateSets !== 'undefined' && templateSets) {
+                  %> <% templateSets.forEach(function(set) { %>
+                  <option value="<%= set.TemplateSet %>">
+                    <%= set.TemplateSet %>
+                  </option>
+                  <% }); %> <% } %>
+                </select>
+              </div>
+              <div class="filter-controls">
+                <label for="category-filter">Category:</label>
+                <select id="category-filter">
+                  <option value="all">Show All</option>
+                  <option value="null">Uncategorized</option>
+                  <% if (typeof categories !== 'undefined' && categories) { %>
+                  <% categories.forEach(function(category) { %>
+                  <option value="<%= category.ID %>">
+                    <%= category.Name %>
+                  </option>
+                  <% }); %> <% } %>
+                </select>
+              </div>
+              <div id="template-list">
+                <% if (typeof templates !== 'undefined' && templates) { %> <%
+                templates.forEach(function(template) { %>
+                <div
+                  class="template-card"
+                  data-id="<%= template.ID %>"
+                  data-templateset="<%= template.TemplateSet %>"
+                  data-category-id="<%= template.CategoryID %>"
+                >
+                  <img
+                    src="/public/images/thumbnails/<%= template.Name.replace(/ /g, '-') %>.jpg"
+                    alt="<%= template.Name %>"
+                  />
+                  <div class="card-title"><%= template.Name %></div>
+                </div>
+                <% }); %> <% } %>
+              </div>
+            </div>
+            <div class="drop-zone">
+              <div class="page-controls-header">
+                <div class="filter-controls">
+                  <label for="parent-path-selector">Parent Path:</label>
+                  <select id="parent-path-selector">
+                    <option value="/">/ (Root)</option>
+                  </select>
+                </div>
+                <div class="filter-controls">
+                  <label for="page-name-input">Page Name:</label>
+                  <input
+                    type="text"
+                    id="page-name-input"
+                    placeholder="Enter a name..."
+                  />
+                </div>
+                <div class="filter-controls">
+                  <label for="page-url-slug">Page URL Slug:</label>
+                  <input
+                    type="text"
+                    id="page-url-slug"
+                    placeholder="auto-generates..."
+                    readonly
+                    style="background-color: #e9ecef; color: #495057"
+                  />
+                </div>
+                <div class="filter-controls">
+                  <label for="layout-selector">Layout:</label>
+                  <select id="layout-selector">
+                    <option value="">-- Choose a Layout --</option>
+                    <% if (typeof pageLayouts !== 'undefined' && pageLayouts) {
+                    %> <% pageLayouts.forEach(function(layout) { %>
+                    <option value="<%= layout.ID %>"><%= layout.Name %></option>
+                    <% }); %> <% } %>
+                  </select>
+                </div>
+                <div class="filter-controls">
+                  <button type="button" id="create-page-btn">
+                    Create Page
+                  </button>
+                </div>
+                <div class="filter-controls">
+                  <button type="button" id="metadata-btn">
+                    <i class="fas fa-info-circle"></i> Meta Data
+                  </button>
+                </div>
+              </div>
+
+              <!-- Meta Data Modal -->
+              <div id="metadata-modal" class="modal">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h3>Page Meta Data</h3>
+                    <button id="metadata-close" class="close-button">
+                      &times;
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                    <div class="form-group">
+                      <label for="meta-title">Meta Title:</label>
+                      <input
+                        type="text"
+                        id="meta-title"
+                        placeholder="Enter the page title (appears in browser tab and search results)..."
+                        maxlength="255"
+                      />
+                    </div>
+                    <div class="form-group">
+                      <label for="meta-keywords">Meta Keywords:</label>
+                      <textarea
+                        id="meta-keywords"
+                        placeholder="Enter comma-separated keywords..."
+                      ></textarea>
+                    </div>
+                    <div class="form-group">
+                      <label for="meta-description">Meta Description:</label>
+                      <textarea
+                        id="meta-description"
+                        placeholder="Enter a brief description..."
+                      ></textarea>
+                    </div>
+                    <div class="form-group">
+                      <label>Alternative URLs (Slugs):</label>
+                      <div id="alternative-urls-container">
+                        <div class="alternative-url-input">
+                          <input
+                            type="text"
+                            class="alternative-url-field"
+                            placeholder="/alternative-title"
+                          />
+                          <button type="button" class="remove-url-btn" disabled>
+                            <i class="fas fa-trash"></i>
+                          </button>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        id="add-alternative-url"
+                        class="toolbar-btn"
+                      >
+                        <i class="fas fa-plus"></i> Add Alternative URL
+                      </button>
+                    </div>
+                  </div>
+                  <div class="modal-actions">
+                    <button id="save-metadata">Save Meta Data</button>
+                  </div>
+                </div>
+              </div>
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                "
+              >
+                <h3 id="canvas-title">Your Page Canvas</h3>
+                <div style="display: flex; gap: 10px;">
+                  <button
+                    id="view-page-btn"
+                    style="
+                      background-color: #007bff;
+                      color: white;
+                      border: none;
+                      padding: 10px 20px;
+                      border-radius: 5px;
+                      font-weight: bold;
+                      cursor: pointer;
+                      display: none;
+                    "
+                    title="Preview page"
+                  >
+                    <i class="fas fa-eye" style="margin-right: 5px;"></i>View
+                  </button>
+                  <button
+                    id="save-page-btn"
+                    style="
+                      background-color: #28a745;
+                      color: white;
+                      border: none;
+                      padding: 10px 20px;
+                      border-radius: 5px;
+                      font-weight: bold;
+                      cursor: pointer;
+                    "
+                    disabled
+                  >
+                    Save Page
+                  </button>
+                </div>
+              </div>
+              <div id="canvas-area" style="position: relative; flex-grow: 1">
+                <div class="disabled-overlay">
+                  <div>Create a page to begin.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <% } %>
+        </main>
+      </div>
+    </div>
+
+    <script src="/public/js/frontend-logger.js"></script>
+    <script src="/public/js/sidebar.js"></script>
+    <script src="/public/js/dashboard.js"></script>
+    <script src="/public/js/buildpage.js?v=20250127-1530"></script>
+    <script src="/public/js/image-picker.js"></script>
+  </body>
+</html>

@@ -1,0 +1,164 @@
+/* Page Templates Specific Styles */
+
+/* Notification Banner Styles */
+.toast-notification {
+  padding: 16px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  font-weight: 500;
+  opacity: 0;
+  transform: translateX(100%);
+  transition: all 0.3s ease-in-out;
+  min-width: 300px;
+  max-width: 400px;
+  border-left: 4px solid;
+  position: relative;
+  z-index: 1000;
+  margin-bottom: 8px;
+}
+
+.toast-notification.show {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.toast-notification.success {
+  background-color: #f0f9ff;
+  color: #065f46;
+  border-left-color: #10b981;
+}
+
+.toast-notification.error {
+  background-color: #fef2f2;
+  color: #991b1b;
+  border-left-color: #ef4444;
+}
+
+.toast-notification.warning {
+  background-color: #fffbeb;
+  color: #92400e;
+  border-left-color: #f59e0b;
+}
+
+.toast-notification.info {
+  background-color: #eff6ff;
+  color: #1e40af;
+  border-left-color: #3b82f6;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-container {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  max-width: 600px;
+  width: 90%;
+  max-height: 80vh;
+  overflow: hidden;
+}
+
+.modal-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-body {
+  padding: 24px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+/* Category Item Styles */
+.category-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.category-item-actions button {
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background-color 0.2s;
+}
+
+/* Template List Item Styles */
+.template-list-item.active {
+  background-color: #dbeafe !important;
+  border-color: #3b82f6 !important;
+}
+
+/* CodeMirror Responsive Styles */
+.editor-container {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+  min-height: 300px;
+  flex: 1 !important;
+  position: relative;
+}
+
+/* Ensure the form inside editor-container fills available space */
+#template-form {
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* Make sure the code view section expands */
+#template-form > .bg-white.border.rounded-lg.p-6.flex-grow {
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 0;
+  flex: 1 !important;
+}
+
+/* Force CodeMirror to fill all available space */
+.CodeMirror {
+  height: 100% !important;
+  flex-grow: 1 !important;
+  min-height: 300px !important;
+  width: 100% !important;
+  flex: 1 !important;
+}
+
+.CodeMirror-scroll {
+  height: 100% !important;
+  min-height: 300px !important;
+}
+
+/* Ensure the outer container for CodeMirror also flexes */
+#editor-container {
+  height: 100% !important;
+  flex: 1 !important;
+}
+
+/* Force the entire right column to use all available height */
+.grid.grid-cols-\[280px_1fr\] > div:last-child {
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+}

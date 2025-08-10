@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Z-Index Test - Notifications</title>
+    <link rel="stylesheet" href="/public/css/dashboard.css" />
+    <link rel="stylesheet" href="/public/css/AzureStorage.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <style>
+      .test-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.1);
+        z-index: 10000;
+        pointer-events: none;
+        display: none;
+      }
+      .test-overlay.show {
+        display: block;
+      }
+      .test-container {
+        margin: 20px;
+        padding: 20px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      .test-button {
+        margin: 5px;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        background: #3b82f6;
+        color: white;
+      }
+      .test-button:hover {
+        background: #2563eb;
+      }
+      .z-index-info {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        margin: 10px 0;
+        font-family: monospace;
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Include the header partial -->
+    <%- include('../partials/header') %>
+
+    <!-- Test overlay to simulate high z-index elements -->
+    <div id="test-overlay" class="test-overlay"></div>
+
+    <div class="test-container">
+      <h1>🎯 Z-Index Layering Test</h1>
+
+      <div class="z-index-info">
+        <strong>Z-Index Hierarchy (highest to lowest):</strong><br />
+        • Notifications: 99999<br />
+        • Notification Dropdowns: 99998<br />
+        • Test Overlay: 10000<br />
+        • Font Size Indicator: 10000<br />
+        • Various Modals: ~10005<br />
+        • Header: 200<br />
+        • Sidebar: 100
+      </div>
+
+      <h3>🧪 Test Scenarios</h3>
+
+      <button class="test-button" onclick="testNotificationOverEverything()">
+        Test: Notification Over Everything
+      </button>
+
+      <button class="test-button" onclick="testNotificationWithOverlay()">
+        Test: Notification vs High Z-Index Overlay
+      </button>
+
+      <button class="test-button" onclick="testBellDropdown()">
+        Test: Bell Dropdown Layering
+      </button>
+
+      <button class="test-button" onclick="testFontSizeIndicator()">
+        Test: Font Size vs Notifications
+      </button>
+
+      <button class="test-button" onclick="clearTests()">
+        Clear All Tests
+      </button>
+
+      <div
+        id="test-results"
+        style="
+          margin-top: 20px;
+          padding: 15px;
+          background: #f0f0f0;
+          border-radius: 8px;
+        "
+      >
+        <strong>Test Results:</strong><br />
+        <div id="results-content">Ready to test...</div>
+      </div>
+    </div>
+
+    <!-- Load notification system -->
+    <script src="/public/js/notifications.js"></script>
+
+    <script>
+      function log(message) {
+        const results = document.getElementById("results-content");
+        results.innerHTML +=
+          "<div>" + new Date().toLocaleTimeString() + ": " + message + "</div>";
+      }
+
+      function testNotificationOverEverything() {
+        log("Testing notification over all elements...");
+
+        // Show notification
+        showNotification(
+          "This notification should appear above EVERYTHING!",
+          "success",
+          {
+            duration: 8000,
+            title: "Z-Index Test",
+          }
+        );
+
+        log(
+          "✅ Notification shown - check if it appears above header, bell, and font controls"
+        );
+      }
+
+      function testNotificationWithOverlay() {
+        log("Testing notification vs high z-index overlay...");
+
+        // Show test overlay
+        const overlay = document.getElementById("test-overlay");
+        overlay.classList.add("show");
+
+        // Show notification
+        showNotification(
+          "This should appear ABOVE the gray overlay!",
+          "warning",
+          {
+            duration: 6000,
+            title: "Overlay Test",
+          }
+        );
+
+        // Hide overlay after 4 seconds
+        setTimeout(() => {
+          overlay.classList.remove("show");
+          log(
+            "✅ Overlay removed - notification should have been visible above it"
+          );
+        }, 4000);
+
+        log("🔍 Gray overlay shown - notification should appear above it");
+      }
+
+      function testBellDropdown() {
+        log("Testing bell dropdown layering...");
+
+        const bellIcon = document.getElementById("notification-bell");
+        if (bellIcon) {
+          // Click bell to open dropdown
+          bellIcon.click();
+          log("✅ Bell clicked - dropdown should appear properly layered");
+
+          // Show notification while dropdown is open
+          setTimeout(() => {
+            showNotification("Notification with dropdown open!", "info", {
+              duration: 5000,
+            });
+            log(
+              "🔍 Notification shown with dropdown open - both should be visible"
+            );
+          }, 1000);
+        } else {
+          log("❌ Bell icon not found");
+        }
+      }
+
+      function testFontSizeIndicator() {
+        log("Testing font size indicator vs notifications...");
+
+        // Trigger font size change to show indicator
+        const fontControls = document.querySelector(".font-controls");
+        if (fontControls) {
+          const increaseBtn = fontControls.querySelector(
+            '[onclick*="increase"]'
+          );
+          if (increaseBtn) {
+            increaseBtn.click();
+            log("🔍 Font size increased - indicator should appear");
+
+            // Show notification immediately
+            setTimeout(() => {
+              showNotification(
+                "Notification vs Font Size Indicator!",
+                "error",
+                {
+                  duration: 6000,
+                  title: "Layering Test",
+                }
+              );
+              log(
+                "✅ Notification shown - should appear above font size indicator"
+              );
+            }, 500);
+          } else {
+            log("❌ Font increase button not found");
+          }
+        } else {
+          log("❌ Font controls not found");
+        }
+      }
+
+      function clearTests() {
+        log("Clearing all tests...");
+
+        // Hide overlay
+        document.getElementById("test-overlay").classList.remove("show");
+
+        // Close any open dropdowns
+        const bellIcon = document.getElementById("notification-bell");
+        if (bellIcon) {
+          // Click elsewhere to close dropdown
+          document.body.click();
+        }
+
+        // Clear notifications
+        const notifications = document.querySelectorAll(".notification");
+        notifications.forEach((n) => n.remove());
+
+        log("✅ All tests cleared");
+      }
+
+      // Auto-test on load
+      setTimeout(() => {
+        log("=== AUTO-TESTING Z-INDEX LAYERING ===");
+        testNotificationOverEverything();
+      }, 2000);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Simple Notification Test</title>
+    <style>
+      body {
+        padding: 20px;
+        font-family: Arial, sans-serif;
+      }
+      button {
+        padding: 10px 20px;
+        margin: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Simple Notification Test</h1>
+    <button onclick="testBasic()">Test Basic Notification</button>
+    <button onclick="testFallback()">Test Fallback Notification</button>
+
+    <div id="debug"></div>
+
+    <script>
+      logger.info("Simple test page loaded");
+
+      function testBasic() {
+        logger.info("Testing basic notification");
+        if (typeof showNotification === "function") {
+          showNotification("Test message", "success");
+        } else {
+          console.error("showNotification function not found");
+          document.getElementById("debug").innerHTML +=
+            "<p>ERROR: showNotification function not found</p>";
+        }
+      }
+
+      function testFallback() {
+        logger.info("Testing fallback notification");
+        // Create a simple fallback notification
+        const notification = document.createElement("div");
+        notification.style.cssText = `
+                position: fixed; top: 20px; right: 20px; z-index: 10000;
+                padding: 12px 20px; border-radius: 4px; color: white;
+                background: #28a745; font-family: Arial, sans-serif;
+            `;
+        notification.textContent = "Fallback notification working!";
+        document.body.appendChild(notification);
+        setTimeout(() => notification.remove(), 3000);
+      }
+
+      // Try to load notifications.js
+      const script = document.createElement("script");
+      script.src = "/public/js/notifications.js";
+      script.onload = function () {
+        logger.info("notifications.js loaded successfully");
+        document.getElementById("debug").innerHTML +=
+          "<p>✅ notifications.js loaded</p>";
+      };
+      script.onerror = function () {
+        console.error("Failed to load notifications.js");
+        document.getElementById("debug").innerHTML +=
+          "<p>❌ Failed to load notifications.js</p>";
+      };
+      document.head.appendChild(script);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Content Blocks - CMS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link href="/public/css/dashboard.css?v=1" rel="stylesheet" />
+    <link href="/public/css/content.css?v=1" rel="stylesheet" />
+    <link href="/public/css/AzureStorage.css?v=1" rel="stylesheet" />
+  </head>
+  <body>
+    <div class="dashboard-container">
+      <!-- Sidebar -->
+      <%- include('../partials/sidebar') %>
+
+      <!-- Main Content -->
+      <div class="main-content">
+        <!-- Header -->
+        <%- include('../partials/header') %>
+
+        <!-- Content -->
+        <main class="content">
+          <!-- Container for the Shared Content Blocks UI -->
+          <div class="container mx-auto">
+            <!-- Header with title, filter, and buttons all on one line -->
+            <div class="flex justify-between items-center w-full p-5">
+              <div class="flex-1 text-left">
+                <h1 class="text-3xl font-bold text-gray-800">
+                  Shared Content Blocks
+                </h1>
+                <!-- Filter dropdown next to the headline -->
+                <select
+                  id="blockTypeFilter"
+                  class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                >
+                  <option value="all">All Content Blocks</option>
+                  <option value="regular">Regular Content Blocks</option>
+                  <option value="shared">Shared Content Blocks</option>
+                </select>
+              </div>
+              <div class="flex-1"></div>
+              <div class="flex-1 flex justify-end gap-2">
+                <button
+                  id="createBlockBtn"
+                  class="bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 transition duration-300 ease-in-out flex items-center"
+                >
+                  <i class="fas fa-plus mr-2"></i>Content Block
+                </button>
+                <button
+                  id="createSharedBlockBtn"
+                  class="bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700 transition duration-300 ease-in-out flex items-center"
+                >
+                  <i class="fas fa-share-alt mr-2"></i>Shared Block
+                </button>
+              </div>
+            </div>
+
+            <!-- Current website ID for API calls -->
+            <input
+              type="hidden"
+              id="websiteId"
+              value="<%= currentWorkingSite ? currentWorkingSite.CurrentWorkingSite : '' %>"
+            />
+            <input
+              type="hidden"
+              id="authorId"
+              value="<%= typeof authorID !== 'undefined' ? authorID : '' %>"
+            />
+
+            <!-- Grid to display the list of shared blocks -->
+            <div
+              id="blocksList"
+              class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            >
+              <!-- Shared content blocks will be dynamically inserted here -->
+            </div>
+          </div>
+
+          <!-- Modal for Creating and Editing Shared Content Blocks -->
+          <!-- Modal for Creating and Editing Shared Content Blocks -->
+          <div
+            id="blockModal"
+            class="fixed inset-0 z-50 items-center justify-center hidden modal-backdrop"
+          >
+            <div
+              class="bg-white rounded-xl shadow-2xl w-full max-w-4xl m-4 modal-content overflow-hidden flex flex-col"
+            >
+              <!-- Modal Header -->
+              <div class="flex justify-between items-center p-5 border-b">
+                <h2 id="modalTitle" class="text-2xl font-bold text-gray-900">
+                  Create New Content Block
+                </h2>
+                <button
+                  id="closeModalBtn"
+                  class="text-gray-500 hover:text-gray-800 text-2xl"
+                >
+                  &times;
+                </button>
+              </div>
+
+              <!-- Modal Body -->
+              <div class="p-6 flex-grow overflow-y-auto">
+                <form id="blockForm">
+                  <input type="hidden" id="blockId" name="blockId" />
+                  <div class="mb-6">
+                    <label
+                      for="blockName"
+                      class="block text-sm font-medium text-gray-700 mb-1"
+                      >Block Name</label
+                    >
+                    <input
+                      type="text"
+                      id="blockName"
+                      name="blockName"
+                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                      placeholder="e.g., Main Website Footer"
+                      required
+                    />
+                  </div>
+                  <div class="mb-6">
+                    <label
+                      for="blockDescription"
+                      class="block text-sm font-medium text-gray-700 mb-1"
+                      >Description</label
+                    >
+                    <textarea
+                      id="blockDescription"
+                      name="blockDescription"
+                      rows="3"
+                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                      placeholder="A brief description of what this block is for."
+                    ></textarea>
+                  </div>
+
+                  <!-- Tabs for HTML, CSS, and JS -->
+                  <div>
+                    <div class="border-b border-gray-200">
+                      <nav class="-mb-px flex space-x-6" aria-label="Tabs">
+                        <button
+                          type="button"
+                          class="tab-button active"
+                          data-tab="html"
+                        >
+                          HTML
+                        </button>
+                        <button type="button" class="tab-button" data-tab="css">
+                          CSS
+                        </button>
+                        <button type="button" class="tab-button" data-tab="js">
+                          JavaScript
+                        </button>
+                      </nav>
+                    </div>
+                    <div class="mt-4">
+                      <!-- HTML Content -->
+                      <div id="htmlTab" class="tab-content active">
+                        <label
+                          for="htmlContent"
+                          class="block text-sm font-medium text-gray-700 mb-1"
+                          >HTML Content</label
+                        >
+                        <textarea
+                          id="htmlContent"
+                          name="htmlContent"
+                          class="w-full h-64 font-mono text-sm p-3 border border-gray-300 rounded-lg"
+                          placeholder="<div>Your HTML here</div>"
+                        ></textarea>
+                      </div>
+                      <!-- CSS Content -->
+                      <div id="cssTab" class="tab-content">
+                        <label
+                          for="cssContent"
+                          class="block text-sm font-medium text-gray-700 mb-1"
+                          >CSS Content</label
+                        >
+                        <textarea
+                          id="cssContent"
+                          name="cssContent"
+                          class="w-full h-64 font-mono text-sm p-3 border border-gray-300 rounded-lg"
+                          placeholder=".my-class { color: red; }"
+                        ></textarea>
+                      </div>
+                      <!-- JS Content -->
+                      <div id="jsTab" class="tab-content">
+                        <label
+                          for="jsContent"
+                          class="block text-sm font-medium text-gray-700 mb-1"
+                          >JavaScript Content</label
+                        >
+                        <textarea
+                          id="jsContent"
+                          name="jsContent"
+                          class="w-full h-64 font-mono text-sm p-3 border border-gray-300 rounded-lg"
+                          placeholder="logger.info('Hello from the block!');"
+                        ></textarea>
+                      </div>
+                    </div>
+                  </div>
+                </form>
+              </div>
+
+              <!-- Modal Footer -->
+              <div
+                class="flex justify-end items-center p-5 border-t bg-gray-50"
+              >
+                <button
+                  id="cancelBtn"
+                  class="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-lg mr-3 hover:bg-gray-300"
+                >
+                  Cancel
+                </button>
+                <button
+                  id="saveBlockBtn"
+                  class="bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700"
+                >
+                  Save Block
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Modal for Creating and Editing Shared Blocks -->
+          <div
+            id="sharedBlockModal"
+            class="fixed inset-0 z-50 items-center justify-center hidden modal-backdrop"
+          >
+            <div
+              class="bg-white rounded-xl shadow-2xl w-full max-w-4xl m-4 modal-content overflow-hidden flex flex-col"
+            >
+              <!-- Modal Header -->
+              <div class="flex justify-between items-center p-5 border-b">
+                <h2
+                  id="sharedModalTitle"
+                  class="text-2xl font-bold text-gray-900"
+                >
+                  Create New Shared Block
+                </h2>
+                <button
+                  id="closeSharedModalBtn"
+                  class="text-gray-500 hover:text-gray-800 text-2xl"
+                >
+                  &times;
+                </button>
+              </div>
+
+              <!-- Modal Body -->
+              <div class="p-6 flex-grow overflow-y-auto">
+                <form id="sharedBlockForm">
+                  <input
+                    type="hidden"
+                    id="sharedBlockId"
+                    name="sharedBlockId"
+                  />
+                  <input
+                    type="hidden"
+                    id="sharedWebsiteId"
+                    name="sharedWebsiteId"
+                    value="<%= currentWorkingSite ? currentWorkingSite.CurrentWorkingSite : '' %>"
+                  />
+                  <div class="mb-6">
+                    <label
+                      for="sharedBlockName"
+                      class="block text-sm font-medium text-gray-700 mb-1"
+                      >Block Name</label
+                    >
+                    <input
+                      type="text"
+                      id="sharedBlockName"
+                      name="sharedBlockName"
+                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                      placeholder="e.g., Shared Footer"
+                      required
+                    />
+                  </div>
+                  <div class="mb-6">
+                    <label
+                      for="sharedBlockDescription"
+                      class="block text-sm font-medium text-gray-700 mb-1"
+                      >Description</label
+                    >
+                    <textarea
+                      id="sharedBlockDescription"
+                      name="sharedBlockDescription"
+                      rows="3"
+                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                      placeholder="A brief description of what this shared block is for."
+                    ></textarea>
+                  </div>
+
+                  <!-- Tabs for HTML, CSS, and JS -->
+                  <div>
+                    <div class="border-b border-gray-200">
+                      <nav class="-mb-px flex space-x-6" aria-label="Tabs">
+                        <button
+                          type="button"
+                          class="tab-button active"
+                          data-tab="shared-html"
+                        >
+                          HTML
+                        </button>
+                        <button
+                          type="button"
+                          class="tab-button"
+                          data-tab="shared-css"
+                        >
+                          CSS
+                        </button>
+                        <button
+                          type="button"
+                          class="tab-button"
+                          data-tab="shared-js"
+                        >
+                          JavaScript
+                        </button>
+                      </nav>
+                    </div>
+                    <div class="mt-4">
+                      <!-- HTML Content -->
+                      <div id="sharedHtmlTab" class="tab-content active">
+                        <label
+                          for="sharedHtmlContent"
+                          class="block text-sm font-medium text-gray-700 mb-1"
+                          >HTML Content</label
+                        >
+                        <textarea
+                          id="sharedHtmlContent"
+                          name="sharedHtmlContent"
+                          class="w-full h-64 font-mono text-sm p-3 border border-gray-300 rounded-lg"
+                          placeholder="<div>Your HTML here</div>"
+                        ></textarea>
+                      </div>
+                      <!-- CSS Content -->
+                      <div id="sharedCssTab" class="tab-content">
+                        <label
+                          for="sharedCssContent"
+                          class="block text-sm font-medium text-gray-700 mb-1"
+                          >CSS Content</label
+                        >
+                        <textarea
+                          id="sharedCssContent"
+                          name="sharedCssContent"
+                          class="w-full h-64 font-mono text-sm p-3 border border-gray-300 rounded-lg"
+                          placeholder=".my-class { color: red; }"
+                        ></textarea>
+                      </div>
+                      <!-- JS Content -->
+                      <div id="sharedJsTab" class="tab-content">
+                        <label
+                          for="sharedJsContent"
+                          class="block text-sm font-medium text-gray-700 mb-1"
+                          >JavaScript Content</label
+                        >
+                        <textarea
+                          id="sharedJsContent"
+                          name="sharedJsContent"
+                          class="w-full h-64 font-mono text-sm p-3 border border-gray-300 rounded-lg"
+                          placeholder="logger.info('Hello from the shared block!');"
+                        ></textarea>
+                      </div>
+                    </div>
+                  </div>
+                </form>
+              </div>
+
+              <!-- Modal Footer -->
+              <div
+                class="flex justify-end items-center p-5 border-t bg-gray-50"
+              >
+                <button
+                  id="cancelSharedBtn"
+                  class="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-lg mr-3 hover:bg-gray-300"
+                >
+                  Cancel
+                </button>
+                <button
+                  id="saveSharedBlockBtn"
+                  class="bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700"
+                >
+                  Save Shared Block
+                </button>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <script src="/public/js/frontend-logger.js"></script>
+    <script src="/public/js/sidebar.js"></script>
+    <script src="/public/js/notifications.js"></script>
+    <script src="/public/js/dashboard.js"></script>
+    <script src="/public/js/debug-logger-frontend.js"></script>
+    <script src="/public/js/content.js"></script>
+  </body>
+</html>

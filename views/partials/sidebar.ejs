@@ -1,0 +1,116 @@
+<nav class="sidebar">
+  <div class="logo">
+    <a href="/"><img src="/public/images/logo/logo.png" alt="Logo" /></a>
+  </div>
+  <hr />
+  <!-- Replace your current-website-indicator section with this: -->
+  <div class="current-website-indicator">
+    <a href="/websites" class="change-site-link">
+      <i class="fa-solid fa-shuffle" title="Click here to change"></i> </a
+    ><a href="/websites" class="change-site-link">
+      <% if (currentWebsite && currentWebsite.WebsiteName) { %>
+
+      <div class="active-site-name" title="Click here to change">
+        <%= (currentWebsite.WebsiteName).replace(/^www\./, "") %>
+      </div></a
+    >
+    <% } else { %>
+    <div class="no-site-selected">
+      <span class="current-site-display">No site selected</span>
+      <a href="/websites" class="change-site-link">Select a Site</a>
+    </div>
+    <% } %>
+  </div>
+
+  <div class="sidebar-nav-container">
+    <div class="nav-section">
+      <div class="nav-title">Menu</div>
+      <a href="/websites" class="nav-item">
+        <i class="fas fa-th-large"></i>
+        Sites
+      </a>
+
+      <div class="nav-item-parent">
+        <a href="#" class="nav-item has-child">
+          <span><i class="fa-solid fa-file-lines"></i> Pages</span>
+          <i class="arrow fas fa-chevron-right"></i>
+        </a>
+        <div class="child-nav">
+          <% if (locals.currentWebsite && currentWebsite.CurrentWorkingSite) {
+          %>
+          <a
+            href="/websites/<%= currentWebsite.CurrentWorkingSite %>/page-list"
+            class="nav-item child-item"
+            ><i class="fa-solid fa-eye"></i> View Pages</a
+          >
+          <% } %>
+          <a href="/buildpage" class="nav-item child-item"
+            ><i class="fa-solid fa-plus"></i> New Page</a
+          >
+        </div>
+      </div>
+
+      <div class="nav-item-parent">
+        <a href="#" class="nav-item has-child">
+          <span><i class="fa-solid fa-puzzle-piece"></i> Content</span>
+          <i class="arrow fas fa-chevron-right"></i>
+        </a>
+        <div class="child-nav">
+          <a href="/content" class="nav-item child-item">
+            <i class="fa-solid fa-cube"></i> Content Blocks
+          </a>
+          <a href="/content/images" class="nav-item child-item">
+            <i class="fa-solid fa-image"></i> Images
+          </a>
+          <a href="/content/documents" class="nav-item child-item">
+            <i class="fa-solid fa-file"></i> Documents
+          </a>
+        </div>
+      </div>
+
+      <a href="/pagetemplates" class="nav-item">
+        <i class="fa-solid fa-copy"></i>
+        Page Templates
+      </a>
+    </div>
+
+    <div class="support-section">
+      <div class="nav-title">Administration</div>
+      <% if (locals.user && locals.user.isAdmin) { %>
+      <a href="/sync" class="nav-item">
+        <i class="fa-solid fa-rotate"></i>
+        Sync
+      </a>
+      <% } else { %>
+      <span class="nav-item disabled" title="Administrator access required">
+        <i class="fa-solid fa-rotate"></i>
+        Sync
+      </span>
+      <% } %> <% if (locals.user && locals.user.isAdmin) { %>
+      <a href="/users" class="nav-item">
+        <i class="fas fa-users"></i>
+        Users
+      </a>
+      <% } else { %>
+      <span class="nav-item disabled" title="Administrator access required">
+        <i class="fas fa-users"></i>
+        Users
+      </span>
+      <% } %> <% if (locals.user && locals.user.isAdmin) { %>
+      <a href="/logs" class="nav-item">
+        <i class="fas fa-file-text"></i>
+        Logs
+      </a>
+      <% } else { %>
+      <span class="nav-item disabled" title="Administrator access required">
+        <i class="fas fa-file-text"></i>
+        Logs
+      </span>
+      <% } %>
+    </div>
+  </div>
+</nav>
+<!-- Sidebar Toggle Button - Outside the sidebar so it's always visible -->
+<button class="sidebar-toggle" id="sidebar-toggle" title="Toggle Sidebar">
+  <i class="fas fa-chevron-left"></i>
+</button>

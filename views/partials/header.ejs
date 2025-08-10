@@ -1,0 +1,81 @@
+<!-- Header -->
+<header class="header">
+  <h1 class="header-title" style="padding-left: 30px">
+    <a href="/dashboard" alt="Dashboard" title="Dashboard"
+      ><i class="fa-solid fa-house"></i
+    ></a>
+  </h1>
+  <div class="header-actions">
+    <!-- 
+    <div class="search-box">
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Search anything..."
+      />
+      <i class="fas fa-search search-icon"></i>
+    </div>
+  -->
+
+    <!-- Font Size Controls -->
+    <div class="font-controls">
+      <button
+        id="decrease-font-btn"
+        class="font-control-btn"
+        title="Decrease Font Size"
+      >
+        <i class="fas fa-search-minus"></i>
+      </button>
+      <button
+        id="increase-font-btn"
+        class="font-control-btn"
+        title="Increase Font Size"
+      >
+        <i class="fas fa-search-plus"></i>
+      </button>
+    </div>
+
+    <div class="user-menu-container">
+      <div
+        class="user-avatar"
+        id="user-avatar-button"
+        title="<%= typeof user !== 'undefined' && user ? (user.name + ' (' + user.username + ') - ' + (user.loginMethod || 'Local') + ' login') : 'User' %>"
+        data-user="<%= typeof user !== 'undefined' && user ? user.name : '' %>"
+        data-username="<%= typeof user !== 'undefined' && user ? user.username : '' %>"
+        data-login-method="<%= typeof user !== 'undefined' && user ? (user.loginMethod || 'Local') : 'Local' %>"
+      >
+        <%= typeof user !== 'undefined' && user && user.initials ? user.initials
+        : (typeof user !== 'undefined' && user && user.name ?
+        user.name.charAt(0).toUpperCase() : 'U') %>
+      </div>
+
+      <!-- User dropdown menu -->
+      <div class="user-dropdown" id="user-dropdown" style="display: none">
+        <div class="user-info">
+          <div class="user-name">
+            <%= typeof user !== 'undefined' && user ? user.name : 'User' %>
+          </div>
+          <div class="user-username">
+            @<%= typeof user !== 'undefined' && user ? user.username :
+            'username' %>
+          </div>
+          <div class="user-login-method">
+            <%= typeof user !== 'undefined' && user ? (user.loginMethod ||
+            'Local') : 'Local' %> login
+          </div>
+        </div>
+        <hr class="dropdown-divider" />
+        <div class="menu-items">
+          <a href="/auth/logout" class="menu-item">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Logout</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification Container -->
+  <div id="notificationContainer" class="notification-container"></div>
+  <link rel="stylesheet" href="/public/css/AzureStorage.css" />
+</header>

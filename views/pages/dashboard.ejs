@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard</title>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link href="/public/css/dashboard.css" rel="stylesheet" />
+    <link href="/public/css/content.css" rel="stylesheet" />
+  </head>
+  <body>
+    <div class="dashboard-container">
+      <!-- Sidebar -->
+      <%- include('../partials/sidebar') %>
+
+      <!-- Main Content -->
+      <div class="main-content">
+        <!-- Header -->
+        <%- include('../partials/header') %>
+
+        <!-- Content -->
+        <main class="content">
+          <div class="cms-feature-table-wrapper" style="padding: 24px">
+            <h2
+              style="
+                font-size: 1.5rem;
+                font-weight: 700;
+                color: #1e293b;
+                margin-bottom: 1rem;
+              "
+            >
+              CMS Basic Functionality
+            </h2>
+            <div
+              class="cms-feature-table"
+              style="
+                overflow-x: auto;
+                border-radius: 12px;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+                background: white;
+              "
+            >
+              <table
+                style="
+                  width: 100%;
+                  border-collapse: collapse;
+                  font-family: var(--font-family);
+                  font-size: 0.95rem;
+                  color: var(--font-color);
+                "
+              >
+                <thead style="background-color: #f8fafc; text-align: left">
+                  <tr>
+                    <th style="padding: 16px; border-bottom: 1px solid #e2e8f0">
+                      Status
+                    </th>
+                    <th style="padding: 16px; border-bottom: 1px solid #e2e8f0">
+                      Category
+                    </th>
+                    <th style="padding: 16px; border-bottom: 1px solid #e2e8f0">
+                      Functionality
+                    </th>
+                    <th style="padding: 16px; border-bottom: 1px solid #e2e8f0">
+                      Description
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- Content -->
+                  <tr class="hoverable-row">
+                    <td style="padding: 16px">
+                      <i
+                        class="fa-solid fa-square-check"
+                        style="color: #00ff1e"
+                      ></i>
+                    </td>
+                    <td style="padding: 16px">Content</td>
+                    <td style="padding: 16px">Page Creation & Editing</td>
+                    <td style="padding: 16px">
+                      Create and update content pages with code editor.
+                    </td>
+                  </tr>
+                  <tr class="hoverable-row">
+                    <td style="padding: 16px">
+                      <i
+                        class="fa-solid fa-square-check"
+                        style="color: #00ff1e"
+                      ></i>
+                    </td>
+                    <td style="padding: 16px">Content</td>
+                    <td style="padding: 16px">HTML Source Editing</td>
+                    <td style="padding: 16px">
+                      Edit the raw HTML of content blocks.
+                    </td>
+                  </tr>
+                  <tr class="hoverable-row">
+                    <td style="padding: 16px">
+                      <i
+                        class="fa-solid fa-square-check"
+                        style="color: #00ff1e"
+                      ></i>
+                    </td>
+                    <td style="padding: 16px">Content</td>
+                    <td style="padding: 16px">Saves & Publishing</td>
+                    <td style="padding: 16px">
+                      Save pages, preview pages, and populate pending sync
+                      tables.
+                    </td>
+                  </tr>
+                  <tr class="hoverable-row">
+                    <td style="padding: 16px">
+                      <i
+                        class="fa-solid fa-question"
+                        style="color: #ff0000"
+                      ></i>
+                    </td>
+                    <td style="padding: 16px">Content</td>
+                    <td style="padding: 16px">Versioning</td>
+                    <td style="padding: 16px">
+                      Track, compare, and restore previous content versions.
+                    </td>
+                  </tr>
+                  <tr class="hoverable-row">
+                    <td style="padding: 16px">
+                      <i
+                        class="fa-solid fa-square-check"
+                        style="color: #00ff1e"
+                      ></i>
+                    </td>
+                    <td style="padding: 16px">Content</td>
+                    <td style="padding: 16px">Shared Content Blocks</td>
+                    <td style="padding: 16px">
+                      Reusable content blocks (e.g., headers, footers).
+                    </td>
+                  </tr>
+                  <tr class="hoverable-row">
+                    <td style="padding: 16px">
+                      <i
+                        class="fa-solid fa-question"
+                        style="color: #ff0000"
+                      ></i>
+                    </td>
+                    <td style="padding: 16px">Content</td>
+                    <td style="padding: 16px">Internal Linking</td>
+                    <td style="padding: 16px">
+                      Easily link to other pages within the site.
+                    </td>
+                  </tr>
+
+                  <!-- Media -->
+                  <tr class="hoverable-row">
+                    <td style="padding: 16px">
+                      <i
+                        class="fa-solid fa-square-check"
+                        style="color: #00ff1e"
+                      ></i>
+                    </td>
+                    <td style="padding: 16px">Media</td>
+                    <td style="padding: 16px">Media Uploads</td>
+                    <td style="padding: 16px">Upload and manage images.</td>
+                  </tr>
+                  <tr class="hoverable-row">
+                    <td style="padding: 16px">
+                      <i
+                        class="fa-solid fa-question"
+                        style="color: #ff0000"
+                      ></i>
+                    </td>
+                    <td style="padding: 16px">Media</td>
+                    <td style="padding: 16px">Media Uploads</td>
+                    <td style="padding: 16px">Upload and manage documents.</td>
+                  </tr>
+
+                  <!-- Design -->
+                  <tr class="hoverable-row">
+                    <td style="padding: 16px">
+                      <i
+                        class="fa-solid fa-square-check"
+                        style="color: #00ff1e"
+                      ></i>
+                    </td>
+                    <td style="padding: 16px">Design</td>
+                    <td style="padding: 16px">Templates & Themes</td>
+                    <td style="padding: 16px">
+                      Predefined page layouts or themes for consistent styling.
+                    </td>
+                  </tr>
+                  <tr class="hoverable-row">
+                    <td style="padding: 16px">
+                      <i
+                        class="fa-solid fa-square-check"
+                        style="color: #00ff1e"
+                      ></i>
+                    </td>
+                    <td style="padding: 16px">Design</td>
+                    <td style="padding: 16px">Layout Builder</td>
+                    <td style="padding: 16px">
+                      Drag-and-drop or grid-based layout editing.
+                    </td>
+                  </tr>
+                  <tr class="hoverable-row">
+                    <td style="padding: 16px">
+                      <i
+                        class="fa-solid fa-question"
+                        style="color: #ff0000"
+                      ></i>
+                    </td>
+                    <td style="padding: 16px">Design</td>
+                    <td style="padding: 16px">Reusable Components</td>
+                    <td style="padding: 16px">
+                      Widgets like carousels, forms, CTAs, etc.
+                    </td>
+                  </tr>
+
+                  <!-- Users -->
+                  <tr class="hoverable-row">
+                    <td style="padding: 16px">
+                      <i
+                        class="fa-solid fa-square-check"
+                        style="color: #00ff1e"
+                      ></i>
+                    </td>
+                    <td style="padding: 16px">Users</td>
+                    <td style="padding: 16px">User Roles & Permissions</td>
+                    <td style="padding: 16px">
+                      Define roles (Admin, Editor, Contributor, etc.) with
+                      access control.
+                    </td>
+                  </tr>
+                  <tr class="hoverable-row">
+                    <td style="padding: 16px">
+                      <i
+                        class="fa-solid fa-square-check"
+                        style="color: #00ff1e"
+                      ></i>
+                    </td>
+                    <td style="padding: 16px">Users</td>
+                    <td style="padding: 16px">Audit Logs</td>
+                    <td style="padding: 16px">
+                      Track user actions and changes for accountability.
+                    </td>
+                  </tr>
+
+                  <!-- SEO -->
+                  <tr class="hoverable-row">
+                    <td style="padding: 16px">
+                      <i
+                        class="fa-solid fa-question"
+                        style="color: #ff0000"
+                      ></i>
+                    </td>
+                    <td style="padding: 16px">SEO</td>
+                    <td style="padding: 16px">Meta Tag Management</td>
+                    <td style="padding: 16px">
+                      Control page titles, descriptions, and social tags.
+                    </td>
+                  </tr>
+                  <tr class="hoverable-row">
+                    <td style="padding: 16px">
+                      <i
+                        class="fa-solid fa-square-check"
+                        style="color: #00ff1e"
+                      ></i>
+                    </td>
+                    <td style="padding: 16px">SEO</td>
+                    <td style="padding: 16px">Friendly URLs</td>
+                    <td style="padding: 16px">
+                      Customize and edit page slugs and paths.
+                    </td>
+                  </tr>
+                  <tr class="hoverable-row">
+                    <td style="padding: 16px">
+                      <i
+                        class="fa-solid fa-question"
+                        style="color: #ff0000"
+                      ></i>
+                    </td>
+                    <td style="padding: 16px">SEO</td>
+                    <td style="padding: 16px">Redirects</td>
+                    <td style="padding: 16px">
+                      Create and manage 301/302 redirects.
+                    </td>
+                  </tr>
+                  <tr class="hoverable-row">
+                    <td style="padding: 16px">
+                      <i
+                        class="fa-solid fa-question"
+                        style="color: #ff0000"
+                      ></i>
+                    </td>
+                    <td style="padding: 16px">SEO</td>
+                    <td style="padding: 16px">XML Sitemap</td>
+                    <td style="padding: 16px">
+                      Automatically generate sitemap.xml for search engines.
+                    </td>
+                  </tr>
+
+                  <!-- Navigation -->
+                  <tr class="hoverable-row">
+                    <td style="padding: 16px">
+                      <i
+                        class="fa-solid fa-question"
+                        style="color: #ff0000"
+                      ></i>
+                    </td>
+                    <td style="padding: 16px">Navigation</td>
+                    <td style="padding: 16px">Menu Builder</td>
+                    <td style="padding: 16px">
+                      Visual tool for building navigation menus.
+                    </td>
+                  </tr>
+                  <tr class="hoverable-row">
+                    <td style="padding: 16px">
+                      <i
+                        class="fa-solid fa-square-check"
+                        style="color: #00ff1e"
+                      ></i>
+                    </td>
+                    <td style="padding: 16px">Navigation</td>
+                    <td style="padding: 16px">Page Hierarchy</td>
+                    <td style="padding: 16px">
+                      Organize pages into nested parent/child trees.
+                    </td>
+                  </tr>
+                  <tr class="hoverable-row">
+                    <td style="padding: 16px">
+                      <i
+                        class="fa-solid fa-square-check"
+                        style="color: #00ff1e"
+                      ></i>
+                    </td>
+                    <td style="padding: 16px">Navigation</td>
+                    <td style="padding: 16px">Breadcrumb Support</td>
+                    <td style="padding: 16px">
+                      Show page trail navigation to users.
+                    </td>
+                  </tr>
+
+                  <!-- Integrations -->
+                  <tr class="hoverable-row">
+                    <td style="padding: 16px">
+                      <i
+                        class="fa-solid fa-question"
+                        style="color: #ff0000"
+                      ></i>
+                    </td>
+                    <td style="padding: 16px">Integrations</td>
+                    <td style="padding: 16px">Analytics Integration</td>
+                    <td style="padding: 16px">
+                      Embed tools like Google Analytics.
+                    </td>
+                  </tr>
+                  <tr class="hoverable-row">
+                    <td style="padding: 16px">
+                      <i
+                        class="fa-solid fa-question"
+                        style="color: #ff0000"
+                      ></i>
+                    </td>
+                    <td style="padding: 16px">Integrations</td>
+                    <td style="padding: 16px">Form Builder</td>
+                    <td style="padding: 16px">
+                      Create and manage contact or feedback forms.
+                    </td>
+                  </tr>
+
+                  <!-- Content Types -->
+                  <tr class="hoverable-row">
+                    <td style="padding: 16px">
+                      <i
+                        class="fa-solid fa-square-check"
+                        style="color: #00ff1e"
+                      ></i>
+                    </td>
+                    <td style="padding: 16px">Content Types</td>
+                    <td style="padding: 16px">Tags & Categories</td>
+                    <td style="padding: 16px">
+                      Allow tags and categories for various template types
+                    </td>
+                  </tr>
+
+                  <!-- Notifications -->
+                  <tr class="hoverable-row">
+                    <td style="padding: 16px">
+                      <i
+                        class="fa-solid fa-square-check"
+                        style="color: #00ff1e"
+                      ></i>
+                    </td>
+                    <td style="padding: 16px">Notifications</td>
+                    <td style="padding: 16px">Real-time Notifications</td>
+                    <td style="padding: 16px">
+                      Success, Fail, and Info notification banner system
+                    </td>
+                  </tr>
+
+                  <!-- Log system -->
+                  <tr class="hoverable-row">
+                    <td style="padding: 16px">
+                      <i
+                        class="fa-solid fa-square-check"
+                        style="color: #00ff1e"
+                      ></i>
+                    </td>
+                    <td style="padding: 16px">Logs</td>
+                    <td style="padding: 16px">Log events</td>
+                    <td style="padding: 16px">
+                      Track activity int he app through an admin /logs system
+                    </td>
+                  </tr>
+
+                  <!-- Localization -->
+                  <tr class="hoverable-row">
+                    <td style="padding: 16px">
+                      <i
+                        class="fa-solid fa-question"
+                        style="color: #ff0000"
+                      ></i>
+                    </td>
+                    <td style="padding: 16px">Localization</td>
+                    <td style="padding: 16px">Multilingual Support</td>
+                    <td style="padding: 16px">
+                      Create content in multiple languages.
+                    </td>
+                  </tr>
+                  <tr class="hoverable-row">
+                    <td style="padding: 16px">
+                      <i
+                        class="fa-solid fa-question"
+                        style="color: #ff0000"
+                      ></i>
+                    </td>
+                    <td style="padding: 16px">Localization</td>
+                    <td style="padding: 16px">Multisite Management</td>
+                    <td style="padding: 16px">
+                      Manage multiple sites/domains in one CMS instance.
+                    </td>
+                  </tr>
+
+                  <!-- Performance -->
+
+                  <tr class="hoverable-row">
+                    <td style="padding: 16px">
+                      <i
+                        class="fa-solid fa-question"
+                        style="color: #ff0000"
+                      ></i>
+                    </td>
+                    <td style="padding: 16px">Performance</td>
+                    <td style="padding: 16px">Media Optimization</td>
+                    <td style="padding: 16px">
+                      Automatically compress or resize uploaded images.
+                    </td>
+                  </tr>
+
+                  <!-- Security -->
+                  <tr class="hoverable-row">
+                    <td style="padding: 16px">
+                      <i
+                        class="fa-solid fa-square-check"
+                        style="color: #00ff1e"
+                      ></i>
+                    </td>
+                    <td style="padding: 16px">Security</td>
+                    <td style="padding: 16px">User Authentication</td>
+                    <td style="padding: 16px">
+                      Enable Azure AD User Authentication
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <style>
+            .hoverable-row:hover {
+              background-color: #f1f5f9;
+              transition: background-color 0.2s ease;
+            }
+
+            @media (max-width: 768px) {
+              .cms-feature-table-wrapper h2 {
+                font-size: 1.25rem;
+              }
+              .cms-feature-table table {
+                font-size: 0.9rem;
+              }
+            }
+          </style>
+
+          <!-- Test Notification System -->
+          <div
+            style="
+              margin: 20px 0;
+              padding: 20px;
+              border: 1px solid #ddd;
+              border-radius: 5px;
+            "
+          >
+            <h3>Test Notification System</h3>
+            <p>Click the buttons below to test the notification system:</p>
+            <button
+              onclick="testNotification('success')"
+              style="
+                margin: 5px;
+                padding: 10px 15px;
+                background: #28a745;
+                color: white;
+                border: none;
+                border-radius: 3px;
+                cursor: pointer;
+              "
+            >
+              Test Success Notification
+            </button>
+            <button
+              onclick="testNotification('error')"
+              style="
+                margin: 5px;
+                padding: 10px 15px;
+                background: #dc3545;
+                color: white;
+                border: none;
+                border-radius: 3px;
+                cursor: pointer;
+              "
+            >
+              Test Error Notification
+            </button>
+            <button
+              onclick="testNotification('warning')"
+              style="
+                margin: 5px;
+                padding: 10px 15px;
+                background: #ffc107;
+                color: black;
+                border: none;
+                border-radius: 3px;
+                cursor: pointer;
+              "
+            >
+              Test Warning Notification
+            </button>
+            <button
+              onclick="testNotification('info')"
+              style="
+                margin: 5px;
+                padding: 10px 15px;
+                background: #17a2b8;
+                color: white;
+                border: none;
+                border-radius: 3px;
+                cursor: pointer;
+              "
+            >
+              Test Info Notification
+            </button>
+            <br /><br />
+            <button
+              onclick="createPersistentNotification()"
+              style="
+                margin: 5px;
+                padding: 10px 15px;
+                background: #6f42c1;
+                color: white;
+                border: none;
+                border-radius: 3px;
+                cursor: pointer;
+              "
+            >
+              Create Persistent Notification (saves to database)
+            </button>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <script src="/public/js/frontend-logger.js"></script>
+    <script src="/public/js/notifications.js"></script>
+    <script src="/public/js/dashboard.js"></script>
+    <script src="/public/js/sidebar.js"></script>
+    <script
+      src="https://kit.fontawesome.com/a076d05399.js"
+      crossorigin="anonymous"
+    ></script>
+    <script>
+      // Debug: Check if notifications.js loaded
+      logger.info("🔍 Dashboard script running");
+      logger.info("🔍 showNotification exists:", typeof showNotification);
+      logger.info("🔍 notificationManager exists:", typeof notificationManager);
+
+      // Test notification immediately
+      setTimeout(() => {
+        logger.info("🔍 Testing notification after 2 seconds");
+        if (typeof showNotification === "function") {
+          showNotification("Dashboard loaded successfully!", "success");
+        } else {
+          console.error("🔍 showNotification function not available");
+          // Create fallback notification
+          const div = document.createElement("div");
+          div.style.cssText =
+            "position:fixed;top:20px;right:20px;background:#28a745;color:white;padding:10px;border-radius:4px;z-index:10000;";
+          div.textContent = "Fallback: Dashboard loaded!";
+          document.body.appendChild(div);
+          setTimeout(() => div.remove(), 3000);
+        }
+      }, 2000);
+    </script>
+    <script>
+      // Test notification functions
+      function testNotification(type) {
+        const messages = {
+          success: "This is a success notification!",
+          error: "This is an error notification!",
+          warning: "This is a warning notification!",
+          info: "This is an info notification!",
+        };
+
+        showNotification(messages[type], type);
+      }
+
+      async function createPersistentNotification() {
+        try {
+          const response = await fetch("/api/notifications/test", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+
+          if (response.ok) {
+            const result = await response.json();
+            showNotification(
+              "Persistent notification created successfully! Check the bell icon.",
+              "success"
+            );
+            // Update the notification bell count
+            updateNotificationCount();
+          } else {
+            showNotification(
+              "Failed to create persistent notification",
+              "error"
+            );
+          }
+        } catch (error) {
+          console.error("Error creating persistent notification:", error);
+          showNotification("Error creating persistent notification", "error");
+        }
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Simple JS Test</title>
+  </head>
+  <body>
+    <h1>Simple JavaScript Test</h1>
+    <div id="results"></div>
+
+    <script>
+      logger.info("Basic script running");
+      document.getElementById("results").innerHTML =
+        "<p>✅ Basic JavaScript working</p>";
+    </script>
+
+    <script src="/public/js/notifications.js"></script>
+
+    <script>
+      setTimeout(() => {
+        const results = document.getElementById("results");
+        results.innerHTML += `
+                <p>File loaded flag: ${!!window.NOTIFICATIONS_JS_LOADED}</p>
+                <p>NotificationManager class: ${typeof NotificationManager}</p>
+                <p>notificationManager instance: ${typeof notificationManager}</p>
+                <p>showNotification function: ${typeof showNotification}</p>
+            `;
+
+        // Try to create a notification
+        if (typeof showNotification === "function") {
+          results.innerHTML += "<p>✅ Attempting to show notification...</p>";
+          showNotification("Test notification", "success");
+        } else {
+          results.innerHTML += "<p>❌ showNotification not available</p>";
+        }
+
+        // Create a manual notification to test CSS
+        results.innerHTML +=
+          "<p>🔧 Creating manual notification for CSS test...</p>";
+        const container = document.createElement("div");
+        container.style.cssText = `
+          position: fixed; top: 20px; right: 20px; z-index: 10000;
+          background: #28a745; color: white; padding: 12px 20px;
+          border-radius: 4px; font-family: Arial, sans-serif;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        `;
+        container.textContent = "Manual CSS Test Notification";
+        document.body.appendChild(container);
+
+        setTimeout(() => {
+          if (container.parentElement) {
+            container.remove();
+          }
+        }, 5000);
+      }, 1000);
+    </script>
+  </body>
+</html>

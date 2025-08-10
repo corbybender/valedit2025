@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= title %></title>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link href="/public/css/dashboard.css" rel="stylesheet" />
+    <style>
+      .log-cards-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+      }
+
+      .log-card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        border-left: 4px solid;
+      }
+
+      .log-card.error {
+        border-left-color: #dc3545;
+      }
+
+      .log-card.warning {
+        border-left-color: #ffc107;
+      }
+
+      .log-card.info {
+        border-left-color: #17a2b8;
+      }
+
+      .log-card.debug {
+        border-left-color: #6c757d;
+      }
+
+      .log-card-header {
+        display: flex;
+        justify-content: between;
+        align-items: center;
+        margin-bottom: 15px;
+      }
+
+      .log-card-title {
+        font-size: 18px;
+        font-weight: 600;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .log-card-count {
+        font-size: 24px;
+        font-weight: 700;
+        margin: 10px 0;
+      }
+
+      .log-card-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+      }
+
+      .delete-btn {
+        background: #dc3545;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .delete-btn:hover {
+        background: #c82333;
+      }
+
+      .refresh-btn {
+        background: #007bff;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .refresh-btn:hover {
+        background: #0056b3;
+      }
+
+      .auto-refresh-indicator {
+        background: #28a745;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 4px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .recent-logs {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        margin-top: 20px;
+      }
+
+      .log-entry {
+        padding: 10px;
+        border-bottom: 1px solid #eee;
+        font-family: monospace;
+        font-size: 12px;
+      }
+
+      .log-entry:last-child {
+        border-bottom: none;
+      }
+
+      .log-entry.error {
+        background: #f8d7da;
+        color: #721c24;
+      }
+
+      .log-entry.warning {
+        background: #fff3cd;
+        color: #856404;
+      }
+
+      .log-entry.info {
+        background: #d1ecf1;
+        color: #0c5460;
+      }
+
+      .log-entry.debug {
+        background: #f8f9fa;
+        color: #495057;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="dashboard-container">
+      <!-- Sidebar -->
+      <%- include('../partials/sidebar') %>
+
+      <!-- Main Content -->
+      <div class="main-content">
+        <!-- Header -->
+        <%- include('../partials/header') %>
+
+        <!-- Content -->
+        <main class="content">
+          <div class="cms-feature-table-wrapper" style="padding: 24px">
+            <h2
+              style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem"
+            >
+              <i class="fas fa-file-alt"></i> Application Logs
+            </h2>
+
+            <!-- Auto-refresh indicator -->
+            <div class="auto-refresh-indicator">
+              <i class="fas fa-sync-alt fa-spin"></i>
+              <span>Auto-refreshing every 30 seconds</span>
+              <span id="countdown">(30s)</span>
+            </div>
+
+            <!-- Log Status Cards -->
+            <div class="log-cards-container">
+              <div class="log-card error">
+                <div class="log-card-header">
+                  <h3 class="log-card-title">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Error Messages
+                  </h3>
+                </div>
+                <div class="log-card-count" id="error-count">0</div>
+                <div class="log-card-actions">
+                  <button class="delete-btn" onclick="deleteLogs('error')">
+                    <i class="fas fa-trash"></i> Delete All
+                  </button>
+                </div>
+              </div>
+
+              <div class="log-card warning">
+                <div class="log-card-header">
+                  <h3 class="log-card-title">
+                    <i class="fas fa-exclamation-circle"></i>
+                    Warning Messages
+                  </h3>
+                </div>
+                <div class="log-card-count" id="warning-count">0</div>
+                <div class="log-card-actions">
+                  <button class="delete-btn" onclick="deleteLogs('warning')">
+                    <i class="fas fa-trash"></i> Delete All
+                  </button>
+                </div>
+              </div>
+
+              <div class="log-card info">
+                <div class="log-card-header">
+                  <h3 class="log-card-title">
+                    <i class="fas fa-info-circle"></i>
+                    Info Messages
+                  </h3>
+                </div>
+                <div class="log-card-count" id="info-count">0</div>
+                <div class="log-card-actions">
+                  <button class="delete-btn" onclick="deleteLogs('info')">
+                    <i class="fas fa-trash"></i> Delete All
+                  </button>
+                </div>
+              </div>
+
+              <div class="log-card debug">
+                <div class="log-card-header">
+                  <h3 class="log-card-title">
+                    <i class="fas fa-bug"></i>
+                    Debug Messages
+                  </h3>
+                </div>
+                <div class="log-card-count" id="debug-count">0</div>
+                <div class="log-card-actions">
+                  <button class="delete-btn" onclick="deleteLogs('debug')">
+                    <i class="fas fa-trash"></i> Delete All
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Manual Refresh Button -->
+            <div style="margin-bottom: 20px">
+              <button class="refresh-btn" onclick="loadLogCounts()">
+                <i class="fas fa-sync-alt"></i> Refresh Now
+              </button>
+            </div>
+
+            <!-- Recent Logs -->
+            <div class="recent-logs">
+              <h3 style="margin-top: 0; margin-bottom: 15px">
+                <i class="fas fa-clock"></i> Recent Log Entries (Last 20)
+              </h3>
+              <div id="recent-logs-container">
+                <div style="text-align: center; padding: 20px; color: #666">
+                  <i class="fas fa-spinner fa-spin"></i> Loading recent logs...
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <!-- Load dashboard JavaScript for sidebar and header functionality -->
+    <script src="/public/js/dashboard.js"></script>
+
+    <script>
+      let autoRefreshInterval;
+      let countdownInterval;
+      let countdownSeconds = 30;
+
+      function loadLogCounts() {
+        // Load counts for each log level
+        const levels = ["error", "warn", "info", "debug"];
+
+        levels.forEach((level) => {
+          fetch(`/logs/api?level=${level}&limit=1000`)
+            .then((response) => response.json())
+            .then((data) => {
+              const countElement = document.getElementById(
+                `${level === "warn" ? "warning" : level}-count`
+              );
+              if (countElement) {
+                countElement.textContent = data.pagination.total || 0;
+              }
+            })
+            .catch((error) => {
+              console.error(`Error loading ${level} count:`, error);
+              const countElement = document.getElementById(
+                `${level === "warn" ? "warning" : level}-count`
+              );
+              if (countElement) {
+                countElement.textContent = "Error";
+              }
+            });
+        });
+
+        // Load recent logs
+        loadRecentLogs();
+      }
+
+      function loadRecentLogs() {
+        fetch("/logs/api?limit=20")
+          .then((response) => response.json())
+          .then((data) => {
+            const container = document.getElementById("recent-logs-container");
+
+            if (data.logs.length === 0) {
+              container.innerHTML =
+                '<div style="text-align: center; padding: 20px; color: #666;">No recent log entries found</div>';
+              return;
+            }
+
+            container.innerHTML = data.logs
+              .map((log) => {
+                const levelClass =
+                  log.Level.toLowerCase() === "warn"
+                    ? "warning"
+                    : log.Level.toLowerCase();
+                const timestamp = new Date(log.CreatedAt).toLocaleString();
+
+                return `
+                <div class="log-entry ${levelClass}">
+                  <strong>[${timestamp}] [${log.Level.toUpperCase()}]</strong> ${
+                  log.Message
+                }
+                </div>
+              `;
+              })
+              .join("");
+          })
+          .catch((error) => {
+            console.error("Error loading recent logs:", error);
+            document.getElementById("recent-logs-container").innerHTML =
+              '<div style="text-align: center; padding: 20px; color: #dc3545;">Error loading recent logs</div>';
+          });
+      }
+
+      function deleteLogs(level) {
+        if (
+          !confirm(
+            `Are you sure you want to delete all ${level} logs? This action cannot be undone.`
+          )
+        ) {
+          return;
+        }
+
+        // For now, we'll use the cleanup endpoint
+        // In a real implementation, you'd want a specific endpoint for deleting by level
+        fetch("/logs/cleanup", { method: "DELETE" })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) {
+              alert(`Successfully deleted ${level} logs`);
+              loadLogCounts();
+            } else {
+              alert(
+                "Failed to delete logs: " + (data.error || "Unknown error")
+              );
+            }
+          })
+          .catch((error) => {
+            console.error("Error deleting logs:", error);
+            alert("Failed to delete logs");
+          });
+      }
+
+      function startAutoRefresh() {
+        // Clear any existing intervals
+        if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+        if (countdownInterval) clearInterval(countdownInterval);
+
+        // Start auto-refresh every 30 seconds
+        autoRefreshInterval = setInterval(() => {
+          loadLogCounts();
+          countdownSeconds = 30;
+        }, 30000);
+
+        // Start countdown
+        countdownSeconds = 30;
+        countdownInterval = setInterval(() => {
+          countdownSeconds--;
+          document.getElementById(
+            "countdown"
+          ).textContent = `(${countdownSeconds}s)`;
+
+          if (countdownSeconds <= 0) {
+            countdownSeconds = 30;
+          }
+        }, 1000);
+      }
+
+      // Initialize on page load
+      document.addEventListener("DOMContentLoaded", function () {
+        loadLogCounts();
+        startAutoRefresh();
+      });
+
+      // Clean up intervals when page is unloaded
+      window.addEventListener("beforeunload", function () {
+        if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+        if (countdownInterval) clearInterval(countdownInterval);
+      });
+    </script>
+  </body>
+</html>

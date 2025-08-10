@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CMS Login - Microsoft Authentication</title>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link href="/public/css/login.css" rel="stylesheet" />
+  </head>
+  <body class="login-body">
+    <!-- Loading Overlay -->
+    <div class="loading" id="loadingOverlay">
+      <div class="spinner"></div>
+    </div>
+
+    <div class="login-container">
+      <div class="logo-section">
+        <img src="/public/images/logo/val_nobg.png" />
+
+        <h1>CMS Login</h1>
+        <p class="subtitle">Sign in with your Microsoft account</p>
+      </div>
+
+      <!-- Error Message -->
+      <% if (typeof error !== 'undefined' && error) { %>
+      <div class="error-message show"><%= error %></div>
+      <% } %>
+
+      <!-- Success Message -->
+      <% if (typeof success !== 'undefined' && success) { %>
+      <div class="success-message show"><%= success %></div>
+      <% } %>
+
+      <!-- Microsoft Azure AD Login (Only Option) -->
+      <div class="login-buttons">
+        <% if (typeof azureEnabled !== 'undefined' && azureEnabled) { %>
+        <a href="/auth/login-redirect" class="btn btn-azure" id="azureLoginBtn">
+          <i class="fab fa-microsoft"></i>
+          Sign in with Microsoft
+        </a>
+        <p class="login-help">
+          Use your Microsoft account to securely access the CMS
+        </p>
+        <% } else { %>
+        <div class="error-message show">
+          <i class="fas fa-exclamation-triangle"></i>
+          Azure AD authentication is not configured. Please contact your
+          administrator.
+        </div>
+        <% } %>
+      </div>
+
+      <!-- Features Section -->
+      <div class="features">
+        <div class="feature-list">
+          <div class="feature-item">
+            <i class="fab fa-microsoft"></i>
+            <span>Microsoft Authentication</span>
+          </div>
+          <div class="feature-item">
+            <i class="fas fa-shield-alt"></i>
+            <span>Enterprise Security</span>
+          </div>
+          <div class="feature-item">
+            <i class="fas fa-key"></i>
+            <span>Single Sign-On</span>
+          </div>
+          <div class="feature-item">
+            <i class="fas fa-users-cog"></i>
+            <span>Azure AD Integration</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="login-footer">
+        <p style="padding-top: 40px">
+          &copy; <%= new Date().getFullYear() %> Valmont CMS. All rights
+          reserved.
+        </p>
+      </div>
+    </div>
+
+    <script src="/public/js/login.js"></script>
+  </body>
+</html>

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Debug Notifications</title>
+    <link rel="stylesheet" href="/public/css/dashboard.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+      }
+      .debug-section {
+        margin: 20px 0;
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+      }
+      .success {
+        color: green;
+      }
+      .error {
+        color: red;
+      }
+      .warning {
+        color: orange;
+      }
+      .console-log {
+        background: #f5f5f5;
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 3px;
+        font-family: monospace;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Include the header partial to get the same structure -->
+    <%- include('../partials/header') %>
+
+    <div class="debug-section">
+      <h2>🔍 Notification System Debug</h2>
+      <div id="debug-results">
+        <p>Loading debug information...</p>
+      </div>
+    </div>
+
+    <div class="debug-section">
+      <h3>🧪 Test Controls</h3>
+      <button onclick="testNotification('success')">
+        Test Success Notification
+      </button>
+      <button onclick="testNotification('error')">
+        Test Error Notification
+      </button>
+      <button onclick="testNotification('warning')">
+        Test Warning Notification
+      </button>
+      <button onclick="testNotification('info')">Test Info Notification</button>
+      <button onclick="testManualNotification()">
+        Test Manual Notification
+      </button>
+    </div>
+
+    <div class="debug-section">
+      <h3>📋 Console Logs</h3>
+      <div id="console-logs" class="console-log">
+        Console logs will appear here...
+      </div>
+    </div>
+
+    <script src="/public/js/frontend-logger.js"></script>
+    <script src="/public/js/notifications.js"></script>
+
+    <script>
+      // Capture console logs
+      const originalLog = console.log;
+      const originalError = console.error;
+      const originalWarn = console.warn;
+      const logsDiv = document.getElementById("console-logs");
+
+      function addLogToPage(type, ...args) {
+        const logEntry = document.createElement("div");
+        logEntry.style.color =
+          type === "error" ? "red" : type === "warn" ? "orange" : "black";
+        logEntry.textContent = `[${type.toUpperCase()}] ${args.join(" ")}`;
+        logsDiv.appendChild(logEntry);
+        logsDiv.scrollTop = logsDiv.scrollHeight;
+      }
+
+      console.log = function (...args) {
+        originalLog.apply(console, args);
+        addLogToPage("log", ...args);
+      };
+
+      console.error = function (...args) {
+        originalError.apply(console, args);
+        addLogToPage("error", ...args);
+      };
+
+      console.warn = function (...args) {
+        originalWarn.apply(console, args);
+        addLogToPage("warn", ...args);
+      };
+
+      // Debug function
+      function runDebugChecks() {
+        const results = document.getElementById("debug-results");
+        const headerActions = document.querySelector(".header-actions");
+        const notificationContainer = document.getElementById(
+          "notificationContainer"
+        );
+        const bellIcon = document.getElementById("notification-bell");
+        const fontControls = document.querySelector(".font-controls");
+
+        results.innerHTML = `
+                <h4>🔍 DOM Elements Check:</h4>
+                <p class="${headerActions ? "success" : "error"}">
+                    ✓ Header actions: ${!!headerActions}
+                </p>
+                <p class="${notificationContainer ? "success" : "error"}">
+                    ✓ Notification container: ${!!notificationContainer}
+                </p>
+                <p class="${bellIcon ? "success" : "error"}">
+                    ✓ Bell icon: ${!!bellIcon}
+                </p>
+                <p class="${fontControls ? "success" : "error"}">
+                    ✓ Font controls: ${!!fontControls}
+                </p>
+                
+                <h4>🔍 JavaScript Objects Check:</h4>
+                <p class="${
+                  window.NOTIFICATIONS_JS_LOADED ? "success" : "error"
+                }">
+                    ✓ notifications.js loaded: ${!!window.NOTIFICATIONS_JS_LOADED}
+                </p>
+                <p class="${
+                  typeof NotificationManager !== "undefined"
+                    ? "success"
+                    : "error"
+                }">
+                    ✓ NotificationManager class: ${
+                      typeof NotificationManager !== "undefined"
+                    }
+                </p>
+                <p class="${
+                  typeof notificationManager !== "undefined"
+                    ? "success"
+                    : "error"
+                }">
+                    ✓ notificationManager instance: ${
+                      typeof notificationManager !== "undefined"
+                    }
+                </p>
+                <p class="${
+                  typeof showNotification !== "undefined" ? "success" : "error"
+                }">
+                    ✓ showNotification function: ${
+                      typeof showNotification !== "undefined"
+                    }
+                </p>
+                
+                <h4>🔍 Header Actions Content:</h4>
+                <div style="background: #f9f9f9; padding: 10px; border-radius: 3px; font-family: monospace; font-size: 12px;">
+                    ${
+                      headerActions
+                        ? headerActions.innerHTML
+                            .replace(/</g, "&lt;")
+                            .replace(/>/g, "&gt;")
+                        : "Not found"
+                    }
+                </div>
+            `;
+      }
+
+      // Test functions
+      function testNotification(type) {
+        logger.info(`Testing ${type} notification`);
+        if (typeof showNotification === "function") {
+          showNotification(`This is a ${type} notification test!`, type);
+        } else {
+          console.error("showNotification function not available");
+        }
+      }
+
+      function testManualNotification() {
+        logger.info("Creating manual notification");
+        const notification = document.createElement("div");
+        notification.style.cssText = `
+                position: fixed; top: 20px; right: 20px; z-index: 10000;
+                background: #007bff; color: white; padding: 15px 20px;
+                border-radius: 5px; box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+                font-family: Arial, sans-serif;
+            `;
+        notification.textContent =
+          "Manual notification test - this should be visible!";
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+          if (notification.parentElement) {
+            notification.remove();
+          }
+        }, 5000);
+      }
+
+      // Run debug checks after a delay to ensure everything is loaded
+      setTimeout(runDebugChecks, 1000);
+      setTimeout(runDebugChecks, 3000); // Run again after 3 seconds
+    </script>
+  </body>
+</html>

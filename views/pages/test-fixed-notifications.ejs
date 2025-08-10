@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test Fixed Notifications</title>
+    <link rel="stylesheet" href="/public/css/dashboard.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <style>
+      .test-container {
+        margin: 20px;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 8px;
+      }
+      .test-button {
+        margin: 5px;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+      }
+      .test-button.success {
+        background: #28a745;
+        color: white;
+      }
+      .test-button.error {
+        background: #dc3545;
+        color: white;
+      }
+      .test-button.warning {
+        background: #ffc107;
+        color: black;
+      }
+      .test-button.info {
+        background: #17a2b8;
+        color: white;
+      }
+      .test-button:hover {
+        opacity: 0.8;
+      }
+
+      .status {
+        margin: 10px 0;
+        padding: 10px;
+        border-radius: 4px;
+        font-family: monospace;
+      }
+      .status.success {
+        background: #d4edda;
+        color: #155724;
+      }
+      .status.error {
+        background: #f8d7da;
+        color: #721c24;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Include the header partial -->
+    <%- include('../partials/header') %>
+
+    <div class="test-container">
+      <h1>🔧 Fixed Notification System Test</h1>
+
+      <div id="status" class="status">Initializing...</div>
+
+      <h3>🧪 Test Notifications</h3>
+      <button class="test-button success" onclick="testSuccess()">
+        Success Notification
+      </button>
+      <button class="test-button error" onclick="testError()">
+        Error Notification
+      </button>
+      <button class="test-button warning" onclick="testWarning()">
+        Warning Notification
+      </button>
+      <button class="test-button info" onclick="testInfo()">
+        Info Notification
+      </button>
+
+      <h3>🔔 Bell Icon Test</h3>
+      <button class="test-button" onclick="checkBellIcon()">
+        Check Bell Icon
+      </button>
+      <button class="test-button" onclick="simulateNotificationReceived()">
+        Simulate New Notification
+      </button>
+
+      <h3>📋 System Status</h3>
+      <div id="system-status">Loading system status...</div>
+    </div>
+
+    <!-- Load the fixed notifications script -->
+    <script src="/public/js/notifications-fixed.js"></script>
+
+    <script>
+      // Test functions
+      function testSuccess() {
+        showNotification("This is a success notification!", "success");
+      }
+
+      function testError() {
+        showNotification("This is an error notification!", "error");
+      }
+
+      function testWarning() {
+        showNotification("This is a warning notification!", "warning");
+      }
+
+      function testInfo() {
+        showNotification("This is an info notification!", "info");
+      }
+
+      function checkBellIcon() {
+        const bellIcon = document.getElementById("notification-bell");
+        const status = document.getElementById("status");
+
+        if (bellIcon) {
+          status.className = "status success";
+          status.textContent = "✅ Bell icon found and working!";
+
+          // Simulate a click
+          bellIcon.click();
+        } else {
+          status.className = "status error";
+          status.textContent = "❌ Bell icon not found!";
+        }
+      }
+
+      function simulateNotificationReceived() {
+        // Simulate receiving a new notification
+        showNotification("New message received!", "info", { title: "Message" });
+
+        // Update badge count (simulate)
+        if (notificationManager) {
+          notificationManager.unreadCount += 1;
+          notificationManager.updateBadge();
+        }
+      }
+
+      function updateSystemStatus() {
+        const statusDiv = document.getElementById("system-status");
+        const headerActions = document.querySelector(".header-actions");
+        const notificationContainer = document.getElementById(
+          "notificationContainer"
+        );
+        const bellIcon = document.getElementById("notification-bell");
+
+        statusDiv.innerHTML = `
+                <div><strong>DOM Elements:</strong></div>
+                <div>• Header actions: ${headerActions ? "✅" : "❌"}</div>
+                <div>• Notification container: ${
+                  notificationContainer ? "✅" : "❌"
+                }</div>
+                <div>• Bell icon: ${bellIcon ? "✅" : "❌"}</div>
+                <br>
+                <div><strong>JavaScript Objects:</strong></div>
+                <div>• NotificationManager class: ${
+                  typeof NotificationManager !== "undefined" ? "✅" : "❌"
+                }</div>
+                <div>• notificationManager instance: ${
+                  typeof notificationManager !== "undefined" ? "✅" : "❌"
+                }</div>
+                <div>• showNotification function: ${
+                  typeof showNotification !== "undefined" ? "✅" : "❌"
+                }</div>
+                <div>• NOTIFICATIONS_JS_LOADED flag: ${
+                  window.NOTIFICATIONS_JS_LOADED ? "✅" : "❌"
+                }</div>
+            `;
+      }
+
+      // Update status periodically
+      setTimeout(updateSystemStatus, 1000);
+      setTimeout(updateSystemStatus, 3000);
+      setInterval(updateSystemStatus, 10000);
+
+      // Initial status update
+      setTimeout(() => {
+        const status = document.getElementById("status");
+        if (typeof notificationManager !== "undefined" && notificationManager) {
+          status.className = "status success";
+          status.textContent =
+            "✅ Fixed notification system loaded successfully!";
+        } else {
+          status.className = "status error";
+          status.textContent = "❌ Fixed notification system failed to load!";
+        }
+      }, 2000);
+    </script>
+  </body>
+</html>

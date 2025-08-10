@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test Notifications</title>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link href="/public/css/dashboard.css" rel="stylesheet" />
+    <style>
+      body {
+        padding: 20px;
+        font-family: Arial, sans-serif;
+      }
+      .test-container {
+        max-width: 800px;
+        margin: 0 auto;
+      }
+      .test-button {
+        margin: 10px;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        color: white;
+      }
+      .success {
+        background: #28a745;
+      }
+      .error {
+        background: #dc3545;
+      }
+      .warning {
+        background: #ffc107;
+        color: black;
+      }
+      .info {
+        background: #17a2b8;
+      }
+
+      /* Mock header for testing */
+      .header {
+        background: white;
+        padding: 15px 20px;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+      .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+      .font-controls {
+        display: flex;
+        align-items: center;
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 2px;
+        gap: 1px;
+      }
+      .font-control-btn {
+        background: transparent;
+        border: none;
+        padding: 8px 10px;
+        border-radius: 6px;
+        cursor: pointer;
+        color: #6c757d;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="test-container">
+      <h1>Notification System Test</h1>
+
+      <!-- Mock header to test bell icon creation -->
+      <div class="header">
+        <h2>Mock Header</h2>
+        <div class="header-actions">
+          <div class="font-controls">
+            <button class="font-control-btn">
+              <i class="fas fa-search-minus"></i>
+            </button>
+            <button class="font-control-btn">
+              <i class="fas fa-search-plus"></i>
+            </button>
+          </div>
+          <!-- Bell icon should appear here -->
+        </div>
+      </div>
+
+      <div id="notificationContainer" class="notification-container"></div>
+
+      <h3>Test Buttons</h3>
+      <button class="test-button success" onclick="testSuccess()">
+        Test Success
+      </button>
+      <button class="test-button error" onclick="testError()">
+        Test Error
+      </button>
+      <button class="test-button warning" onclick="testWarning()">
+        Test Warning
+      </button>
+      <button class="test-button info" onclick="testInfo()">Test Info</button>
+
+      <h3>Debug Info</h3>
+      <div id="debug-info">
+        <p>Check browser console for debug messages</p>
+      </div>
+    </div>
+
+    <script src="/public/js/notifications.js"></script>
+    <script>
+      function testSuccess() {
+        logger.info("Testing success notification");
+        showNotification("This is a success message!", "success");
+      }
+
+      function testError() {
+        logger.info("Testing error notification");
+        showNotification("This is an error message!", "error");
+      }
+
+      function testWarning() {
+        logger.info("Testing warning notification");
+        showNotification("This is a warning message!", "warning");
+      }
+
+      function testInfo() {
+        logger.info("Testing info notification");
+        showNotification("This is an info message!", "info");
+      }
+
+      // Debug info
+      setTimeout(() => {
+        const debugDiv = document.getElementById("debug-info");
+        debugDiv.innerHTML = `
+                <p><strong>Debug Info:</strong></p>
+                <p>NotificationManager exists: ${
+                  typeof notificationManager !== "undefined"
+                }</p>
+                <p>showNotification function exists: ${
+                  typeof showNotification !== "undefined"
+                }</p>
+                <p>Bell icon container exists: ${!!document.querySelector(
+                  ".notification-bell-container"
+                )}</p>
+                <p>Notification container exists: ${!!document.getElementById(
+                  "notificationContainer"
+                )}</p>
+            `;
+      }, 1000);
+    </script>
+  </body>
+</html>

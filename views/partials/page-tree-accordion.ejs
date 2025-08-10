@@ -1,0 +1,55 @@
+<% if (pages && pages.length > 0) { %>
+<div class="page-accordion-level">
+  <% pages.forEach(page => { %>
+  <div class="accordion-item">
+    <button type="button" class="accordion-header">
+      <div class="title-container">
+        <% if (page.children && page.children.length > 0) { %>
+        <i class="arrow fas fa-chevron-right"></i>
+        <% } %>
+        <span class="page-title"><%= page.Title %></span>
+      </div>
+      <div class="header-actions">
+        <span class="page-path"><%= page.Path %></span>
+
+        <!-- Sync Status Indicator -->
+        <% if (page.syncStatus && page.syncStatus.status) { %>
+        <span
+          class="sync-status-badge sync-<%= page.syncStatus.status.toLowerCase() %>"
+          title="Sync Status: <%= page.syncStatus.status %>"
+        >
+          <% if (page.syncStatus.status === 'PENDING') { %>
+          <i class="fas fa-clock"></i>
+          <% } else if (page.syncStatus.status === 'IN_PROGRESS') { %>
+          <i class="fas fa-spinner fa-spin"></i>
+          <% } else if (page.syncStatus.status === 'COMPLETED') { %>
+          <i class="fas fa-check"></i>
+          <% } else if (page.syncStatus.status === 'FAILED') { %>
+          <i class="fas fa-times"></i>
+          <% } %> <%= page.syncStatus.status %>
+        </span>
+        <% } %>
+
+        <a
+          href="/pages/<%= page.PageID %>/preview"
+          class="action-btn view-btn"
+          target="_blank"
+          title="Preview page"
+          ><i class="fas fa-eye mr-1"></i>View</a
+        >
+        <a
+          href="/buildpage?pageid=<%= page.PageID %>"
+          class="action-btn edit-btn"
+          ><i class="fas fa-edit mr-1"></i>Edit</a
+        >
+      </div>
+    </button>
+    <div class="accordion-panel">
+      <div class="accordion-panel-content">
+        <%- include('page-tree-accordion', { pages: page.children }) %>
+      </div>
+    </div>
+  </div>
+  <% }); %>
+</div>
+<% } %>

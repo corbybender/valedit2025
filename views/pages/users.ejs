@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link href="/public/css/dashboard.css?v=1" rel="stylesheet" />
+    <link href="/public/css/users.css?v=1" rel="stylesheet" />
+    <script src="/public/js/notifications.js"></script>
+  </head>
+  <body>
+    <div class="dashboard-container">
+      <!-- Sidebar -->
+      <%- include('../partials/sidebar') %>
+
+      <!-- Main Content -->
+      <div class="main-content">
+        <!-- Header -->
+        <%- include('../partials/header') %>
+
+        <!-- Content -->
+        <main class="content">
+          <!-- Container for the User Management UI -->
+          <div class="container mx-auto">
+            <!-- Header with title and create button -->
+            <div class="flex items-center justify-between mb-6">
+              <div class="flex items-center gap-6">
+                <h1 class="text-3xl font-bold text-gray-800">
+                  User Management
+                </h1>
+                <!-- Filter dropdown -->
+                <select
+                  id="userStatusFilter"
+                  class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                >
+                  <option value="all">All Users</option>
+                  <option value="active">Active Users</option>
+                  <option value="inactive">Inactive Users</option>
+                  <option value="admin">Admin Users</option>
+                </select>
+              </div>
+              <!-- Create User Button -->
+              <div class="flex items-center gap-3">
+                <button
+                  id="createUserBtn"
+                  class="bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 transition duration-300 ease-in-out flex items-center"
+                >
+                  <i class="fas fa-plus mr-2"></i>Create User
+                </button>
+              </div>
+            </div>
+
+            <!-- Users List -->
+            <div id="usersList" class="grid grid-cols-1 gap-4">
+              <!-- Users will be loaded here -->
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <!-- User Modal -->
+    <div id="userModal" class="modal-backdrop hidden">
+      <div class="modal-content max-w-2xl">
+        <!-- Modal Header -->
+        <div class="flex justify-between items-center p-5 border-b">
+          <h2 id="modalTitle" class="text-2xl font-bold text-gray-900">
+            Create User
+          </h2>
+          <button
+            id="closeModalBtn"
+            class="text-gray-500 hover:text-gray-800 text-2xl"
+          >
+            &times;
+          </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="p-6 flex-grow overflow-y-auto">
+          <form id="userForm">
+            <input type="hidden" id="userId" name="userId" />
+
+            <!-- Basic Information -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div>
+                <label
+                  for="authorLogin"
+                  class="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Login Username *
+                </label>
+                <input
+                  type="text"
+                  id="authorLogin"
+                  name="authorLogin"
+                  required
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                />
+              </div>
+
+              <div>
+                <label
+                  for="authorName"
+                  class="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Full Name *
+                </label>
+                <input
+                  type="text"
+                  id="authorName"
+                  name="authorName"
+                  required
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                />
+              </div>
+            </div>
+
+            <div class="mb-6">
+              <label
+                for="authorEmail"
+                class="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Email Address *
+              </label>
+              <input
+                type="email"
+                id="authorEmail"
+                name="authorEmail"
+                required
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
+
+            <!-- Password field (only for new users) -->
+            <div id="passwordField" class="mb-6">
+              <label
+                for="authorPassword"
+                class="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Password *
+              </label>
+              <input
+                type="password"
+                id="authorPassword"
+                name="authorPassword"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
+
+            <!-- Additional Information -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div>
+                <label
+                  for="authorCategory"
+                  class="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Category
+                </label>
+                <input
+                  type="text"
+                  id="authorCategory"
+                  name="authorCategory"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                />
+              </div>
+
+              <div>
+                <label
+                  for="authorType"
+                  class="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Type
+                </label>
+                <input
+                  type="text"
+                  id="authorType"
+                  name="authorType"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                />
+              </div>
+            </div>
+
+            <!-- Status Toggles -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div class="flex items-center">
+                <input
+                  type="checkbox"
+                  id="isActive"
+                  name="isActive"
+                  class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                />
+                <label for="isActive" class="ml-2 block text-sm text-gray-900">
+                  Active User
+                </label>
+              </div>
+
+              <div class="flex items-center">
+                <input
+                  type="checkbox"
+                  id="isAdmin"
+                  name="isAdmin"
+                  class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                />
+                <label for="isAdmin" class="ml-2 block text-sm text-gray-900">
+                  Administrator
+                </label>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- Modal Footer -->
+        <div
+          class="flex justify-end items-center p-5 border-t bg-gray-50 space-x-3"
+        >
+          <button
+            id="cancelBtn"
+            type="button"
+            class="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-lg hover:bg-gray-300 transition duration-300"
+          >
+            Cancel
+          </button>
+          <button
+            id="saveUserBtn"
+            type="button"
+            class="bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 transition duration-300"
+          >
+            Save User
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Password Change Modal -->
+    <div id="passwordModal" class="modal-backdrop hidden">
+      <div class="modal-content max-w-md">
+        <!-- Modal Header -->
+        <div class="flex justify-between items-center p-5 border-b">
+          <h2 class="text-2xl font-bold text-gray-900">Change Password</h2>
+          <button
+            id="closePasswordModalBtn"
+            class="text-gray-500 hover:text-gray-800 text-2xl"
+          >
+            &times;
+          </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="p-6">
+          <form id="passwordForm">
+            <input type="hidden" id="passwordUserId" name="passwordUserId" />
+
+            <div class="mb-6">
+              <label
+                for="newPassword"
+                class="block text-sm font-medium text-gray-700 mb-2"
+              >
+                New Password *
+              </label>
+              <input
+                type="password"
+                id="newPassword"
+                name="newPassword"
+                required
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
+
+            <div class="mb-6">
+              <label
+                for="confirmPassword"
+                class="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Confirm Password *
+              </label>
+              <input
+                type="password"
+                id="confirmPassword"
+                name="confirmPassword"
+                required
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
+          </form>
+        </div>
+
+        <!-- Modal Footer -->
+        <div
+          class="flex justify-end items-center p-5 border-t bg-gray-50 space-x-3"
+        >
+          <button
+            id="cancelPasswordBtn"
+            type="button"
+            class="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-lg hover:bg-gray-300 transition duration-300"
+          >
+            Cancel
+          </button>
+          <button
+            id="savePasswordBtn"
+            type="button"
+            class="bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 transition duration-300"
+          >
+            Update Password
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Website Access Management Modal -->
+    <div id="websiteAccessModal" class="modal-backdrop hidden">
+      <div class="modal-content max-w-3xl">
+        <!-- Modal Header -->
+        <div class="flex justify-between items-center p-5 border-b">
+          <h2 class="text-2xl font-bold text-gray-900">
+            Manage Website Access
+          </h2>
+          <button
+            id="closeWebsiteAccessModalBtn"
+            class="text-gray-500 hover:text-gray-800 text-2xl"
+          >
+            &times;
+          </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="p-6 flex-grow overflow-y-auto">
+          <input type="hidden" id="websiteAccessUserId" />
+
+          <div class="mb-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-3">
+              Current Website Access
+            </h3>
+            <div id="currentWebsitesList" class="space-y-2">
+              <!-- Current websites will be loaded here -->
+            </div>
+          </div>
+
+          <div class="border-t pt-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-3">
+              Add Website Access
+            </h3>
+            <div class="flex gap-3">
+              <select
+                id="availableWebsitesSelect"
+                class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+              >
+                <option value="">Select a website to add...</option>
+              </select>
+              <button
+                id="addWebsiteAccessBtn"
+                class="bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700 transition duration-300"
+              >
+                <i class="fas fa-plus mr-2"></i>Add Access
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="flex justify-end items-center p-5 border-t bg-gray-50">
+          <button
+            id="closeWebsiteAccessBtn"
+            type="button"
+            class="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-lg hover:bg-gray-300 transition duration-300"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notification Container -->
+    <div id="notificationContainer"></div>
+
+    <!-- JavaScript -->
+    <script src="/public/js/frontend-logger.js"></script>
+    <script src="/public/js/sidebar.js"></script>
+    <script src="/public/js/users.js"></script>
+    <script src="/public/js/dashboard.js"></script>
+  </body>
+</html>

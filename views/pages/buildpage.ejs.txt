@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      Build Page<% if (typeof currentWorkingSite !== 'undefined' &&
+      currentWorkingSite && currentWorkingSite.WebsiteName) { %> - <%=
+      currentWorkingSite.WebsiteName %><% } %>
+    </title>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link href="/public/css/dashboard.css" rel="stylesheet" />
+    <link href="/public/css/buildpage.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    <script>
+      const initialPageData = <%- JSON.stringify(typeof pageData !== 'undefined' ? pageData : null).replace(/<\/script>/g, '<\\/script>') %>;
+      const currentWebsite = <%- JSON.stringify(typeof currentWorkingSite !== 'undefined' ? currentWorkingSite : null) %>;
+      const currentWorkingSite = <%- JSON.stringify(typeof currentWorkingSite !== 'undefined' ? currentWorkingSite : null) %>;
+    </script>
+  </head>
+  <body>
+    <div class="dashboard-container">
+      <!-- Sidebar -->
+      <%- include('../partials/sidebar') %>
+
+      <!-- Main Content -->
+      <div class="main-content">
+        <!-- Header -->
+        <%- include('../partials/header') %>
+
+        <!-- Content -->
+        <main
+          class="content bg-white p-8 rounded-lg shadow-lg w-full max-w-12xl"
+        >
+          <!-- Check if user has selected a working site -->
+          <% if (typeof currentWorkingSite === 'undefined' ||
+          !currentWorkingSite || !currentWorkingSite.CurrentWorkingSite) { %>
+          <div style="text-align: center; padding: 50px">
+            <h2 style="color: #666; margin-bottom: 20px">
+              No Website Selected
+            </h2>
+            <p style="margin-bottom: 30px">
+              You need to select a website before you can build pages.
+            </p>
+            <a
+              href="/websites"
+              style="
+                background: #007bff;
+                color: white;
+                padding: 12px 24px;
+                text-decoration: none;
+                border-radius: 6px;
+              "
+            >
+              Select a Website
+            </a>
+          </div>
+          <% } else { %>
+
+          <!-- REMOVED: Building page for section - redundant with sidebar -->
+
+          <div id="image-preview-popup"><img src="" alt="Preview" /></div>
+          <div id="editor-modal">
+            <div class="modal-content">
+              <h3>Edit Content Block</h3>
+              <textarea id="html-editor"></textarea>
+              <div class="modal-actions">
+                <button id="cancel-edit">Cancel</button>
+                <button id="save-block-changes">Save Changes</button>
+              </div>
+            </div>
+          </div>
+          <div class="builder-container">
+            <div class="template-sidebar">
+              <h3>Content Library</h3>
+              <div class="filter-controls">
+                <label for="template-set-filter">Template Set:</label>
+                <select id="template-set-filter">
+                  <option value="all">Show All</option>
+                  <% if (typeof templateSets !== 'undefined' && templateSets) {
+                  %> <% templateSets.forEach(function(set) { %>
+                  <option value="<%= set.TemplateSet %>">
+                    <%= set.TemplateSet %>
+                  </option>
+                  <% }); %> <% } %>
+                </select>
+              </div>
+              <div class="filter-controls">
+                <label for="category-filter">Category:</label>
+                <select id="category-filter">
+                  <option value="all">Show All</option>
+                  <% if (typeof categories !== 'undefined' && categories) { %>
+                  <% categories.forEach(function(category) { %>
+                  <option value="<%= category.CategoryID %>">
+                    <%= category.Name %>
+                  </option>
+                  <% }); %> <% } %>
+                </select>
+              </div>
+              <div id="template-list">
+                <% if (typeof templates !== 'undefined' && templates) { %> <%
+                templates.forEach(function(template) { %>
+                <div
+                  class="template-card"
+                  data-id="<%= template.ID %>"
+                  data-templateset="<%= template.TemplateSet %>"
+                  data-category-id="<%= template.CategoryID %>"
+                >
+                  <img
+                    src="/public/images/thumbnails/<%= template.Name.replace(/ /g, '-') %>.jpg"
+                    alt="<%= template.Name %>"
+                  />
+                  <div class="card-title"><%= template.Name %></div>
+                </div>
+                <% }); %> <% } %>
+              </div>
+            </div>
+            <div class="drop-zone">
+              <div class="page-controls-header">
+                <div class="filter-controls">
+                  <label for="parent-path-selector">Parent Path:</label>
+                  <select id="parent-path-selector">
+                    <option value="/">/ (Root)</option>
+                    <!-- This will be populated by JavaScript based on current site -->
+                  </select>
+                </div>
+                <div class="filter-controls">
+                  <label for="page-name-input">Page Name:</label>
+                  <input
+                    type="text"
+                    id="page-name-input"
+                    placeholder="Enter a name..."
+                  />
+                </div>
+                <div class="filter-controls">
+                  <label for="page-url-slug">Page URL Slug:</label>
+                  <input
+                    type="text"
+                    id="page-url-slug"
+                    placeholder="auto-generates..."
+                    readonly
+                    style="background-color: #e9ecef; color: #495057"
+                  />
+                </div>
+                <div class="filter-controls">
+                  <label for="layout-selector">Layout:</label>
+                  <select id="layout-selector">
+                    <option value="">-- Choose a Layout --</option>
+                    <% if (typeof pageLayouts !== 'undefined' && pageLayouts) {
+                    %> <% pageLayouts.forEach(function(layout) { %>
+                    <option value="<%= layout.ID %>"><%= layout.Name %></option>
+                    <% }); %> <% } %>
+                  </select>
+                </div>
+                <div class="filter-controls">
+                  <button id="create-page-btn">Create Page</button>
+                </div>
+              </div>
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                "
+              >
+                <h3 id="canvas-title">Your Page Canvas</h3>
+                <button
+                  id="save-page-btn"
+                  style="
+                    background-color: #28a745;
+                    color: white;
+                    border: none;
+                    padding: 10px 20px;
+                    border-radius: 5px;
+                    font-weight: bold;
+                    cursor: pointer;
+                  "
+                  disabled
+                >
+                  Save Page
+                </button>
+              </div>
+              <div id="canvas-area" style="position: relative; flex-grow: 1">
+                <div class="disabled-overlay">
+                  <div>Create a page to begin.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <% } %>
+        </main>
+      </div>
+    </div>
+
+    <script src="/public/js/dashboard.js"></script>
+    <script src="/public/js/buildpage.js"></script>
+
+    <!-- Add current site data to buildpage JavaScript -->
+    <% if (typeof currentWorkingSite !== 'undefined' && currentWorkingSite &&
+    currentWorkingSite.CurrentWorkingSite) { %>
+    <script>
+      // Make current working site available to buildpage JavaScript
+      window.currentWorkingSiteID = <%= currentWorkingSite.CurrentWorkingSite %>;
+      window.currentWorkingSiteName = '<%= currentWorkingSite.WebsiteName %>';
+
+      // Populate parent path selector when page loads
+      document.addEventListener('DOMContentLoaded', function() {
+        logger.info('Current working site:', window.currentWorkingSiteID, window.currentWorkingSiteName);
+
+        // Load available paths for the current working site
+        loadParentPaths(window.currentWorkingSiteID);
+      });
+
+      // Function to load parent paths for the current working site
+      async function loadParentPaths(websiteId) {
+        try {
+          logger.info('Loading paths for website ID:', websiteId);
+          const response = await fetch(`/api/websites/${websiteId}/paths`);
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const paths = await response.json();
+          logger.info('Loaded paths:', paths);
+
+          const parentPathSelector = document.getElementById('parent-path-selector');
+
+          // Clear existing options except the first one
+          parentPathSelector.innerHTML = '<option value="/">/ (Root)</option>';
+
+          // Add each path as an option
+          paths.forEach(function(path) {
+            if (path !== '/') { // Don't duplicate the root path
+              const option = document.createElement('option');
+              option.value = path;
+              option.textContent = path;
+              parentPathSelector.appendChild(option);
+            }
+          });
+
+          // Enable the selector
+          parentPathSelector.disabled = false;
+
+        } catch (error) {
+          console.error('Error loading parent paths:', error);
+
+          // If there's an error, at least enable the selector with just root
+          const parentPathSelector = document.getElementById('parent-path-selector');
+          parentPathSelector.disabled = false;
+          parentPathSelector.innerHTML = '<option value="/">/ (Root)</option>';
+        }
+      }
+
+      // Create Page button functionality
+      document.getElementById('create-page-btn').addEventListener('click', async function() {
+        const pageName = document.getElementById('page-name-input').value.trim();
+        const parentPath = document.getElementById('parent-path-selector').value;
+        const layoutId = document.getElementById('layout-selector').value;
+
+        logger.info('=== CREATE PAGE DEBUG ===');
+        logger.info('Create page clicked:', { pageName, parentPath, layoutId, websiteId: window.currentWorkingSiteID });
+        logger.info('Current URL:', window.location.href);
+        logger.info('Canvas area exists:', !!document.getElementById('canvas-area'));
+
+        // Validation
+        if (!pageName) {
+          alert('Please enter a page name');
+          return;
+        }
+
+        if (!layoutId) {
+          alert('Please select a layout');
+          return;
+        }
+
+        if (!window.currentWorkingSiteID) {
+          alert('No working site selected');
+          return;
+        }
+
+        // Generate URL slug from page name
+        const urlSlug = pageName.toLowerCase()
+          .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+          .replace(/\s+/g, '-') // Replace spaces with hyphens
+          .replace(/-+/g, '-') // Replace multiple hyphens with single
+          .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
+
+        // Build full path
+        const fullPath = parentPath === '/' ? `/${urlSlug}` : `${parentPath}${urlSlug}`;
+        const fullUrl = `${window.currentWorkingSiteName}${fullPath}`;
+
+        // Update the URL slug display
+        document.getElementById('page-url-slug').value = urlSlug;
+
+        logger.info('About to create page with data:', {
+          name: pageName,
+          pageLayoutId: parseInt(layoutId),
+          websiteId: window.currentWorkingSiteID,
+          url: fullUrl,
+          path: fullPath
+        });
+
+        try {
+          const response = await fetch('/api/pages', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              name: pageName,
+              pageLayoutId: parseInt(layoutId),
+              websiteId: window.currentWorkingSiteID,
+              url: fullUrl,
+              path: fullPath
+            })
+          });
+
+          const result = await response.json();
+          logger.info('API response:', response.status, result);
+
+          if (response.ok) {
+            logger.info('Page created successfully:', result);
+
+            // DON'T show alert immediately - do setup first
+            logger.info('About to load template...');
+
+            // Load the page template and set up the canvas
+            const templateLoaded = await loadPageTemplate(parseInt(layoutId), result.PageID);
+
+            if (templateLoaded) {
+              // DON'T use alert - it might trigger redirect
+              logger.info(`Page "${pageName}" created successfully! Canvas is ready.`);
+
+              // Show success message in a better way
+              const successMsg = document.createElement('div');
+              successMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #28a745; color: white; padding: 15px 20px; border-radius: 5px; z-index: 10000; font-weight: bold;';
+              successMsg.textContent = `Page "${pageName}" created successfully! You can now drag content blocks to the canvas.`;
+              document.body.appendChild(successMsg);
+
+              // Remove success message after 5 seconds
+              setTimeout(() => {
+                if (successMsg.parentNode) {
+                  successMsg.parentNode.removeChild(successMsg);
+                }
+              }, 5000);
+
+              // Clear the form
+              document.getElementById('page-name-input').value = '';
+              document.getElementById('page-url-slug').value = '';
+              document.getElementById('layout-selector').value = '';
+
+              // Optionally refresh the parent paths
+              loadParentPaths(window.currentWorkingSiteID);
+            } else {
+              console.error(`Page "${pageName}" created, but canvas setup failed.`);
+              // Show error message
+              const errorMsg = document.createElement('div');
+              errorMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #dc3545; color: white; padding: 15px 20px; border-radius: 5px; z-index: 10000; font-weight: bold;';
+              errorMsg.textContent = `Page "${pageName}" created, but canvas setup failed. Please refresh and try again.`;
+              document.body.appendChild(errorMsg);
+
+              setTimeout(() => {
+                if (errorMsg.parentNode) {
+                  errorMsg.parentNode.removeChild(errorMsg);
+                }
+              }, 5000);
+            }
+
+          } else {
+            console.error('Error creating page:', result);
+            alert(`Error creating page: ${result.error || 'Unknown error'}`);
+          }
+
+        } catch (error) {
+          console.error('Network error creating page:', error);
+          alert('Network error creating page. Please try again.');
+        }
+
+        logger.info('=== END CREATE PAGE DEBUG ===');
+      });
+
+      // Auto-generate URL slug as user types page name
+      document.getElementById('page-name-input').addEventListener('input', function() {
+        const pageName = this.value.trim();
+        const urlSlug = pageName.toLowerCase()
+          .replace(/[^a-z0-9\s-]/g, '')
+          .replace(/\s+/g, '-')
+          .replace(/-+/g, '-')
+          .replace(/^-|-$/g, '');
+
+        document.getElementById('page-url-slug').value = urlSlug;
+      });
+
+      // Function to load page template and set up canvas
+      async function loadPageTemplate(layoutId, pageId) {
+        try {
+          logger.info('=== LOAD TEMPLATE DEBUG ===');
+          logger.info('Loading page template:', layoutId, 'for page:', pageId);
+          logger.info('Canvas area before load:', document.getElementById('canvas-area'));
+
+          // Fetch the page template HTML structure
+          const response = await fetch(`/api/pagetemplate/${layoutId}`);
+          logger.info('Template API response status:', response.status);
+
+          if (!response.ok) {
+            throw new Error(`Failed to fetch template: ${response.status}`);
+          }
+
+          const templateData = await response.json();
+          logger.info('Template data received:', templateData);
+
+          // Get the canvas area
+          const canvasArea = document.getElementById('canvas-area');
+          if (!canvasArea) {
+            throw new Error('Canvas area not found in DOM');
+          }
+
+          logger.info('Canvas area found, current content:', canvasArea.innerHTML);
+
+          // Remove the disabled overlay
+          const disabledOverlay = canvasArea.querySelector('.disabled-overlay');
+          if (disabledOverlay) {
+            logger.info('Removing disabled overlay');
+            disabledOverlay.remove();
+          }
+
+          // Set the template HTML
+          canvasArea.innerHTML = templateData.HtmlStructure;
+          logger.info('Template HTML set, new content:', canvasArea.innerHTML);
+
+          // Store the current page ID for saving later
+          window.currentPageId = pageId;
+          logger.info('Stored current page ID:', window.currentPageId);
+
+          // Initialize drag and drop zones
+          logger.info('Initializing drag and drop...');
+          initializeDragAndDrop();
+
+          // Enable the Save Page button
+          const savePageBtn = document.getElementById('save-page-btn');
+          if (savePageBtn) {
+            savePageBtn.disabled = false;
+            logger.info('Save Page button enabled');
+          }
+
+          logger.info('=== TEMPLATE LOADED SUCCESSFULLY ===');
+          return true;
+
+        } catch (error) {
+          console.error('=== TEMPLATE LOAD ERROR ===');
+          console.error('Error loading page template:', error);
+
+          // Try to at least set up a basic canvas
+          const canvasArea = document.getElementById('canvas-area');
+          if (canvasArea) {
+            const disabledOverlay = canvasArea.querySelector('.disabled-overlay');
+            if (disabledOverlay) {
+              disabledOverlay.remove();
+            }
+            canvasArea.innerHTML = '<div style="border: 2px dashed #ccc; padding: 20px; text-align: center; color: #666;">Template failed to load. Try refreshing the page.</div>';
+          }
+
+          return false;
+        }
+      }
+
+      // Function to initialize drag and drop functionality
+      function initializeDragAndDrop() {
+        // This function should set up your existing drag-and-drop functionality
+        // You may need to call existing functions from your buildpage.js file
+
+        // Find all drop zones in the loaded template - updated selectors for your placeholders
+        const dropZones = document.querySelectorAll('.layout-placeholder, [data-drop-zone], .drop-zone-area, [id*="zone"], [id*="cph"]');
+        logger.info('Found drop zones:', dropZones.length);
+        logger.info('Drop zone IDs:', Array.from(dropZones).map(z => z.id || z.className));
+
+        dropZones.forEach(function(zone, index) {
+          logger.info(`Setting up drop zone ${index}:`, zone.id || zone.className);
+
+          // Make the zone visually identifiable as a drop zone
+          zone.style.minHeight = '60px';
+          zone.style.border = '2px dashed #007bff';
+          zone.style.padding = '15px';
+          zone.style.margin = '5px 0';
+          zone.style.backgroundColor = '#f8f9fa';
+          zone.style.borderRadius = '4px';
+          zone.style.position = 'relative';
+
+          // Add drop zone styling and placeholder text
+          if (!zone.innerHTML.trim() || zone.textContent.includes('Placeholder')) {
+            zone.innerHTML = `
+              <div style="text-align: center; color: #6c757d; font-style: italic; padding: 10px;">
+                <i class="fas fa-plus-circle" style="font-size: 24px; margin-bottom: 5px; display: block;"></i>
+                Drop content blocks here<br>
+                <small>${zone.id || 'Drop Zone'}</small>
+              </div>
+            `;
+          }
+
+          // Set up drag and drop events
+          zone.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            zone.style.backgroundColor = '#e3f2fd';
+            zone.style.borderColor = '#2196f3';
+            zone.style.borderStyle = 'solid';
+          });
+
+          zone.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            zone.style.backgroundColor = '#f8f9fa';
+            zone.style.borderColor = '#007bff';
+            zone.style.borderStyle = 'dashed';
+          });
+
+          zone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            zone.style.backgroundColor = '#f8f9fa';
+            zone.style.borderColor = '#007bff';
+            zone.style.borderStyle = 'dashed';
+
+            try {
+              const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+              logger.info('Item dropped in zone:', zone.id, 'Data:', data);
+
+              if (data.type === 'template' && data.id) {
+                // Add the template to this zone
+                addTemplateToZone(zone, data);
+              }
+            } catch (error) {
+              console.error('Error handling drop:', error);
+            }
+          });
+        });
+
+        // Set up draggable template cards
+        const templateCards = document.querySelectorAll('.template-card');
+        logger.info('Setting up', templateCards.length, 'draggable template cards');
+
+        templateCards.forEach(function(card) {
+          card.draggable = true;
+          card.style.cursor = 'grab';
+
+          card.addEventListener('dragstart', function(e) {
+            const templateId = card.getAttribute('data-id');
+            const templateName = card.querySelector('.card-title').textContent;
+
+            e.dataTransfer.setData('text/plain', JSON.stringify({
+              id: templateId,
+              name: templateName,
+              type: 'template'
+            }));
+
+            card.style.opacity = '0.5';
+            logger.info('Started dragging template:', templateName, templateId);
+          });
+
+          card.addEventListener('dragend', function(e) {
+            card.style.opacity = '1';
+          });
+        });
+      }
+
+      // Function to add a template to a drop zone
+      async function addTemplateToZone(zone, templateData) {
+        try {
+          logger.info('Adding template to zone:', zone.id, templateData);
+
+          // Fetch the template content
+          const response = await fetch(`/api/content-templates/${templateData.id}`);
+          if (!response.ok) {
+            throw new Error(`Failed to fetch template content: ${response.status}`);
+          }
+
+          const template = await response.json();
+          logger.info('Template content loaded:', template);
+
+          // Create a content block element
+          const blockElement = document.createElement('div');
+          blockElement.className = 'content-block-instance';
+          blockElement.innerHTML = `
+            <div class="content-block-header">
+              <div class="content-block-title">${template.Name}</div>
+              <div class="content-block-actions">
+                <button onclick="editBlock(this)" title="Edit">Edit</button>
+                <button onclick="removeBlock(this)" class="delete-btn" title="Delete">Delete</button>
+              </div>
+            </div>
+            <div class="content-block-content">
+              ${template.HtmlContent}
+            </div>
+          `;
+
+          // Replace the placeholder content
+          zone.innerHTML = '';
+          zone.appendChild(blockElement);
+
+          // Update zone styling for content
+          zone.style.border = '1px solid #28a745';
+          zone.style.backgroundColor = '#fff';
+          zone.style.padding = '0';
+
+          logger.info('Template added successfully to zone:', zone.id);
+
+        } catch (error) {
+          console.error('Error adding template to zone:', error);
+          alert('Error adding template. Please try again.');
+        }
+      }
+
+      // Global functions for content block actions
+      window.editBlock = function(button) {
+        const block = button.closest('.content-block-instance');
+        const content = block.querySelector('.content-block-content');
+        logger.info('Edit block clicked:', block);
+
+        // Simple edit for now - you can enhance this
+        const newContent = prompt('Edit content:', content.innerHTML);
+        if (newContent !== null) {
+          content.innerHTML = newContent;
+        }
+      };
+
+      window.removeBlock = function(button) {
+        const block = button.closest('.content-block-instance');
+        const zone = block.parentElement;
+
+        if (confirm('Remove this content block?')) {
+          block.remove();
+
+          // Restore drop zone placeholder
+          zone.innerHTML = `
+            <div style="text-align: center; color: #6c757d; font-style: italic; padding: 10px;">
+              <i class="fas fa-plus-circle" style="font-size: 24px; margin-bottom: 5px; display: block;"></i>
+              Drop content blocks here<br>
+              <small>${zone.id || 'Drop Zone'}</small>
+            </div>
+          `;
+          zone.style.border = '2px dashed #007bff';
+          zone.style.backgroundColor = '#f8f9fa';
+          zone.style.padding = '15px';
+        }
+      };
+    </script>
+    <% } else { %>
+    <script>
+      // No working site selected, disable the parent path selector
+      document.addEventListener("DOMContentLoaded", function () {
+        const parentPathSelector = document.getElementById(
+          "parent-path-selector"
+        );
+        parentPathSelector.disabled = true;
+        parentPathSelector.innerHTML =
+          '<option value="">-- Select a website first --</option>';
+      });
+    </script>
+    <% } %>
+  </body>
+</html>

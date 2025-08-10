@@ -1,0 +1,890 @@
+/* ─────────────── Base Resets ─────────────── */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: #f8fafc;
+  height: 100vh;
+  overflow-x: hidden; /* Prevent horizontal scroll but allow vertical */
+}
+
+/* ─────────────── Layout ─────────────── */
+.dashboard-container {
+  display: flex;
+  height: 100vh;
+}
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 250px; /* Fixed width for the sidebar */
+  height: 100%;
+  background-color: #f8fafc; /* Restored original light background color */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* Push support-section to the bottom */
+  z-index: 1000;
+}
+
+.logo {
+  padding: 20px;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 18px;
+  color: #1e293b;
+}
+
+.logo-icon {
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 14px;
+}
+
+.support-section {
+  width: 100%; /* Match the sidebar width */
+  background-color: #f8fafc; /* Match the sidebar background color */
+  color: #2c3e50; /* Adjusted text color for contrast */
+  padding: 1rem;
+  box-sizing: border-box;
+  border-top: 1px solid #e2e8f0; /* Subtle border to separate from the rest of the sidebar */
+}
+
+/* Sidebar toggle button */
+.sidebar-toggle {
+  position: fixed;
+  top: 1rem;
+  left: 250px; /* Adjust based on the sidebar width */
+  z-index: 1100;
+  background-color: #34495e;
+  color: #ecf0f1;
+  border: none;
+  padding: 0.5rem;
+  cursor: pointer;
+  transition: left 0.3s ease;
+}
+
+.sidebar.hidden {
+  left: -250px; /* Hide the sidebar off-screen */
+}
+
+.sidebar.hidden + .sidebar-toggle {
+  left: 0; /* Adjust toggle button position when sidebar is hidden */
+}
+
+/* Sidebar Nav Container */
+.sidebar-nav-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1; /* fill available height inside .sidebar */
+}
+
+.main-content {
+  flex: 1;
+  margin-left: 240px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #f8f9fa;
+  padding-top: 73px; /* Space for fixed header */
+}
+
+/* ─────────────── Header ─────────────── */
+.header {
+  background: white;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 16px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: fixed;
+  top: 0;
+  left: 240px; /* Same as sidebar width */
+  right: 0;
+  z-index: 200; /* Higher than sidebar */
+  height: 73px; /* Explicit height for consistency */
+}
+
+.header-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.search-box {
+  position: relative;
+}
+
+.search-input {
+  padding: 8px 40px 8px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #f8fafc;
+  width: 300px;
+  font-size: 14px;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  background: white;
+}
+
+.search-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+}
+
+.notification-btn {
+  position: relative;
+  background: none;
+  border: none;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #64748b;
+}
+
+.notification-btn:hover {
+  background: #f1f5f9;
+}
+
+
+.user-menu-container {
+  position: relative;
+}
+
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.user-avatar:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+/* User dropdown menu */
+.user-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 8px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  border: 1px solid #e5e7eb;
+  min-width: 200px;
+  z-index: 1000;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(-10px) scale(0.95);
+  transition: all 0.2s ease;
+  pointer-events: none;
+}
+
+.user-dropdown[style*="display: block"] {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.user-dropdown::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  right: 16px;
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 8px solid white;
+}
+
+.user-info {
+  padding: 16px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.user-name {
+  font-weight: 600;
+  color: #1f2937;
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+
+.user-username {
+  color: #6b7280;
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+.user-login-method {
+  color: #9ca3af;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.dropdown-divider {
+  margin: 0;
+  border: none;
+  border-top: 1px solid #f3f4f6;
+}
+
+.menu-items {
+  padding: 8px 0;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  color: #374151;
+  text-decoration: none;
+  font-size: 14px;
+  transition: background-color 0.2s ease;
+}
+
+.menu-item:hover {
+  background-color: #f9fafb;
+  color: #ef4444;
+}
+
+.menu-item:focus {
+  outline: none;
+  background-color: #f9fafb;
+  color: #ef4444;
+}
+
+.menu-item i {
+  margin-right: 12px;
+  width: 16px;
+  font-size: 14px;
+}
+
+.menu-item span {
+  font-weight: 500;
+}
+
+/* ─────────────── Sidebar Navigation ─────────────── */
+
+.nav-section {
+  padding: 20px 0;
+}
+
+.nav-title {
+  padding: 0 20px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 20px;
+  color: #64748b;
+  text-decoration: none;
+  transition: all 0.2s;
+  position: relative;
+  gap: 12px;
+}
+
+.nav-item:hover {
+  background-color: #f1f5f9;
+  color: #3b82f6;
+}
+
+.nav-item.active {
+  background-color: #eff6ff;
+  color: #3b82f6;
+  border-right: 3px solid #3b82f6;
+}
+
+.nav-item i {
+  width: 20px;
+  text-align: center;
+}
+
+.nav-item.disabled {
+  color: #cbd5e1;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.nav-item.disabled:hover {
+  background-color: transparent;
+  color: #cbd5e1;
+}
+
+.nav-badge {
+  background: #ef4444;
+  color: white;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  margin-left: auto;
+}
+
+/* ───── Dropdown Child Nav ───── */
+.nav-item.has-child {
+  justify-content: space-between;
+}
+
+.child-nav {
+  display: none;
+  padding-left: 20px;
+}
+
+.child-nav.open {
+  display: block;
+}
+
+.arrow {
+  transition: transform 0.3s ease;
+}
+
+.nav-item.menu-open .arrow {
+  transform: rotate(90deg);
+}
+
+/* Updated styling for current website indicator to match menu items */
+.current-website-indicator {
+  padding: 10px 20px;
+  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 1rem;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #64748b;
+  transition: all 0.2s;
+  width: 100%; /* Ensure full width */
+  box-sizing: border-box; /* Include padding in width calculation */
+  margin-left: 0; /* Remove any left margin */
+  margin-right: 0; /* Remove any right margin */
+}
+
+.current-website-indicator:hover {
+  background-color: #f1f5f9;
+  color: #3b82f6;
+}
+
+/* Style the shuffle icon like other nav icons */
+.current-website-indicator .change-site-link {
+  color: #64748b;
+  text-decoration: none;
+  transition: color 0.2s;
+  width: 20px;
+  text-align: center;
+  flex-shrink: 0; /* Prevent icon from shrinking */
+}
+
+.current-website-indicator .change-site-link:hover {
+  color: #3b82f6;
+}
+
+/* Style the website name */
+.active-site-name {
+  font-weight: 500;
+  color: #10b981;
+  margin: 0;
+  flex: 1;
+  font-size: 14px;
+}
+
+.no-site-selected {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  width: 100%; /* Ensure full width */
+}
+
+.no-site-selected .current-site-display {
+  color: #94a3b8;
+  font-style: italic;
+  font-size: 14px;
+  flex: 1; /* Take up remaining space */
+}
+
+.no-site-selected .change-site-link {
+  font-size: 12px;
+  color: #6b7280;
+  text-decoration: underline;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #f3f4f6;
+  transition: all 0.2s;
+  flex-shrink: 0; /* Prevent shrinking */
+}
+
+.no-site-selected .change-site-link:hover {
+  color: #3b82f6;
+  background: #eff6ff;
+  text-decoration: none;
+}
+
+/* Make it look more like a nav item with proper spacing */
+.current-website-indicator {
+  min-height: 44px; /* Same height as nav-item */
+  cursor: pointer;
+}
+
+/* Optional: Add a subtle border or background to make it more distinct */
+.current-website-indicator {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-left: 3px solid #10b981;
+  border-radius: 0;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+/* ─────────────── Content Areas ─────────────── */
+.content-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+/* ─────────────── Responsive ─────────────── */
+@media (max-width: 1024px) {
+  .sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.3s;
+  }
+
+  .main-content {
+    margin-left: 0;
+    padding-top: 73px;
+  }
+
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .table-section {
+    grid-template-columns: 1fr;
+  }
+  
+  .header {
+    left: 0; /* Full width on mobile */
+  }
+}
+
+/* ADD THIS CSS TO YOUR public/css/dashboard.css FILE */
+
+/* Font Controls Styling */
+.font-controls {
+  display: flex;
+  align-items: center;
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 2px;
+  gap: 1px;
+}
+
+.font-control-btn {
+  background: transparent;
+  border: none;
+  padding: 8px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #6c757d;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+.font-control-btn:hover {
+  background: #ffffff;
+  color: #007bff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+.font-control-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Font size indicator (for visual feedback) */
+.font-size-indicator {
+  position: fixed;
+  top: 70px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  z-index: 10000;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ADD THIS CSS TO YOUR public/css/dashboard.css FILE */
+
+/* Sidebar Toggle Button */
+.sidebar-toggle {
+  position: absolute;
+  top: 15px;
+  right: -12px;
+  width: 24px;
+  height: 24px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.sidebar-toggle:hover {
+  background: #f8f9fa;
+  transform: scale(1.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.sidebar-toggle i {
+  font-size: 12px;
+  color: #6b7280;
+  transition: transform 0.3s ease;
+}
+
+.sidebar-toggle:hover i {
+  color: #374151;
+}
+
+/* Sidebar Collapsed State */
+.sidebar {
+  position: relative;
+  transition: all 0.3s ease;
+  width: 250px; /* Your current sidebar width */
+}
+
+.sidebar.collapsed {
+  width: 0;
+  overflow: hidden;
+}
+
+/* Dashboard Container Adjustments */
+.dashboard-container {
+  display: flex;
+  transition: all 0.3s ease;
+}
+
+.main-content {
+  flex: 1;
+  transition: all 0.3s ease;
+}
+
+
+/* public/css/dashboard.css FILE */
+/* Sidebar  */
+/* Sidebar  */
+ 
+/* Sidebar Toggle Button - Fixed positioning so it's always visible */
+/* REPLACE ALL THE PREVIOUS SIDEBAR CSS WITH THIS TARGETED VERSION */
+
+/* Sidebar Toggle Button - Fixed positioning so it's always visible */
+.sidebar-toggle {
+  position: fixed;
+  top: 15px;
+  left: 238px; /* Adjust this to match your sidebar width */
+  width: 24px;
+  height: 24px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 1001;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.sidebar-toggle:hover {
+  background: #f8f9fa;
+  transform: scale(1.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.sidebar-toggle i {
+  font-size: 12px;
+  color: #6b7280;
+  transition: transform 0.3s ease;
+}
+
+.sidebar-toggle:hover i {
+  color: #374151;
+}
+
+/* When sidebar is collapsed, move toggle to the left edge */
+body.sidebar-collapsed .sidebar-toggle {
+  left: 12px;
+}
+
+/* FIX THE GAP: Remove left margin from main-content */
+.main-content {
+  margin-left: 0 !important;
+}
+
+/* Ensure dashboard container has no gaps */
+.dashboard-container {
+  gap: 0 !important;
+}
+
+/* Sidebar collapse behavior - MINIMAL CHANGES */
+.sidebar {
+  transition: width 0.3s ease;
+  overflow: hidden;
+}
+
+.sidebar.collapsed {
+  width: 0 !important;
+  min-width: 0 !important;
+  overflow: hidden;
+}
+
+.sidebar.collapsed .logo,
+.sidebar.collapsed .nav-title,
+.sidebar.collapsed .nav-item span:not(.arrow),
+.sidebar.collapsed .user-info,
+.sidebar.collapsed .user-name,
+.sidebar.collapsed .user-username,
+.sidebar.collapsed .user-login-method,
+.sidebar.collapsed .menu-items,
+.sidebar.collapsed .support-section {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.sidebar:not(.collapsed) .logo,
+.sidebar:not(.collapsed) .nav-title,
+.sidebar:not(.collapsed) .nav-item span:not(.arrow),
+.sidebar:not(.collapsed) .user-info,
+.sidebar:not(.collapsed) .user-name,
+.sidebar:not(.collapsed) .user-username,
+.sidebar:not(.collapsed) .user-login-method,
+.sidebar:not(.collapsed) .menu-items,
+.sidebar:not(.collapsed) .support-section {
+  opacity: 1;
+  transition: opacity 0.2s ease 0.1s;
+}
+
+/* Hide text content when sidebar is collapsed */
+.sidebar.collapsed .nav-item span:not(.arrow) {
+  display: none;
+}
+
+/* Keep icons visible when collapsed */
+.sidebar.collapsed .nav-item i {
+  margin-right: 0;
+}
+
+/* Center nav items when collapsed */
+.sidebar.collapsed .nav-item {
+  justify-content: center;
+}
+
+/* Adjust header position when sidebar is collapsed */
+.header {
+  transition: left 0.3s ease;
+}
+
+body.sidebar-collapsed .header {
+  left: 0 !important;
+}
+
+/* When sidebar is collapsed, main content takes full width */
+body.sidebar-collapsed .main-content {
+  margin-left: 0 !important;
+}
+
+
+
+
+/* Header positioning - ONLY */
+.header {
+  left: 250px; /* Default position when sidebar is open */
+  transition: left 0.3s ease;
+}
+
+/* When sidebar is collapsed, move header to left edge */
+body.sidebar-collapsed .header {
+  left: 0 !important;
+}
+
+/* FINAL RULE: Ensure sidebar fully collapses to 0 width */
+body.sidebar-collapsed .sidebar,
+body.sidebar-collapsed .sidebar.collapsed {
+  width: 0 !important;
+  min-width: 0 !important;
+  max-width: 0 !important;
+  overflow: hidden !important;
+}
+
+.sidebar-toggle i {
+  transition: all 0.2s ease;
+}
+
+/* ─────────────── Notification System ─────────────── */
+
+/* Global notification z-index rule - ensures ALL notifications appear above everything */
+[class*="notification"], 
+.notification-container,
+#notificationContainer {
+  z-index: 2147483647 !important;
+}
+
+.notification-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 2147483647;
+  pointer-events: none;
+}
+
+.notification {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  margin-bottom: 10px;
+  padding: 16px;
+  min-width: 300px;
+  max-width: 400px;
+  transform: translateX(100%);
+  opacity: 0;
+  transition: all 0.3s ease;
+  pointer-events: auto;
+  border-left: 4px solid #3b82f6;
+}
+
+.notification.show {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.notification-success {
+  border-left-color: #10b981;
+}
+
+.notification-error {
+  border-left-color: #ef4444;
+}
+
+.notification-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.notification-content i {
+  font-size: 18px;
+  color: #3b82f6;
+}
+
+.notification-success .notification-content i {
+  color: #10b981;
+}
+
+.notification-error .notification-content i {
+  color: #ef4444;
+}
+
+.notification-content span {
+  font-size: 14px;
+  color: #374151;
+  font-weight: 500;
+}
+
+/* Additional styles for user cards */
+.user-card {
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-card:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.user-card.inactive {
+  background-color: #f1f1f1; /* Light grey background for inactive users */
+  border: 1px solid #d1d5db; /* Subtle grey border */
+  color: #6b7280; /* Muted text color */
+  opacity: 0.8; /* Slightly faded appearance */
+}
+
+.user-card.inactive:hover {
+  background-color: #e5e7eb; /* Slightly darker grey on hover */
+  border-color: #cbd5e1; /* Darker border on hover */
+}
