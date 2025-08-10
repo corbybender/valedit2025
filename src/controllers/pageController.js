@@ -29,9 +29,9 @@ const showPagesForWebsite = async (req, res) => {
     // Determine sort order based on query parameter
     let orderBy = "p.Title";
     if (sort === "lastmodified") {
-      orderBy = "COALESCE(p.LastModified, p.CreatedAt, '1900-01-01') DESC";
+      orderBy = "p.Title"; // Fallback to title sort since date columns don't exist
     } else if (sort === "created") {
-      orderBy = "COALESCE(p.CreatedAt, '1900-01-01') DESC";
+      orderBy = "p.Title"; // Fallback to title sort since date columns don't exist  
     }
 
     // Build page tree with sync status
@@ -43,8 +43,6 @@ const showPagesForWebsite = async (req, res) => {
           p.ParentPageID, 
           p.Title, 
           p.URL,
-          p.CreatedAt,
-          p.LastModified,
           psq.Status as SyncStatus,
           psq.ChangeType as SyncChangeType,
           psq.QueuedAt as SyncQueuedAt

@@ -16,11 +16,6 @@ module.exports = (db) => {
     res.send("Websites router is working!");
   });
 
-  // PRIORITY ROUTE - Put this first to avoid conflicts
-  router.get("/35/website-pages", (req, res) => {
-    console.log("🚨 PRIORITY ROUTE HIT");
-    res.send("Priority route works!");
-  });
 
   // This route now renders the HTML page
   router.get("/", async (req, res) => {
@@ -142,6 +137,12 @@ module.exports = (db) => {
     console.log("🚨 PARAMS EXTRACTED: websiteId =", websiteId);
     
     try {
+      // Validate websiteId
+      if (!websiteId || isNaN(parseInt(websiteId))) {
+        console.log(`❌ DEBUG: Invalid websiteId: ${websiteId}`);
+        return res.status(400).json({ error: 'Invalid website ID' });
+      }
+
       console.log(`🔍 DEBUG: Starting /websites/${websiteId}/website-pages route`);
       
       const authorID = req.session.authorID;
@@ -158,10 +159,14 @@ module.exports = (db) => {
       const pool = await db;
       console.log(`🔍 DEBUG: Database pool obtained`);
       
+      if (!pool) {
+        throw new Error('Database connection not available');
+      }
+      
       const accessCheck = await pool
         .request()
-        .input("AuthorID", sql.Int, authorID)
-        .input("WebsiteID", sql.Int, websiteId)
+        .input("AuthorID", sql.Int, parseInt(authorID))
+        .input("WebsiteID", sql.Int, parseInt(websiteId))
         .query(`
           SELECT COUNT(*) as AccessCount 
           FROM dbo.AuthorWebsiteAccess 
@@ -180,7 +185,7 @@ module.exports = (db) => {
       // Get website info
       const websiteResult = await pool
         .request()
-        .input("WebsiteID", sql.Int, websiteId)
+        .input("WebsiteID", sql.Int, parseInt(websiteId))
         .query("SELECT Domain FROM dbo.Websites WHERE WebsiteID = @WebsiteID");
 
       console.log(`🔍 DEBUG: Website query result:`, websiteResult.recordset);
@@ -197,7 +202,7 @@ module.exports = (db) => {
       console.log(`🔍 DEBUG: Fetching pages for website ${websiteId}`);
       const pagesResult = await pool
         .request()
-        .input("websiteId", sql.Int, websiteId)
+        .input("websiteId", sql.Int, parseInt(websiteId))
         .query(`
           SELECT 
             PageID, 
@@ -253,7 +258,7 @@ module.exports = (db) => {
           isAdmin: false,
         },
         currentWorkingSite: {
-          WebsiteID: websiteId,
+          WebsiteID: parseInt(websiteId),
           WebsiteName: website.Domain
         },
         website: website,
@@ -266,18 +271,29 @@ module.exports = (db) => {
     } catch (err) {
       console.error(`❌ DEBUG: Error in /websites/${websiteId}/website-pages route:`, err);
       console.error(`❌ DEBUG: Error stack:`, err.stack);
+      console.error(`❌ DEBUG: Error name:`, err.name);
+      console.error(`❌ DEBUG: Error code:`, err.code);
       
       // Try to use logger if available, otherwise use console
       if (typeof logger !== 'undefined') {
         logger.error(`Error in /websites/${websiteId}/website-pages route`, {
           error: err,
+          errorMessage: err.message,
+          errorName: err.name,
+          errorCode: err.code,
           sessionID: req.sessionID,
           authorID: req.session?.authorID,
           websiteId: websiteId,
+          stack: err.stack
         });
       }
 
-      res.status(500).send(`Error loading the pages: ${err.message}`);
+      res.status(500).json({
+        error: 'Internal Server Error',
+        message: err.message,
+        code: err.code || 'UNKNOWN_ERROR',
+        details: process.env.NODE_ENV === 'development' ? err.stack : undefined
+      });
     }
   });
 
