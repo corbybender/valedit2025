@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dashboard</title>
+    <title>Azure Storage - <%= process.env.APP_NAME || 'ValEdit' %></title>
     <link
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
       rel="stylesheet"
@@ -13,18 +13,12 @@
     <link href="/public/css/dashboard.css" rel="stylesheet" />
     <link rel="stylesheet" href="/css/AzureStorage.css" />
   </head>
-  <body>
-    <div class="dashboard-container">
-      <!-- Sidebar -->
-      <%- include('../partials/sidebar') %>
+  <body class="bg-gray-50">
+    <!-- Tailwind Megamenu -->
+    <%- include('../partials/tailwind-megamenu') %>
 
-      <!-- Main Content -->
-      <div class="main-content">
-        <!-- Header -->
-        <%- include('../partials/header') %>
-
-        <!-- Content -->
-        <main class="content">
+    <!-- Main Content -->
+    <main class="w-full px-2 py-8">
           <section class="card">
             <h2>Upload New File</h2>
             <form id="upload-form">
@@ -81,7 +75,7 @@
               <div id="images-status" class="status-message"></div>
             </section>
           </div>
-        </main>
+    </main>
 
         <div id="edit-modal" class="modal">
           <div class="modal-content">

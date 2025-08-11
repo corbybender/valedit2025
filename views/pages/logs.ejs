@@ -3,7 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title><%= title %></title>
+    <title><%= title %> - <%= process.env.APP_NAME || 'ValEdit' %></title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
     <link
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
       rel="stylesheet"
@@ -11,116 +15,164 @@
     <link href="/public/css/dashboard.css" rel="stylesheet" />
     <link href="/public/css/content.css" rel="stylesheet" />
   </head>
-  <body>
-    <div class="dashboard-container">
-      <!-- Sidebar -->
-      <%- include('../partials/sidebar') %>
+  <body class="bg-gray-50">
+    <!-- Tailwind Megamenu -->
+    <%- include('../partials/tailwind-megamenu') %>
 
-      <!-- Main Content -->
-      <div class="main-content">
-        <!-- Header -->
-        <%- include('../partials/header') %>
+    <!-- Main Content -->
+    <main class="w-full px-2 py-8">
+      <div class="cms-feature-table-wrapper" style="padding: 24px">
+        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem">
+          <i class="fas fa-file-alt"></i> Application Logs
+        </h2>
 
-        <!-- Content -->
-        <main class="content">
-          <div class="cms-feature-table-wrapper" style="padding: 24px">
-            <h2
-              style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem"
+        <!-- Auto-refresh indicator -->
+        <div
+          class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6 flex items-center gap-3"
+        >
+          <i class="fas fa-sync-alt fa-spin text-green-600"></i>
+          <span class="text-green-700 font-medium"
+            >Auto-refreshing every 30 seconds</span
+          >
+          <span id="countdown" class="text-green-600 font-semibold">(30s)</span>
+        </div>
+
+        <!-- Log Statistics Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          <div
+            class="bg-red-50 border border-red-200 rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-md hover:bg-red-100"
+            onclick="filterLogsByLevel('error')"
+            data-level="error"
+          >
+            <div class="flex items-center justify-between mb-2">
+              <div
+                class="text-red-600 text-sm font-medium flex items-center gap-2"
+              >
+                <i class="fas fa-exclamation-triangle"></i>
+                Error Messages
+              </div>
+            </div>
+            <div class="text-2xl font-bold text-red-900 mb-3" id="error-count">
+              0
+            </div>
+            <button
+              class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm transition-colors"
+              onclick="deleteLogs('error'); event.stopPropagation();"
             >
-              <i class="fas fa-file-alt"></i> Application Logs
-            </h2>
+              <i class="fas fa-trash mr-1"></i> Delete All
+            </button>
+          </div>
 
-            <!-- Auto-refresh indicator -->
-            <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6 flex items-center gap-3">
-              <i class="fas fa-sync-alt fa-spin text-green-600"></i>
-              <span class="text-green-700 font-medium">Auto-refreshing every 30 seconds</span>
-              <span id="countdown" class="text-green-600 font-semibold">(30s)</span>
-            </div>
-
-            <!-- Log Statistics Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-              <div class="bg-red-50 border border-red-200 rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-md hover:bg-red-100" onclick="filterLogsByLevel('error')" data-level="error">
-                <div class="flex items-center justify-between mb-2">
-                  <div class="text-red-600 text-sm font-medium flex items-center gap-2">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    Error Messages
-                  </div>
-                </div>
-                <div class="text-2xl font-bold text-red-900 mb-3" id="error-count">0</div>
-                <button class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm transition-colors" onclick="deleteLogs('error'); event.stopPropagation();">
-                  <i class="fas fa-trash mr-1"></i> Delete All
-                </button>
-              </div>
-
-              <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-md hover:bg-yellow-100" onclick="filterLogsByLevel('warn')" data-level="warn">
-                <div class="flex items-center justify-between mb-2">
-                  <div class="text-yellow-600 text-sm font-medium flex items-center gap-2">
-                    <i class="fas fa-exclamation-circle"></i>
-                    Warning Messages
-                  </div>
-                </div>
-                <div class="text-2xl font-bold text-yellow-900 mb-3" id="warning-count">0</div>
-                <button class="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1 rounded text-sm transition-colors" onclick="deleteLogs('warning'); event.stopPropagation();">
-                  <i class="fas fa-trash mr-1"></i> Delete All
-                </button>
-              </div>
-
-              <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-md hover:bg-blue-100" onclick="filterLogsByLevel('info')" data-level="info">
-                <div class="flex items-center justify-between mb-2">
-                  <div class="text-blue-600 text-sm font-medium flex items-center gap-2">
-                    <i class="fas fa-info-circle"></i>
-                    Info Messages
-                  </div>
-                </div>
-                <div class="text-2xl font-bold text-blue-900 mb-3" id="info-count">0</div>
-                <button class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm transition-colors" onclick="deleteLogs('info'); event.stopPropagation();">
-                  <i class="fas fa-trash mr-1"></i> Delete All
-                </button>
-              </div>
-
-              <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-md hover:bg-gray-100" onclick="filterLogsByLevel('debug')" data-level="debug">
-                <div class="flex items-center justify-between mb-2">
-                  <div class="text-gray-600 text-sm font-medium flex items-center gap-2">
-                    <i class="fas fa-bug"></i>
-                    Debug Messages
-                  </div>
-                </div>
-                <div class="text-2xl font-bold text-gray-900 mb-3" id="debug-count">0</div>
-                <button class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1 rounded text-sm transition-colors" onclick="deleteLogs('debug'); event.stopPropagation();">
-                  <i class="fas fa-trash mr-1"></i> Delete All
-                </button>
+          <div
+            class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-md hover:bg-yellow-100"
+            onclick="filterLogsByLevel('warn')"
+            data-level="warn"
+          >
+            <div class="flex items-center justify-between mb-2">
+              <div
+                class="text-yellow-600 text-sm font-medium flex items-center gap-2"
+              >
+                <i class="fas fa-exclamation-circle"></i>
+                Warning Messages
               </div>
             </div>
-
-            <!-- Manual Refresh Buttons -->
-            <div class="mb-6 flex gap-3">
-              <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition-colors flex items-center gap-2" onclick="loadLogCounts()">
-                <i class="fas fa-sync-alt"></i> Refresh Now
-              </button>
-              <button class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded transition-colors items-center gap-2 hidden" onclick="clearFilter()" id="clear-filter-btn">
-                <i class="fas fa-times"></i> Show All Logs
-              </button>
+            <div
+              class="text-2xl font-bold text-yellow-900 mb-3"
+              id="warning-count"
+            >
+              0
             </div>
+            <button
+              class="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1 rounded text-sm transition-colors"
+              onclick="deleteLogs('warning'); event.stopPropagation();"
+            >
+              <i class="fas fa-trash mr-1"></i> Delete All
+            </button>
+          </div>
 
-            <!-- Recent Logs Table -->
-            <div class="bg-white border border-gray-200 rounded-lg">
-              <div class="p-4 border-b border-gray-200">
-                <h3 class="text-lg font-semibold" id="recent-logs-title">
-                  <i class="fas fa-clock"></i> Recent Log Entries (Last 20)
-                </h3>
+          <div
+            class="bg-blue-50 border border-blue-200 rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-md hover:bg-blue-100"
+            onclick="filterLogsByLevel('info')"
+            data-level="info"
+          >
+            <div class="flex items-center justify-between mb-2">
+              <div
+                class="text-blue-600 text-sm font-medium flex items-center gap-2"
+              >
+                <i class="fas fa-info-circle"></i>
+                Info Messages
               </div>
-              <div class="overflow-x-auto">
-                <div id="recent-logs-container" class="p-4">
-                  <div class="text-center py-8 text-gray-500">
-                    <i class="fas fa-spinner fa-spin"></i> Loading recent logs...
-                  </div>
-                </div>
+            </div>
+            <div class="text-2xl font-bold text-blue-900 mb-3" id="info-count">
+              0
+            </div>
+            <button
+              class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm transition-colors"
+              onclick="deleteLogs('info'); event.stopPropagation();"
+            >
+              <i class="fas fa-trash mr-1"></i> Delete All
+            </button>
+          </div>
+
+          <div
+            class="bg-gray-50 border border-gray-200 rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-md hover:bg-gray-100"
+            onclick="filterLogsByLevel('debug')"
+            data-level="debug"
+          >
+            <div class="flex items-center justify-between mb-2">
+              <div
+                class="text-gray-600 text-sm font-medium flex items-center gap-2"
+              >
+                <i class="fas fa-bug"></i>
+                Debug Messages
+              </div>
+            </div>
+            <div class="text-2xl font-bold text-gray-900 mb-3" id="debug-count">
+              0
+            </div>
+            <button
+              class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1 rounded text-sm transition-colors"
+              onclick="deleteLogs('debug'); event.stopPropagation();"
+            >
+              <i class="fas fa-trash mr-1"></i> Delete All
+            </button>
+          </div>
+        </div>
+
+        <!-- Manual Refresh Buttons -->
+        <div class="mb-6 flex gap-3">
+          <button
+            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition-colors flex items-center gap-2"
+            onclick="loadLogCounts()"
+          >
+            <i class="fas fa-sync-alt"></i> Refresh Now
+          </button>
+          <button
+            class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded transition-colors items-center gap-2 hidden"
+            onclick="clearFilter()"
+            id="clear-filter-btn"
+          >
+            <i class="fas fa-times"></i> Show All Logs
+          </button>
+        </div>
+
+        <!-- Recent Logs Table -->
+        <div class="bg-white border border-gray-200 rounded-lg">
+          <div class="p-4 border-b border-gray-200">
+            <h3 class="text-lg font-semibold" id="recent-logs-title">
+              <i class="fas fa-clock"></i> Recent Log Entries (Last 20)
+            </h3>
+          </div>
+          <div class="overflow-x-auto">
+            <div id="recent-logs-container" class="p-4">
+              <div class="text-center py-8 text-gray-500">
+                <i class="fas fa-spinner fa-spin"></i> Loading recent logs...
               </div>
             </div>
           </div>
-        </main>
+        </div>
       </div>
-    </div>
+    </main>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="/public/js/notifications.js"></script>
@@ -131,7 +183,7 @@
       let autoRefreshInterval;
       let countdownInterval;
       let countdownSeconds = 30;
-      let currentFilter = 'all'; // Track current filter state
+      let currentFilter = "all"; // Track current filter state
 
       function loadLogCounts() {
         // Load counts for each log level
@@ -165,80 +217,94 @@
 
       function filterLogsByLevel(level) {
         currentFilter = level;
-        
+
         // Update visual state of cards - remove active styling from all cards
-        document.querySelectorAll('[data-level]').forEach(card => {
-          card.classList.remove('ring-2', 'ring-blue-500', 'shadow-lg');
+        document.querySelectorAll("[data-level]").forEach((card) => {
+          card.classList.remove("ring-2", "ring-blue-500", "shadow-lg");
         });
-        
+
         // Add active styling to selected card
         const activeCard = document.querySelector(`[data-level="${level}"]`);
         if (activeCard) {
-          activeCard.classList.add('ring-2', 'ring-blue-500', 'shadow-lg');
+          activeCard.classList.add("ring-2", "ring-blue-500", "shadow-lg");
         }
-        
+
         // Show clear filter button
-        document.getElementById('clear-filter-btn').classList.remove('hidden');
-        document.getElementById('clear-filter-btn').classList.add('flex');
-        
+        document.getElementById("clear-filter-btn").classList.remove("hidden");
+        document.getElementById("clear-filter-btn").classList.add("flex");
+
         // Update title to show filtered state
-        const levelDisplay = level === 'warn' ? 'Warning' : level.charAt(0).toUpperCase() + level.slice(1);
-        document.getElementById('recent-logs-title').innerHTML = 
-          `<i class="fas fa-filter"></i> ${levelDisplay} Log Entries`;
-        
+        const levelDisplay =
+          level === "warn"
+            ? "Warning"
+            : level.charAt(0).toUpperCase() + level.slice(1);
+        document.getElementById(
+          "recent-logs-title"
+        ).innerHTML = `<i class="fas fa-filter"></i> ${levelDisplay} Log Entries`;
+
         // Load filtered logs
         loadRecentLogs();
       }
 
       function clearFilter() {
-        currentFilter = 'all';
-        
+        currentFilter = "all";
+
         // Remove active state from all cards
-        document.querySelectorAll('[data-level]').forEach(card => {
-          card.classList.remove('ring-2', 'ring-blue-500', 'shadow-lg');
+        document.querySelectorAll("[data-level]").forEach((card) => {
+          card.classList.remove("ring-2", "ring-blue-500", "shadow-lg");
         });
-        
+
         // Hide clear filter button
-        document.getElementById('clear-filter-btn').classList.add('hidden');
-        document.getElementById('clear-filter-btn').classList.remove('flex');
-        
+        document.getElementById("clear-filter-btn").classList.add("hidden");
+        document.getElementById("clear-filter-btn").classList.remove("flex");
+
         // Reset title
-        document.getElementById('recent-logs-title').innerHTML = 
+        document.getElementById("recent-logs-title").innerHTML =
           '<i class="fas fa-clock"></i> Recent Log Entries (Last 20)';
-        
+
         // Load all logs
         loadRecentLogs();
       }
 
       function loadRecentLogs() {
-        const url = currentFilter === 'all' 
-          ? "/logs/api?limit=20" 
-          : `/logs/api?limit=20&level=${currentFilter}`;
-        
+        const url =
+          currentFilter === "all"
+            ? "/logs/api?limit=20"
+            : `/logs/api?limit=20&level=${currentFilter}`;
+
         fetch(url)
           .then((response) => response.json())
           .then((data) => {
             const container = document.getElementById("recent-logs-container");
 
             if (data.logs.length === 0) {
-              const filterText = currentFilter === 'all' ? 'recent log entries' : `${currentFilter} log entries`;
-              container.innerHTML =
-                `<div class="text-center py-8 text-gray-500">No ${filterText} found</div>`;
+              const filterText =
+                currentFilter === "all"
+                  ? "recent log entries"
+                  : `${currentFilter} log entries`;
+              container.innerHTML = `<div class="text-center py-8 text-gray-500">No ${filterText} found</div>`;
               return;
             }
 
             container.innerHTML = data.logs
               .map((log) => {
-                const levelClass = log.Level.toLowerCase() === "warn" ? "warning" : log.Level.toLowerCase();
+                const levelClass =
+                  log.Level.toLowerCase() === "warn"
+                    ? "warning"
+                    : log.Level.toLowerCase();
                 const timestamp = new Date(log.CreatedAt).toLocaleString();
-                
+
                 // Color classes for different log levels
-                const colorClasses = {
-                  error: 'bg-red-50 border-l-4 border-red-400 text-red-700',
-                  warning: 'bg-yellow-50 border-l-4 border-yellow-400 text-yellow-700',
-                  info: 'bg-blue-50 border-l-4 border-blue-400 text-blue-700',
-                  debug: 'bg-gray-50 border-l-4 border-gray-400 text-gray-700'
-                }[levelClass] || 'bg-gray-50 border-l-4 border-gray-400 text-gray-700';
+                const colorClasses =
+                  {
+                    error: "bg-red-50 border-l-4 border-red-400 text-red-700",
+                    warning:
+                      "bg-yellow-50 border-l-4 border-yellow-400 text-yellow-700",
+                    info: "bg-blue-50 border-l-4 border-blue-400 text-blue-700",
+                    debug:
+                      "bg-gray-50 border-l-4 border-gray-400 text-gray-700",
+                  }[levelClass] ||
+                  "bg-gray-50 border-l-4 border-gray-400 text-gray-700";
 
                 return `
                 <div class="mb-2 p-3 rounded ${colorClasses}">

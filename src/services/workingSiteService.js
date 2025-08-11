@@ -4,11 +4,11 @@ const sql = require("mssql");
 // Ensure logger is available (it's set up globally in debug-logger.js)
 const logger = global.logger || console;
 
-logger.info("=== workingSiteService.js loaded - REFACTORED VERSION ===");
+logger.debug("=== workingSiteService.js loaded - REFACTORED VERSION ===");
 
 const setCurrentWorkingSite = async (authorID, websiteID = null) => {
   try {
-    logger.info("Setting working site:", { authorID, websiteID });
+    logger.debug("Setting working site:", { authorID, websiteID });
     const pool = await db;
     const result = await pool
       .request()
@@ -30,7 +30,7 @@ const setCurrentWorkingSite = async (authorID, websiteID = null) => {
 
 const getCurrentWorkingSite = async (authorID) => {
   try {
-    logger.info("Getting working site for authorID:", authorID);
+    logger.debug("Getting working site for authorID:", authorID);
     if (!authorID) return null;
 
     const pool = await db;

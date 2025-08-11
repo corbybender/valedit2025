@@ -4,7 +4,7 @@ const db = require("../db");
 const sql = require("mssql");
 const NotificationService = require("../src/services/notificationService");
 // const SyncQueue = require("../utils/syncQueue");
-// const logger = require("../utils/logger");
+// const logger = require("../utils/logger"); // logger is global
 
 // ===== SHARED CONTENT BLOCKS (ContentTemplates) ROUTES =====
 
@@ -76,8 +76,8 @@ router.get("/shared/single/:id", async (req, res) => {
 
 // CREATE a new shared content block
 router.post("/shared", async (req, res) => {
-  logger.info("🔧 BACKEND: POST /shared route hit");
-  logger.info("🔧 BACKEND: Request body:", JSON.stringify(req.body, null, 2));
+  logger.debug("🔧 BACKEND: POST /shared route hit");
+  logger.debug("🔧 BACKEND: Request body:", JSON.stringify(req.body, null, 2));
 
   const {
     name,
@@ -175,9 +175,9 @@ router.post("/shared", async (req, res) => {
 
 // UPDATE a shared content block
 router.put("/shared/:id", async (req, res) => {
-  logger.info("🔧 BACKEND: PUT /shared/:id route hit");
-  logger.info("🔧 BACKEND: ID:", req.params.id);
-  logger.info("🔧 BACKEND: Request body:", JSON.stringify(req.body, null, 2));
+  logger.debug("🔧 BACKEND: PUT /shared/:id route hit");
+  logger.debug("🔧 BACKEND: ID:", req.params.id);
+  logger.debug("🔧 BACKEND: Request body:", JSON.stringify(req.body, null, 2));
 
   const {
     name,
@@ -413,8 +413,8 @@ router.get("/template/:id", async (req, res) => {
 
 // CREATE a page content block from a content template or empty block
 router.post("/page", async (req, res) => {
-  logger.info("--- CREATE PAGE CONTENT BLOCK ---");
-  logger.info("Request Body:", JSON.stringify(req.body, null, 2));
+  logger.debug("--- CREATE PAGE CONTENT BLOCK ---");
+  logger.debug("Request Body:", JSON.stringify(req.body, null, 2));
 
   const {
     pageId,
@@ -433,7 +433,7 @@ router.post("/page", async (req, res) => {
     let contentName;
 
     if (isShared) {
-      logger.info(
+      logger.debug(
         `Processing as a SHARED CONTENT block with ID: ${contentTemplateId}`
       );
       // Get content from SharedContent table
@@ -444,14 +444,14 @@ router.post("/page", async (req, res) => {
           "SELECT Name, HtmlContent, CssContent, JsContent FROM SharedContent WHERE SharedBlockID = @SharedBlockID"
         );
       if (sharedResult.recordset.length === 0) {
-        logger.error(
-          `Shared content block with ID ${contentTemplateId} not found.`
+        logger.debug(
+          `Shared content block with ID ${contentTemplateId} not found - this will cause an error`
         );
         throw new Error("Shared content block not found");
       }
       templateData = sharedResult.recordset[0];
       contentName = templateData.Name;
-      logger.info(`Shared content data fetched for '${contentName}'`);
+      logger.debug(`Shared content data fetched for '${contentName}'`);
 
       // Check if a ContentTemplate already exists for this shared block
       const sharedTemplateSlug = `shared-block-${contentTemplateId}`;
@@ -465,7 +465,7 @@ router.post("/page", async (req, res) => {
       if (existingTemplateResult.recordset.length > 0) {
         // Use existing ContentTemplate
         contentTemplateId = existingTemplateResult.recordset[0].ID;
-        logger.info(
+        logger.debug(
           `Using existing ContentTemplate with ID ${contentTemplateId} for shared block`
         );
 
@@ -481,13 +481,13 @@ router.post("/page", async (req, res) => {
           .query(
             "UPDATE ContentTemplates SET Name = @Name, HtmlContent = @HtmlContent, CssContent = @CssContent, JsContent = @JsContent, UpdatedAt = @UpdatedAt WHERE ID = @ID"
           );
-        logger.info(
+        logger.debug(
           `Updated ContentTemplate ${contentTemplateId} with latest shared content`
         );
       } else {
         // Create a new ContentTemplate for this shared block
         const sharedTemplateName = `Shared: ${templateData.Name}`;
-        logger.info(
+        logger.debug(
           `Creating ContentTemplate entry for shared block: ${sharedTemplateName} with slug: ${sharedTemplateSlug}`
         );
 
@@ -505,7 +505,7 @@ router.post("/page", async (req, res) => {
           );
 
         contentTemplateId = createSharedTemplateResult.recordset[0].ID;
-        logger.info(
+        logger.debug(
           `Created ContentTemplate with ID ${contentTemplateId} for shared block`
         );
       }
@@ -516,7 +516,7 @@ router.post("/page", async (req, res) => {
       clientBlockType === "css"
     ) {
       const actualBlockType = clientBlockType || "empty";
-      logger.info(`Processing as a ${actualBlockType.toUpperCase()} block.`);
+      logger.debug(`Processing as a ${actualBlockType.toUpperCase()} block.`);
 
       // Define template content based on block type
       let templateContent;
@@ -525,17 +525,17 @@ router.post("/page", async (req, res) => {
           templateContent = {
             Name: "JavaScript Block",
             HtmlContent:
-              '<div style="padding: 20px; text-align: center; color: #6c757d; border: 2px dashed #007bff; border-radius: 4px;"><p><i class="fab fa-js-square" style="font-size: 24px; margin-bottom: 10px; color: #f7df1e;"></i></p><p>JavaScript Block - Click \"Edit\" to add your JavaScript code</p></div>',
+              '<div style="padding: 20px; text-align: center; color: #6c757d; border: 2px dashed #007bff; border-radius: 4px;"><p><i class="fab fa-js-square" style="font-size: 24px; margin-bottom: 10px; color: #f7df1e;"></i></p><p>JavaScript Block - Click "Edit" to add your JavaScript code</p></div>',
             CssContent: "",
             JsContent:
-              "// Add your JavaScript code here\nlogger.info('JavaScript block loaded');",
+              "// Add your JavaScript code here\nconsole.log('JavaScript block loaded');",
           };
           break;
         case "css":
           templateContent = {
             Name: "CSS Block",
             HtmlContent:
-              '<div style="padding: 20px; text-align: center; color: #6c757d; border: 2px dashed #28a745; border-radius: 4px;"><p><i class="fab fa-css3-alt" style="font-size: 24px; margin-bottom: 10px; color: #1572b6;"></i></p><p>CSS Block - Click \"Edit\" to add your CSS styles</p></div>',
+              '<div style="padding: 20px; text-align: center; color: #6c757d; border: 2px dashed #28a745; border-radius: 4px;"><p><i class="fab fa-css3-alt" style="font-size: 24px; margin-bottom: 10px; color: #1572b6;"></i></p><p>CSS Block - Click "Edit" to add your CSS styles</p></div>',
             CssContent:
               "/* Add your CSS styles here */\n.my-custom-style {\n  color: #333;\n}",
             JsContent: "",
@@ -545,14 +545,14 @@ router.post("/page", async (req, res) => {
           templateContent = {
             Name: "Empty Content Block",
             HtmlContent:
-              '<div style="padding: 20px; text-align: center; color: #6c757d; border: 2px dashed #dee2e6; border-radius: 4px;"><p><i class="fas fa-edit" style="font-size: 24px; margin-bottom: 10px;"></i></p><p>Click \"Edit\" to add your content</p></div>',
+              '<div style="padding: 20px; text-align: center; color: #6c757d; border: 2px dashed #dee2e6; border-radius: 4px;"><p><i class="fas fa-edit" style="font-size: 24px; margin-bottom: 10px;"></i></p><p>Click "Edit" to add your content</p></div>',
             CssContent: "",
             JsContent: "",
           };
       }
 
       // Check if template exists for this block type
-      logger.info(
+      logger.debug(
         `Checking for existing '${templateContent.Name}' template...`
       );
       let blockTemplateResult = await pool
@@ -563,7 +563,7 @@ router.post("/page", async (req, res) => {
         );
 
       if (blockTemplateResult.recordset.length === 0) {
-        logger.info(
+        logger.debug(
           `'${templateContent.Name}' template NOT found. Creating a new one.`
         );
         // Create the template with all required fields
@@ -615,20 +615,20 @@ router.post("/page", async (req, res) => {
           `);
         contentTemplateId = createResult.recordset[0].ID;
         templateData = templateContent;
-        logger.info(
+        logger.debug(
           `New '${templateContent.Name}' template created with ID: ${contentTemplateId}`
         );
       } else {
         // Use existing template
         contentTemplateId = blockTemplateResult.recordset[0].ID;
         templateData = blockTemplateResult.recordset[0];
-        logger.info(
+        logger.debug(
           `Found existing '${templateContent.Name}' template with ID: ${contentTemplateId}`
         );
       }
       contentName = templateContent.Name;
     } else {
-      logger.info(
+      logger.debug(
         `Processing as a TEMPLATE block with ID: ${contentTemplateId}`
       );
       // Get content from template
@@ -639,18 +639,18 @@ router.post("/page", async (req, res) => {
           "SELECT Name, HtmlContent, CssContent, JsContent FROM ContentTemplates WHERE ID = @ID"
         );
       if (templateResult.recordset.length === 0) {
-        logger.error(
-          `Content template with ID ${contentTemplateId} not found.`
+        logger.debug(
+          `Content template with ID ${contentTemplateId} not found - this will cause an error`
         );
         throw new Error("Content template not found");
       }
       templateData = templateResult.recordset[0];
       contentName = templateData.Name;
-      logger.info(`Template data fetched for '${contentName}'`);
+      logger.debug(`Template data fetched for '${contentName}'`);
     }
 
     // Now we always have a valid contentTemplateId (either provided or created for empty blocks)
-    logger.info(
+    logger.debug(
       `Proceeding to create PageContentBlock with ContentTemplateID: ${contentTemplateId}`
     );
     const result = await pool
@@ -667,7 +667,7 @@ router.post("/page", async (req, res) => {
       );
 
     const newBlockId = result.recordset[0].ID;
-    logger.info(
+    logger.debug(
       `Successfully inserted into PageContentBlocks. New ID: ${newBlockId}`
     );
 
@@ -727,7 +727,7 @@ router.post("/page", async (req, res) => {
       additionalInfo: `Page ID: ${pageId}`,
     });
 
-    logger.info("Sending final JSON response to client.");
+    logger.debug("Sending final JSON response to client.");
     res.status(201).json(newBlock);
   } catch (err) {
     logger.error("Error in create page content block", {
@@ -752,7 +752,7 @@ router.post("/page", async (req, res) => {
 // GET a page content block by ID
 router.get("/page/:id", async (req, res) => {
   try {
-    logger.info(`--- GET PAGE CONTENT BLOCK ${req.params.id} ---`);
+    logger.debug(`--- GET PAGE CONTENT BLOCK ${req.params.id} ---`);
     const pool = await db;
     const result = await pool
       .request()
@@ -762,12 +762,12 @@ router.get("/page/:id", async (req, res) => {
       );
 
     if (result.recordset.length === 0) {
-      logger.info(`❌ Block ${req.params.id} not found`);
+      logger.debug(`❌ Block ${req.params.id} not found`);
       return res.status(404).json({ error: "Block not found" });
     }
 
     const blockData = result.recordset[0];
-    logger.info(`📄 Block ${req.params.id} data from database:`, {
+    logger.debug(`📄 Block ${req.params.id} data from database:`, {
       ID: blockData.ID,
       HtmlContentLength: blockData.HtmlContent?.length || 0,
       CssContentLength: blockData.CssContent?.length || 0,
@@ -787,8 +787,8 @@ router.get("/page/:id", async (req, res) => {
 // UPDATE a page content block
 router.put("/page/:id", async (req, res) => {
   const { htmlContent, cssContent, jsContent, instanceName } = req.body;
-  logger.info("--- UPDATE PAGE CONTENT BLOCK ---");
-  logger.info("Request Body:", JSON.stringify(req.body, null, 2));
+  logger.debug("--- UPDATE PAGE CONTENT BLOCK ---");
+  logger.debug("Request Body:", JSON.stringify(req.body, null, 2));
 
   try {
     const pool = await db;
@@ -828,7 +828,7 @@ router.put("/page/:id", async (req, res) => {
     //     const blockInfoResult = await pool
     //       .request()
     //       .input("BlockID", sql.BigInt, req.params.id).query(`
-    //         SELECT p.PageID, p.WebsiteID 
+    //         SELECT p.PageID, p.WebsiteID
     //         FROM PageContentBlocks pcb
     //         JOIN Pages p ON pcb.PageID = p.PageID
     //         WHERE pcb.ID = @BlockID
@@ -884,8 +884,8 @@ router.put("/page/:id", async (req, res) => {
 // UPDATE page content block position (for moving between zones)
 router.put("/page/:id/position", async (req, res) => {
   try {
-    logger.info(`🔄 UPDATE block position - ID: ${req.params.id}`);
-    logger.info(`📦 Request body:`, req.body);
+    logger.debug(`🔄 UPDATE block position - ID: ${req.params.id}`);
+    logger.debug(`📦 Request body:`, req.body);
 
     const { id } = req.params;
     const { placeholderId, sortOrder } = req.body;
@@ -911,7 +911,7 @@ router.put("/page/:id/position", async (req, res) => {
         WHERE ID = @ID
       `);
 
-    logger.info(
+    logger.debug(
       `✅ Updated block position - Rows affected: ${result.rowsAffected[0]}`
     );
 
@@ -926,7 +926,7 @@ router.put("/page/:id/position", async (req, res) => {
     //     const blockInfoResult = await pool
     //       .request()
     //       .input("BlockID", sql.BigInt, id).query(`
-    //         SELECT p.PageID, p.WebsiteID 
+    //         SELECT p.PageID, p.WebsiteID
     //         FROM PageContentBlocks pcb
     //         JOIN Pages p ON pcb.PageID = p.PageID
     //         WHERE pcb.ID = @BlockID
@@ -984,7 +984,7 @@ router.delete("/page/:id", async (req, res) => {
     //     const blockInfoResult = await pool
     //       .request()
     //       .input("BlockID", sql.BigInt, req.params.id).query(`
-    //         SELECT p.PageID, p.WebsiteID 
+    //         SELECT p.PageID, p.WebsiteID
     //         FROM PageContentBlocks pcb
     //         JOIN Pages p ON pcb.PageID = p.PageID
     //         WHERE pcb.ID = @BlockID
@@ -1060,7 +1060,7 @@ router.delete("/page/:id", async (req, res) => {
 // UNSHARE a shared content block (convert to regular block)
 router.post("/unshare/:id", async (req, res) => {
   try {
-    logger.info(`--- UNSHARE SHARED CONTENT BLOCK ${req.params.id} ---`);
+    logger.debug(`--- UNSHARE SHARED CONTENT BLOCK ${req.params.id} ---`);
     const instanceId = req.params.id;
 
     // First, get the current PageContentBlock data
@@ -1081,7 +1081,7 @@ router.post("/unshare/:id", async (req, res) => {
     }
 
     const blockData = blockResult.recordset[0];
-    logger.info("📦 Current block data:", blockData);
+    logger.debug("📦 Current block data:", blockData);
 
     // Check if this is actually a shared block
     if (!blockData.Slug || !blockData.Slug.startsWith("shared-block-")) {
@@ -1101,7 +1101,7 @@ router.post("/unshare/:id", async (req, res) => {
 
     // Extract shared block ID from slug
     const sharedBlockId = blockData.Slug.replace("shared-block-", "");
-    logger.info(
+    logger.debug(
       `🔍 Fetching fresh shared content for block ID: ${sharedBlockId}`
     );
 
@@ -1116,7 +1116,7 @@ router.post("/unshare/:id", async (req, res) => {
 
       if (sharedContentResult.recordset.length > 0) {
         sharedContentData = sharedContentResult.recordset[0];
-        logger.info(`✅ Found fresh shared content:`, {
+        logger.debug(`✅ Found fresh shared content:`, {
           name: sharedContentData.Name,
           htmlLength: (sharedContentData.HtmlContent || "").length,
           cssLength: (sharedContentData.CssContent || "").length,
@@ -1131,7 +1131,7 @@ router.post("/unshare/:id", async (req, res) => {
           name: sharedContentData.Name || "Content Block",
         };
       } else {
-        logger.info(
+        logger.debug(
           `⚠️ No SharedContent found for ID ${sharedBlockId}, using template content as fallback`
         );
       }
@@ -1139,7 +1139,7 @@ router.post("/unshare/:id", async (req, res) => {
       logger.error(`Error fetching SharedContent for ID ${sharedBlockId}`, {
         error: sharedContentError,
       });
-      logger.info(`⚠️ Using template content as fallback`);
+      logger.debug(`⚠️ Using template content as fallback`);
     }
 
     // Create a new ContentTemplate with the fresh shared content
@@ -1149,8 +1149,8 @@ router.post("/unshare/:id", async (req, res) => {
     )}`;
     const newTemplateSlug = `unshared-${instanceId}-${Date.now()}`;
 
-    logger.info(`🆕 Creating new ContentTemplate: ${newTemplateName}`);
-    logger.info(`🆕 Using content:`, {
+    logger.debug(`🆕 Creating new ContentTemplate: ${newTemplateName}`);
+    logger.debug(`🆕 Using content:`, {
       htmlLength: contentToUse.html.length,
       cssLength: contentToUse.css.length,
       jsLength: contentToUse.js.length,
@@ -1171,7 +1171,7 @@ router.post("/unshare/:id", async (req, res) => {
       `);
 
     const newContentTemplateId = createTemplateResult.recordset[0].ID;
-    logger.info(
+    logger.debug(
       `✅ Created new ContentTemplate with ID: ${newContentTemplateId}`
     );
 
@@ -1189,11 +1189,11 @@ router.post("/unshare/:id", async (req, res) => {
         WHERE ID = @ID
       `);
 
-    logger.info(
+    logger.debug(
       `✅ Updated PageContentBlock instance name to: ${newInstanceName}`
     );
 
-    logger.info(
+    logger.debug(
       `✅ Updated PageContentBlock ${instanceId} to reference new ContentTemplate ${newContentTemplateId}`
     );
 
@@ -1204,7 +1204,7 @@ router.post("/unshare/:id", async (req, res) => {
     //     const blockInfoResult = await pool
     //       .request()
     //       .input("BlockID", sql.BigInt, instanceId).query(`
-    //         SELECT p.PageID, p.WebsiteID 
+    //         SELECT p.PageID, p.WebsiteID
     //         FROM PageContentBlocks pcb
     //         JOIN Pages p ON pcb.PageID = p.PageID
     //         WHERE pcb.ID = @BlockID

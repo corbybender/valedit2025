@@ -1,11 +1,11 @@
 // Logger fallback - ensure logger is always available
-if (typeof window.logger === 'undefined' || !window.logger) {
+if (typeof window.logger === "undefined" || !window.logger) {
   window.logger = {
-    info: (msg, meta) => console.log(`[INFO] ${msg}`, meta || ''),
-    warn: (msg, meta) => console.warn(`[WARN] ${msg}`, meta || ''),
-    error: (msg, meta) => console.error(`[ERROR] ${msg}`, meta || ''),
-    debug: (msg, meta) => console.log(`[DEBUG] ${msg}`, meta || ''),
-    verbose: (msg, meta) => console.log(`[VERBOSE] ${msg}`, meta || '')
+    info: (msg, meta) => console.log(`[INFO] ${msg}`, meta || ""),
+    warn: (msg, meta) => console.warn(`[WARN] ${msg}`, meta || ""),
+    error: (msg, meta) => console.error(`[ERROR] ${msg}`, meta || ""),
+    debug: (msg, meta) => console.log(`[DEBUG] ${msg}`, meta || ""),
+    verbose: (msg, meta) => console.log(`[VERBOSE] ${msg}`, meta || ""),
   };
 }
 
@@ -294,6 +294,59 @@ document.addEventListener("DOMContentLoaded", function () {
   logger.info("blockModal:", blockModal);
   logger.info("websiteId:", websiteId);
 
+  // --- Image Preview Functionality ---
+  const imagePreviewModal = document.getElementById("imagePreviewModal");
+  const previewImage = document.getElementById("previewImage");
+  const previewTitle = document.getElementById("previewTitle");
+
+  const showImagePreview = (imageSrc, title) => {
+    if (previewImage && previewTitle && imagePreviewModal) {
+      // Don't show preview for fallback images
+      if (imageSrc.includes("noimage.png")) {
+        return;
+      }
+
+      previewImage.src = imageSrc;
+      previewTitle.textContent = title;
+      imagePreviewModal.classList.remove("hidden");
+      // Force reflow to ensure the element is visible before adding show class
+      imagePreviewModal.offsetHeight;
+      imagePreviewModal.classList.add("show");
+    }
+  };
+
+  const hideImagePreview = () => {
+    if (imagePreviewModal) {
+      imagePreviewModal.classList.remove("show");
+      setTimeout(() => {
+        imagePreviewModal.classList.add("hidden");
+      }, 300);
+    }
+  };
+
+  // Close modal when clicking on backdrop
+  if (imagePreviewModal) {
+    imagePreviewModal.addEventListener("click", (e) => {
+      if (
+        e.target === imagePreviewModal ||
+        e.target.classList.contains("image-preview-backdrop")
+      ) {
+        hideImagePreview();
+      }
+    });
+  }
+
+  // Add keyboard support (ESC to close)
+  document.addEventListener("keydown", (e) => {
+    if (
+      e.key === "Escape" &&
+      imagePreviewModal &&
+      !imagePreviewModal.classList.contains("hidden")
+    ) {
+      hideImagePreview();
+    }
+  });
+
   // --- API Functions ---
   const api = {
     getBlocks: async (webId) => {
@@ -550,8 +603,26 @@ document.addEventListener("DOMContentLoaded", function () {
           // Ensure block.ID is properly handled
           const blockId = block.ID !== undefined ? block.ID : "";
 
+          // Generate thumbnail path from block name
+          const thumbnailName = (block.Name || "noimage")
+            .replace(/ /g, "-")
+            .replace(/[^a-zA-Z0-9\-_]/g, ""); // Remove special characters except dashes and underscores
+          const thumbnailPath = `/public/images/thumbnails/${thumbnailName}.jpg`;
+          const fallbackPath = `/public/images/thumbnails/noimage.png`;
+
           blockElement.innerHTML = `
             <div class="flex-grow">
+              <div class="mb-3">
+                <img 
+                  src="${thumbnailPath}" 
+                  alt="${block.Name || "Unnamed Block"}"
+                  class="w-full h-32 object-cover rounded-lg thumbnail-hover"
+                  onerror="this.src='${fallbackPath}'"
+                  loading="lazy"
+                  data-title="${block.Name || "Unnamed Block"}"
+                  title="Click to view larger image"
+                />
+              </div>
               <div class="flex justify-between items-start mb-2">
                 <h3 class="text-xl font-bold text-gray-800">${
                   block.Name || "Unnamed Block"
@@ -595,8 +666,26 @@ document.addEventListener("DOMContentLoaded", function () {
           const websiteId =
             block.WebsiteID !== undefined ? block.WebsiteID : "";
 
+          // Generate thumbnail path from block name
+          const sharedThumbnailName = (block.Name || "noimage")
+            .replace(/ /g, "-")
+            .replace(/[^a-zA-Z0-9\-_]/g, ""); // Remove special characters except dashes and underscores
+          const sharedThumbnailPath = `/public/images/thumbnails/${sharedThumbnailName}.jpg`;
+          const sharedFallbackPath = `/public/images/thumbnails/noimage.png`;
+
           blockElement.innerHTML = `
             <div class="flex-grow">
+              <div class="mb-3">
+                <img 
+                  src="${sharedThumbnailPath}" 
+                  alt="${block.Name || "Unnamed Shared Block"}"
+                  class="w-full h-32 object-cover rounded-lg thumbnail-hover"
+                  onerror="this.src='${sharedFallbackPath}'"
+                  loading="lazy"
+                  data-title="${block.Name || "Unnamed Shared Block"}"
+                  title="Click to view larger image"
+                />
+              </div>
               <div class="flex justify-between items-start mb-2">
                 <h3 class="text-xl font-bold text-green-800">${
                   block.Name || "Unnamed Shared Block"
@@ -628,6 +717,18 @@ document.addEventListener("DOMContentLoaded", function () {
       if (blocksList.children.length === 0) {
         blocksList.innerHTML = `<p class="text-gray-500 col-span-full">No content blocks match the selected filter.</p>`;
       }
+
+      // Add click event listeners to all thumbnail images
+      const thumbnailImages = blocksList.querySelectorAll(".thumbnail-hover");
+      thumbnailImages.forEach((img) => {
+        img.addEventListener("click", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const imageSrc = e.target.src;
+          const title = e.target.getAttribute("data-title");
+          showImagePreview(imageSrc, title);
+        });
+      });
     } catch (error) {
       blocksList.innerHTML = `<p class="text-red-500 col-span-full">Error loading content blocks: ${error.message}</p>`;
     }

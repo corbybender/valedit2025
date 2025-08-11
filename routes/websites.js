@@ -16,18 +16,17 @@ module.exports = (db) => {
     res.send("Websites router is working!");
   });
 
-
   // This route now renders the HTML page
   router.get("/", async (req, res) => {
     try {
       const authorID = req.session.authorID;
-      logger.info(
+      logger.debug(
         `🌐 Websites route - authorID: ${authorID}, sessionID: ${req.sessionID}`
       );
 
       if (!authorID) {
         // If there's no author in the session, they shouldn't be here.
-        logger.info("❌ No authorID in session, redirecting to login");
+        logger.debug("❌ No authorID in session, redirecting to login");
         return res.redirect("/auth/login");
       }
 
@@ -40,7 +39,7 @@ module.exports = (db) => {
           `SELECT COUNT(*) as AccessCount FROM dbo.AuthorWebsiteAccess WHERE AuthorID = @AuthorID`
         );
 
-      logger.info(
+      logger.debug(
         `🔍 Author ${authorID} has ${accessCheck.recordset[0].AccessCount} website access records.`
       );
 
@@ -52,7 +51,7 @@ module.exports = (db) => {
                 WHERE awa.AuthorID = @AuthorID AND w.IsActive = 1
                 ORDER BY w.Domain`);
 
-      logger.info(
+      logger.debug(
         `📋 Found ${result.recordset.length} accessible websites for author ${authorID}.`
       );
 
@@ -132,19 +131,23 @@ module.exports = (db) => {
 
   // Route to display pages for a specific website
   router.get("/:websiteId/website-pages", async (req, res) => {
-    console.log("🚨 ROUTE HIT: /websites/:websiteId/website-pages handler started");
+    console.log(
+      "🚨 ROUTE HIT: /websites/:websiteId/website-pages handler started"
+    );
     const { websiteId } = req.params;
     console.log("🚨 PARAMS EXTRACTED: websiteId =", websiteId);
-    
+
     try {
       // Validate websiteId
       if (!websiteId || isNaN(parseInt(websiteId))) {
         console.log(`❌ DEBUG: Invalid websiteId: ${websiteId}`);
-        return res.status(400).json({ error: 'Invalid website ID' });
+        return res.status(400).json({ error: "Invalid website ID" });
       }
 
-      console.log(`🔍 DEBUG: Starting /websites/${websiteId}/website-pages route`);
-      
+      console.log(
+        `🔍 DEBUG: Starting /websites/${websiteId}/website-pages route`
+      );
+
       const authorID = req.session.authorID;
       console.log(`🔍 DEBUG: AuthorID from session: ${authorID}`);
 
@@ -153,21 +156,22 @@ module.exports = (db) => {
         return res.redirect("/auth/login");
       }
 
-      console.log(`🔍 DEBUG: About to check database access for websiteId: ${websiteId}, authorID: ${authorID}`);
-      
+      console.log(
+        `🔍 DEBUG: About to check database access for websiteId: ${websiteId}, authorID: ${authorID}`
+      );
+
       // Check if user has access to this website
       const pool = await db;
       console.log(`🔍 DEBUG: Database pool obtained`);
-      
+
       if (!pool) {
-        throw new Error('Database connection not available');
+        throw new Error("Database connection not available");
       }
-      
+
       const accessCheck = await pool
         .request()
         .input("AuthorID", sql.Int, parseInt(authorID))
-        .input("WebsiteID", sql.Int, parseInt(websiteId))
-        .query(`
+        .input("WebsiteID", sql.Int, parseInt(websiteId)).query(`
           SELECT COUNT(*) as AccessCount 
           FROM dbo.AuthorWebsiteAccess 
           WHERE AuthorID = @AuthorID AND WebsiteID = @WebsiteID
@@ -176,8 +180,12 @@ module.exports = (db) => {
       console.log(`🔍 DEBUG: Access check result:`, accessCheck.recordset[0]);
 
       if (accessCheck.recordset[0].AccessCount === 0) {
-        console.log(`❌ DEBUG: User ${authorID} has no access to website ${websiteId}`);
-        return res.status(403).send("Access Denied: You don't have access to this website");
+        console.log(
+          `❌ DEBUG: User ${authorID} has no access to website ${websiteId}`
+        );
+        return res
+          .status(403)
+          .send("Access Denied: You don't have access to this website");
       }
 
       console.log(`🔍 DEBUG: Access granted, fetching website info`);
@@ -196,14 +204,15 @@ module.exports = (db) => {
       }
 
       const website = websiteResult.recordset[0];
-      console.log(`🔍 DEBUG: About to render pages view for website: ${website.Domain}`);
+      console.log(
+        `🔍 DEBUG: About to render pages view for website: ${website.Domain}`
+      );
 
       // Get all pages for this website
       console.log(`🔍 DEBUG: Fetching pages for website ${websiteId}`);
       const pagesResult = await pool
         .request()
-        .input("websiteId", sql.Int, parseInt(websiteId))
-        .query(`
+        .input("websiteId", sql.Int, parseInt(websiteId)).query(`
           SELECT 
             PageID, 
             Title, 
@@ -216,7 +225,7 @@ module.exports = (db) => {
         `);
 
       console.log(`🔍 DEBUG: Found ${pagesResult.recordset.length} pages`);
-      
+
       // Build page tree structure
       const pages = pagesResult.recordset;
       let pageTree = [];
@@ -228,7 +237,7 @@ module.exports = (db) => {
             ...page,
             children: [],
             syncStatus: {
-              status: 'COMPLETED', // Default status for now
+              status: "COMPLETED", // Default status for now
               changeType: null,
               queuedAt: null,
             },
@@ -245,37 +254,41 @@ module.exports = (db) => {
         }
       }
 
-      console.log(`🔍 DEBUG: Built page tree with ${pageTree.length} root pages`);
+      console.log(
+        `🔍 DEBUG: Built page tree with ${pageTree.length} root pages`
+      );
 
       // Render the pages view for this website
       res.render("pages/pages", {
         title: `Pages - ${website.Domain}`,
         user: {
-          name: 'User',
-          initials: 'U',
-          username: 'user',
-          loginMethod: 'Local',
+          name: "User",
+          initials: "U",
+          username: "user",
+          loginMethod: "Local",
           isAdmin: false,
         },
         currentWorkingSite: {
           WebsiteID: parseInt(websiteId),
-          WebsiteName: website.Domain
+          WebsiteName: website.Domain,
         },
         website: website,
         pageTree: pageTree, // Actual pages from database
-        currentSort: 'title',
+        currentSort: "title",
       });
 
       console.log(`✅ DEBUG: Successfully rendered pages view`);
-
     } catch (err) {
-      console.error(`❌ DEBUG: Error in /websites/${websiteId}/website-pages route:`, err);
+      console.error(
+        `❌ DEBUG: Error in /websites/${websiteId}/website-pages route:`,
+        err
+      );
       console.error(`❌ DEBUG: Error stack:`, err.stack);
       console.error(`❌ DEBUG: Error name:`, err.name);
       console.error(`❌ DEBUG: Error code:`, err.code);
-      
+
       // Try to use logger if available, otherwise use console
-      if (typeof logger !== 'undefined') {
+      if (typeof logger !== "undefined") {
         logger.error(`Error in /websites/${websiteId}/website-pages route`, {
           error: err,
           errorMessage: err.message,
@@ -284,15 +297,15 @@ module.exports = (db) => {
           sessionID: req.sessionID,
           authorID: req.session?.authorID,
           websiteId: websiteId,
-          stack: err.stack
+          stack: err.stack,
         });
       }
 
       res.status(500).json({
-        error: 'Internal Server Error',
+        error: "Internal Server Error",
         message: err.message,
-        code: err.code || 'UNKNOWN_ERROR',
-        details: process.env.NODE_ENV === 'development' ? err.stack : undefined
+        code: err.code || "UNKNOWN_ERROR",
+        details: process.env.NODE_ENV === "development" ? err.stack : undefined,
       });
     }
   });

@@ -27,36 +27,36 @@ const debugLog = (message, data = null) => {
 // CREATE new shared block
 router.post("/", async (req, res) => {
   try {
-    logger.info("\n=== NEW SHARED BLOCK CREATION REQUEST ===");
-    logger.info("Timestamp:", new Date().toISOString());
+    logger.debug("\n=== NEW SHARED BLOCK CREATION REQUEST ===");
+    logger.debug("Timestamp:", new Date().toISOString());
     debugLog("[DEBUG] POST /api/sharedcontent - Request body:", req.body);
-    logger.info("[DEBUG] Session data:", req.session);
+    logger.debug("[DEBUG] Session data:", req.session);
 
     const { WebsiteID, Name, Description, HtmlContent, CssContent, JsContent } =
       req.body;
     const authorID = req.session.authorID;
 
-    logger.info("[DEBUG] Extracted values:");
-    logger.info("  - WebsiteID:", WebsiteID);
-    logger.info("  - Name:", Name);
-    logger.info("  - Description:", Description);
-    logger.info(
+    logger.debug("[DEBUG] Extracted values:");
+    logger.debug("  - WebsiteID:", WebsiteID);
+    logger.debug("  - Name:", Name);
+    logger.debug("  - Description:", Description);
+    logger.debug(
       "  - HtmlContent length:",
       HtmlContent ? HtmlContent.length : 0
     );
-    logger.info("  - CssContent length:", CssContent ? CssContent.length : 0);
-    logger.info("  - JsContent length:", JsContent ? JsContent.length : 0);
-    logger.info("  - AuthorID:", authorID);
+    logger.debug("  - CssContent length:", CssContent ? CssContent.length : 0);
+    logger.debug("  - JsContent length:", JsContent ? JsContent.length : 0);
+    logger.debug("  - AuthorID:", authorID);
 
     if (!authorID || !WebsiteID || !Name) {
-      logger.info("[DEBUG] Validation failed - missing required fields");
+      logger.debug("[DEBUG] Validation failed - missing required fields");
       return res
         .status(400)
         .json({ error: "AuthorID, WebsiteID, and Name are required." });
     }
 
     // Validate that the author has access to the website before creating shared content
-    logger.info("[DEBUG] Creating validation request...");
+    logger.debug("[DEBUG] Creating validation request...");
     const pool = await db;
     const validateRequest = pool.request();
     validateRequest.input("AuthorID", sql.Int, authorID);
@@ -67,61 +67,61 @@ router.post("/", async (req, res) => {
     );
 
     if (validateAccess.recordset.length === 0) {
-      logger.info("[DEBUG] Access validation failed - no access to website");
+      logger.debug("[DEBUG] Access validation failed - no access to website");
       return res
         .status(403)
         .json({ error: "You do not have access to this website." });
     }
 
     // Proceed with creating shared content
-    logger.info("[DEBUG] Access validation passed, proceeding with creation");
+    logger.debug("[DEBUG] Access validation passed, proceeding with creation");
     const now = new Date();
     const request = pool.request();
 
-    logger.info("[DEBUG] Setting up SQL parameters:");
+    logger.debug("[DEBUG] Setting up SQL parameters:");
     request.input("WebsiteID", sql.BigInt, parseInt(WebsiteID));
-    logger.info("  - WebsiteID parameter set:", parseInt(WebsiteID));
+    logger.debug("  - WebsiteID parameter set:", parseInt(WebsiteID));
 
     request.input("Name", sql.NVarChar, Name);
-    logger.info("  - Name parameter set:", Name);
+    logger.debug("  - Name parameter set:", Name);
 
     request.input("Description", sql.NVarChar, Description || "");
-    logger.info("  - Description parameter set:", Description || "");
+    logger.debug("  - Description parameter set:", Description || "");
 
     request.input("HtmlContent", sql.NVarChar, HtmlContent || "");
-    logger.info(
+    logger.debug(
       "  - HtmlContent parameter set, length:",
       (HtmlContent || "").length
     );
 
     request.input("CssContent", sql.NVarChar, CssContent || "");
-    logger.info(
+    logger.debug(
       "  - CssContent parameter set, length:",
       (CssContent || "").length
     );
-    logger.info("  - CssContent value:", CssContent || "");
+    logger.debug("  - CssContent value:", CssContent || "");
 
     request.input("JsContent", sql.NVarChar, JsContent || "");
-    logger.info(
+    logger.debug(
       "  - JsContent parameter set, length:",
       (JsContent || "").length
     );
-    logger.info("  - JsContent value:", JsContent || "");
+    logger.debug("  - JsContent value:", JsContent || "");
 
     request.input("CreatedAt", sql.DateTime2, now);
-    logger.info("  - CreatedAt parameter set:", now);
+    logger.debug("  - CreatedAt parameter set:", now);
 
     request.input("UpdatedAt", sql.DateTime2, now);
-    logger.info("  - UpdatedAt parameter set:", now);
+    logger.debug("  - UpdatedAt parameter set:", now);
 
     const sqlQuery = `INSERT INTO SharedContent (WebsiteID, Name, Description, HtmlContent, CssContent, JsContent, CreatedAt, UpdatedAt)
        VALUES (@WebsiteID, @Name, @Description, @HtmlContent, @CssContent, @JsContent, @CreatedAt, @UpdatedAt)`;
 
-    logger.info("[DEBUG] Executing SQL query:", sqlQuery);
+    logger.debug("[DEBUG] Executing SQL query:", sqlQuery);
 
     const result = await request.query(sqlQuery);
 
-    logger.info("[DEBUG] SQL query executed successfully, result:", result);
+    logger.debug("[DEBUG] SQL query executed successfully, result:", result);
     debugLog("[CRITICAL] CSS and JS values being saved:", {
       CssContent: CssContent || "EMPTY",
       JsContent: JsContent || "EMPTY",
@@ -171,11 +171,11 @@ router.post("/", async (req, res) => {
 // UPDATE shared block
 router.put("/:id", async (req, res) => {
   try {
-    logger.info("\n=== SHARED BLOCK UPDATE REQUEST RECEIVED ===");
-    logger.info("Timestamp:", new Date().toISOString());
-    logger.info("PUT /api/sharedcontent/:id - ID:", req.params.id);
-    logger.info("Request body:", JSON.stringify(req.body, null, 2));
-    logger.info("Is PUT request reaching backend? YES");
+    logger.debug("\n=== SHARED BLOCK UPDATE REQUEST RECEIVED ===");
+    logger.debug("Timestamp:", new Date().toISOString());
+    logger.debug("PUT /api/sharedcontent/:id - ID:", req.params.id);
+    logger.debug("Request body:", JSON.stringify(req.body, null, 2));
+    logger.debug("Is PUT request reaching backend? YES");
 
     logger.log(
       "ROUTE_START",
@@ -188,8 +188,8 @@ router.put("/:id", async (req, res) => {
       req.headers
     );
 
-    logger.info("[DEBUG] PUT /api/sharedcontent/:id - ID:", req.params.id);
-    logger.info(
+    logger.debug("[DEBUG] PUT /api/sharedcontent/:id - ID:", req.params.id);
+    logger.debug(
       "[DEBUG] PUT /api/sharedcontent/:id - Request body:",
       JSON.stringify(req.body, null, 2)
     );
@@ -197,18 +197,18 @@ router.put("/:id", async (req, res) => {
     const { id } = req.params;
     const { Name, Description, HtmlContent, CssContent, JsContent } = req.body;
 
-    logger.info("[DEBUG] Extracted values for update:");
-    logger.info("  - ID:", id);
-    logger.info("  - Name:", Name);
-    logger.info("  - Description:", Description);
-    logger.info(
+    logger.debug("[DEBUG] Extracted values for update:");
+    logger.debug("  - ID:", id);
+    logger.debug("  - Name:", Name);
+    logger.debug("  - Description:", Description);
+    logger.debug(
       "  - HtmlContent length:",
       HtmlContent ? HtmlContent.length : 0
     );
-    logger.info("  - CssContent length:", CssContent ? CssContent.length : 0);
-    logger.info("  - CssContent value:", CssContent || "");
-    logger.info("  - JsContent length:", JsContent ? JsContent.length : 0);
-    logger.info("  - JsContent value:", JsContent || "");
+    logger.debug("  - CssContent length:", CssContent ? CssContent.length : 0);
+    logger.debug("  - CssContent value:", CssContent || "");
+    logger.debug("  - JsContent length:", JsContent ? JsContent.length : 0);
+    logger.debug("  - JsContent value:", JsContent || "");
 
     const now = new Date();
 
@@ -228,48 +228,48 @@ router.put("/:id", async (req, res) => {
 
     const pool = await db;
     const request = pool.request();
-    logger.info("[DEBUG] Setting up SQL parameters for update:");
+    logger.debug("[DEBUG] Setting up SQL parameters for update:");
     request.input("id", sql.BigInt, parseInt(id));
-    logger.info("  - ID parameter set:", parseInt(id));
+    logger.debug("  - ID parameter set:", parseInt(id));
 
     request.input("Name", sql.NVarChar, Name);
-    logger.info("  - Name parameter set:", Name);
+    logger.debug("  - Name parameter set:", Name);
 
     request.input("Description", sql.NVarChar, Description || "");
-    logger.info("  - Description parameter set:", Description || "");
+    logger.debug("  - Description parameter set:", Description || "");
 
     request.input("HtmlContent", sql.NVarChar, HtmlContent || "");
-    logger.info(
+    logger.debug(
       "  - HtmlContent parameter set, length:",
       (HtmlContent || "").length
     );
 
     request.input("CssContent", sql.NVarChar, CssContent || "");
-    logger.info(
+    logger.debug(
       "  - CssContent parameter set, length:",
       (CssContent || "").length
     );
-    logger.info("  - CssContent value:", CssContent || "");
+    logger.debug("  - CssContent value:", CssContent || "");
 
     request.input("JsContent", sql.NVarChar, JsContent || "");
-    logger.info(
+    logger.debug(
       "  - JsContent parameter set, length:",
       (JsContent || "").length
     );
-    logger.info("  - JsContent value:", JsContent || "");
+    logger.debug("  - JsContent value:", JsContent || "");
 
     request.input("UpdatedAt", sql.DateTime2, now);
-    logger.info("  - UpdatedAt parameter set:", now);
+    logger.debug("  - UpdatedAt parameter set:", now);
 
     // Split into two separate queries to avoid multi-statement issues
     const updateQuery = `UPDATE SharedContent SET Name=@Name, Description=@Description, HtmlContent=@HtmlContent, CssContent=@CssContent, JsContent=@JsContent, UpdatedAt=@UpdatedAt WHERE SharedBlockID=@id`;
     const selectQuery = `SELECT * FROM SharedContent WHERE SharedBlockID=@id`;
 
-    logger.info("[DEBUG] Executing UPDATE SQL query:", updateQuery);
+    logger.debug("[DEBUG] Executing UPDATE SQL query:", updateQuery);
 
-    logger.info("\n=== EXECUTING SQL UPDATE ===");
-    logger.info("Update Query:", updateQuery);
-    logger.info("Select Query:", selectQuery);
+    logger.debug("\n=== EXECUTING SQL UPDATE ===");
+    logger.debug("Update Query:", updateQuery);
+    logger.debug("Select Query:", selectQuery);
 
     logger.log("SQL_EXECUTE", "Executing SharedContent UPDATE query", {
       updateQuery,
@@ -278,11 +278,11 @@ router.put("/:id", async (req, res) => {
 
     // Execute update first
     const updateResult = await request.query(updateQuery);
-    logger.info("Update result:", updateResult);
+    logger.debug("Update result:", updateResult);
 
     // Then execute select to get updated record
     const selectResult = await request.query(selectQuery);
-    logger.info("Select result:", selectResult);
+    logger.debug("Select result:", selectResult);
 
     // Combine results to match expected structure
     const result = {
@@ -290,15 +290,15 @@ router.put("/:id", async (req, res) => {
       rowsAffected: updateResult.rowsAffected,
     };
 
-    logger.info("\n=== SQL UPDATE COMPLETED ===");
-    logger.info("Rows affected:", result.rowsAffected);
-    logger.info("Recordsets length:", result.recordsets.length);
-    logger.info("About to check recordsets structure...");
+    logger.debug("\n=== SQL UPDATE COMPLETED ===");
+    logger.debug("Rows affected:", result.rowsAffected);
+    logger.debug("Recordsets length:", result.recordsets.length);
+    logger.debug("About to check recordsets structure...");
 
     // Debug: Log the actual structure
-    logger.info("result.recordsets:", result.recordsets);
-    logger.info("result.recordsets[0]:", result.recordsets[0]);
-    logger.info("result.recordsets[1]:", result.recordsets[1]);
+    logger.debug("result.recordsets:", result.recordsets);
+    logger.debug("result.recordsets[0]:", result.recordsets[0]);
+    logger.debug("result.recordsets[1]:", result.recordsets[1]);
 
     logger.log("SQL_RESULT", "SharedContent UPDATE query completed", {
       recordsetsLength: result.recordsets.length,
@@ -306,29 +306,29 @@ router.put("/:id", async (req, res) => {
       updatedRecord: result.recordsets[1] ? result.recordsets[1][0] : null,
     });
 
-    logger.info("[DEBUG] UPDATE SQL query executed successfully");
-    logger.info("[DEBUG] Result recordsets length:", result.recordsets.length);
+    logger.debug("[DEBUG] UPDATE SQL query executed successfully");
+    logger.debug("[DEBUG] Result recordsets length:", result.recordsets.length);
     if (result.recordsets[1]) {
-      logger.info(
+      logger.debug(
         "[DEBUG] Updated record:",
         JSON.stringify(result.recordsets[1][0], null, 2)
       );
     }
 
     // Check if we have the expected recordsets
-    logger.info("DEBUG: Checking recordsets...");
-    logger.info("DEBUG: recordsets.length =", result.recordsets.length);
-    logger.info("DEBUG: recordsets[0] exists =", !!result.recordsets[0]);
-    logger.info("DEBUG: recordsets[1] exists =", !!result.recordsets[1]);
+    logger.debug("DEBUG: Checking recordsets...");
+    logger.debug("DEBUG: recordsets.length =", result.recordsets.length);
+    logger.debug("DEBUG: recordsets[0] exists =", !!result.recordsets[0]);
+    logger.debug("DEBUG: recordsets[1] exists =", !!result.recordsets[1]);
 
     if (!result.recordsets[1] || result.recordsets[1].length === 0) {
-      logger.info("ERROR: Second recordset not found or empty");
+      logger.debug("ERROR: Second recordset not found or empty");
       return res.status(404).json({ error: "Shared block not found." });
     }
 
     // Also update the corresponding ContentTemplate to keep shared blocks in sync
     const sharedTemplateSlug = `shared-block-${id}`;
-    logger.info(
+    logger.debug(
       `[DEBUG] Updating ContentTemplate with slug: ${sharedTemplateSlug}`
     );
 
@@ -345,16 +345,16 @@ router.put("/:id", async (req, res) => {
           "UPDATE ContentTemplates SET Name = @Name, HtmlContent = @HtmlContent, CssContent = @CssContent, JsContent = @JsContent, UpdatedAt = @UpdatedAt WHERE Slug = @Slug"
         );
 
-      logger.info(
+      logger.debug(
         `[DEBUG] ContentTemplate update result: ${updateTemplateResult.rowsAffected[0]} rows affected`
       );
 
       if (updateTemplateResult.rowsAffected[0] > 0) {
-        logger.info(
+        logger.debug(
           `[DEBUG] Successfully updated ContentTemplate for shared block ${id}`
         );
       } else {
-        logger.info(
+        logger.debug(
           `[DEBUG] No ContentTemplate found with slug ${sharedTemplateSlug} - this is normal if the shared block hasn't been used on any pages yet`
         );
       }
@@ -371,7 +371,7 @@ router.put("/:id", async (req, res) => {
       updatedRecord = result.recordsets[1][0];
     } else {
       // If second recordset doesn't exist, fetch the record separately
-      logger.info(
+      logger.debug(
         "WARNING: Second recordset not found, fetching updated record separately"
       );
       const fetchRequest = pool.request();
@@ -383,8 +383,8 @@ router.put("/:id", async (req, res) => {
     }
 
     logger.info(
-      "SUCCESS: SharedContent update completed, returning record:",
-      updatedRecord
+      "Shared content block updated successfully",
+      { blockName: Name, id: parseInt(id) }
     );
 
     logger.log(
@@ -428,7 +428,7 @@ router.put("/:id", async (req, res) => {
       err.message &&
       err.message.includes("Cannot read properties of undefined")
     ) {
-      logger.info(
+      logger.debug(
         "EMERGENCY FIX: Detected post-update JS error, attempting to return success anyway"
       );
       try {
@@ -440,7 +440,7 @@ router.put("/:id", async (req, res) => {
         );
 
         if (emergencyResult.recordset && emergencyResult.recordset[0]) {
-          logger.info("EMERGENCY FIX: Record found, returning success");
+          logger.debug("EMERGENCY FIX: Record found, returning success");
           return res.json(emergencyResult.recordset[0]);
         }
       } catch (emergencyErr) {
@@ -492,34 +492,34 @@ router.get("/website/:websiteId", async (req, res) => {
     request.input("websiteId", sql.BigInt, parseInt(websiteId));
 
     const sqlQuery = `SELECT * FROM SharedContent WHERE WebsiteID=@websiteId`;
-    logger.info("[DEBUG] Executing GET query:", sqlQuery);
-    logger.info("[DEBUG] With websiteId parameter:", parseInt(websiteId));
+    logger.debug("[DEBUG] Executing GET query:", sqlQuery);
+    logger.debug("[DEBUG] With websiteId parameter:", parseInt(websiteId));
 
     const result = await request.query(sqlQuery);
 
-    logger.info("[DEBUG] GET query executed successfully");
-    logger.info("[DEBUG] Number of records found:", result.recordset.length);
+    logger.debug("[DEBUG] GET query executed successfully");
+    logger.debug("[DEBUG] Number of records found:", result.recordset.length);
 
     if (result.recordset.length > 0) {
-      logger.info(
+      logger.debug(
         "[DEBUG] Sample record (first one):",
         JSON.stringify(result.recordset[0], null, 2)
       );
       result.recordset.forEach((record, index) => {
-        logger.info(`[DEBUG] Record ${index + 1}:`);
-        logger.info(`  - Name: ${record.Name}`);
-        logger.info(
+        logger.debug(`[DEBUG] Record ${index + 1}:`);
+        logger.debug(`  - Name: ${record.Name}`);
+        logger.debug(
           `  - CssContent length: ${
             record.CssContent ? record.CssContent.length : 0
           }`
         );
-        logger.info(
+        logger.debug(
           `  - JsContent length: ${
             record.JsContent ? record.JsContent.length : 0
           }`
         );
-        logger.info(`  - CssContent value: ${record.CssContent || "NULL"}`);
-        logger.info(`  - JsContent value: ${record.JsContent || "NULL"}`);
+        logger.debug(`  - CssContent value: ${record.CssContent || "NULL"}`);
+        logger.debug(`  - JsContent value: ${record.JsContent || "NULL"}`);
       });
     }
 

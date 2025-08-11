@@ -26,7 +26,7 @@ async function checkSharedContentTable() {
       logger.info("SharedContent table structure:");
       console.table(structure.recordset);
     } else {
-      logger.info("SharedContent table does not exist");
+      logger.warn("SharedContent table does not exist");
     }
 
     // Close connection

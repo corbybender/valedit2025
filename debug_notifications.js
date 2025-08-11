@@ -31,15 +31,15 @@ async function debugNotificationIssue() {
     logger.info("\n2. Testing GET /api/notifications route requirements:");
 
     // Simulate a request without session (what might be happening)
-    logger.info("   Testing without session...");
+    logger.debug("   Testing without session...");
     const mockReqWithoutSession = { session: null };
     const userId1 = mockReqWithoutSession.session?.authorID;
-    logger.info(
+    logger.debug(
       `   - userId from session: ${userId1} (should be undefined/null)`
     );
 
     // Simulate a request with session
-    logger.info("   Testing with session...");
+    logger.debug("   Testing with session...");
     const mockReqWithSession = {
       session: {
         authorID: 5,
@@ -47,10 +47,10 @@ async function debugNotificationIssue() {
       },
     };
     const userId2 = mockReqWithSession.session?.authorID;
-    logger.info(`   - userId from session: ${userId2} (should be 5)`);
+    logger.debug(`   - userId from session: ${userId2} (should be 5)`);
 
     if (userId2) {
-      logger.info("   - Session valid, would proceed with query");
+      logger.debug("   - Session valid, would proceed with query");
 
       // Show what the actual route returns
       const notificationsResult = await db
@@ -67,11 +67,11 @@ async function debugNotificationIssue() {
           OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY
         `);
 
-      logger.info(
+      logger.debug(
         `   - Would return ${notificationsResult.recordset.length} notifications`
       );
     } else {
-      logger.info("   - No session, would return 401 error");
+      logger.debug("   - No session, would return 401 error");
     }
 
     // Check what pages are being served and how they authenticate

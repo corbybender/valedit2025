@@ -10,9 +10,9 @@ const NotificationService = require("../src/services/notificationService");
 // Publish a page
 router.post("/:id/publish", async (req, res) => {
   const pageId = req.params.id;
-  logger.info(`--- PUBLISH PAGE ${pageId} ---`);
+  logger.info(`📄 Publishing page ${pageId}`);
   const { zoneContent } = req.body;
-  logger.info("Received zoneContent:", JSON.stringify(zoneContent, null, 2));
+  logger.debug("Received zoneContent:", JSON.stringify(zoneContent, null, 2));
 
   if (!zoneContent) {
     return res.status(400).json({ error: "zoneContent is required." });
@@ -28,10 +28,10 @@ router.post("/:id/publish", async (req, res) => {
 
     if (pageResult.recordset.length === 0) throw new Error("Page not found.");
     const pageData = pageResult.recordset[0];
-    logger.info("Page data fetched:", pageData.Title);
+    logger.debug("Page data fetched:", pageData.Title);
 
     // Debug authentication data
-    logger.info("🔍 Authentication Debug for Publish:", {
+    logger.debug("🔍 Authentication Debug for Publish:", {
       sessionAuthorID: req.session?.authorID,
       localsAuthorID: res.locals?.authorID,
       sessionUserInfo: req.session?.userInfo,
@@ -44,7 +44,7 @@ router.post("/:id/publish", async (req, res) => {
     // Manually queue the page sync
     const authorID = req.session?.authorID || res.locals?.authorID;
     if (authorID) {
-      logger.info(
+      logger.debug(
         `🔄 Attempting to queue page sync for PageID: ${pageId}, AuthorID: ${authorID}`
       );
       // try {
@@ -64,7 +64,7 @@ router.post("/:id/publish", async (req, res) => {
       //   });
       // }
     } else {
-      logger.info("⚠️ No user authentication found - skipping sync queue", {
+      logger.warn("⚠️ No user authentication found - skipping sync queue", {
         sessionAuthorID: req.session?.authorID,
         localsAuthorID: res.locals?.authorID,
         hasSession: !!req.session,
@@ -79,7 +79,7 @@ router.post("/:id/publish", async (req, res) => {
 
     if (templateResult.recordset.length === 0)
       throw new Error("Page Template not found.");
-    logger.info("Page layout template fetched.");
+    logger.debug("Page layout template fetched.");
 
     const allTemplateIds = Object.values(zoneContent)
       .flat()
@@ -93,11 +93,11 @@ router.post("/:id/publish", async (req, res) => {
           !isNaN(parseInt(id))
       ); // Filter out null, undefined, "empty", "javascript", "css", and non-numeric values
 
-    logger.info("Filtered numeric template IDs for query:", allTemplateIds);
+    logger.debug("Filtered numeric template IDs for query:", allTemplateIds);
 
     let contentTemplateMap = {};
     if (allTemplateIds.length > 0) {
-      logger.info("Fetching content templates from DB...");
+      logger.debug("Fetching content templates from DB...");
       const contentTemplatesResult = await pool
         .request()
         .query(
@@ -109,7 +109,7 @@ router.post("/:id/publish", async (req, res) => {
         map[t.ID] = t;
         return map;
       }, {});
-      logger.info(
+      logger.debug(
         `Mapped ${Object.keys(contentTemplateMap).length} content templates.`
       );
     }
@@ -118,11 +118,11 @@ router.post("/:id/publish", async (req, res) => {
       decodeEntities: false,
     });
 
-    logger.info("Processing zones with Cheerio...");
+    logger.debug("Processing zones with Cheerio...");
     for (const zoneId in zoneContent) {
       const placeholder = $(`#${zoneId}`);
       if (placeholder.length) {
-        logger.info(`- Found placeholder for zone: #${zoneId}`);
+        logger.debug(`- Found placeholder for zone: #${zoneId}`);
         const blocks = zoneContent[zoneId];
         const finalContent = blocks
           .map((block) => {
@@ -131,7 +131,7 @@ router.post("/:id/publish", async (req, res) => {
               block.id === "javascript" ||
               block.id === "css"
             ) {
-              logger.info(`  - Handling '${block.id}' block.`);
+              logger.debug(`  - Handling '${block.id}' block.`);
               // These blocks store their content in PageContentBlocks, not templates
               // For publishing, we need to fetch their actual content
               // For now, return a placeholder div - this could be enhanced to fetch the actual content
@@ -139,7 +139,7 @@ router.post("/:id/publish", async (req, res) => {
             }
             const template = contentTemplateMap[block.id];
             if (template) {
-              logger.info(
+              logger.debug(
                 `  - Appending template ID: ${block.id} ('${template.Name}')`
               );
               return `<div data-template-id="${template.ID}">${template.HtmlContent}</div>`;
@@ -156,7 +156,7 @@ router.post("/:id/publish", async (req, res) => {
     }
 
     const finalHtml = $.html();
-    logger.info("Final HTML generated. Length:", finalHtml.length);
+    logger.debug("Final HTML generated. Length:", finalHtml.length);
 
     // Here you would typically save the finalHtml to a file or another database table.
     // For this example, we'll just log it and send success.

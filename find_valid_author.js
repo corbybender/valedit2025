@@ -14,7 +14,7 @@ async function findValidAuthor() {
 
     logger.info("\n📋 Available Authors:");
     authorsResult.recordset.forEach((author) => {
-      logger.info(`   Author record:`, author);
+      logger.debug(`   Author record:`, author);
     });
 
     // Also check existing notifications to see what AuthorIDs are being used

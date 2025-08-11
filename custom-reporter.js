@@ -11,11 +11,11 @@ class CustomReporter {
       );
 
       test.testResults.forEach((assertion) => {
-        logger.info(
-          assertion.status === "failed"
-            ? chalk.red(`  ❌ ${assertion.title}`)
-            : chalk.green(`  ✅ ${assertion.title}`)
-        );
+        if (assertion.status === "failed") {
+          logger.error(`  ❌ ${assertion.title}`);
+        } else {
+          logger.debug(`  ✅ ${assertion.title}`);
+        }
       });
     });
   }

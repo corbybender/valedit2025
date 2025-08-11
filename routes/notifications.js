@@ -7,18 +7,18 @@ const db = require("../db");
 // Get user notifications with pagination
 router.get("/", async (req, res) => {
   try {
-    logger.info("🔔 GET /api/notifications called");
-    logger.info("🔔 Session:", req.session ? "exists" : "null");
-    logger.info("🔔 AuthorID:", req.session?.authorID);
-    logger.info("🔔 User Agent:", req.get("User-Agent")?.substring(0, 50));
+    logger.debug("🔔 GET /api/notifications called");
+    logger.debug("🔔 Session:", req.session ? "exists" : "null");
+    logger.debug("🔔 AuthorID:", req.session?.authorID);
+    logger.debug("🔔 User Agent:", req.get("User-Agent")?.substring(0, 50));
 
     const userId = req.session?.authorID;
     if (!userId) {
-      logger.info("🔔 Authentication failed - no userId in session");
+      logger.debug("🔔 Authentication failed - no userId in session");
       return res.status(401).json({ error: "User not authenticated" });
     }
 
-    logger.info(`🔔 Fetching notifications for user ${userId}`);
+    logger.debug(`🔔 Fetching notifications for user ${userId}`);
 
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 50;
@@ -76,7 +76,7 @@ router.get("/", async (req, res) => {
       hasMore: offset + limit < totalCount,
     };
 
-    logger.info(
+    logger.debug(
       `🔔 Returning ${response.notifications.length} notifications, ${response.unreadCount} unread`
     );
     res.json(response);

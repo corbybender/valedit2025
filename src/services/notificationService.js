@@ -1,7 +1,6 @@
 const sql = require("mssql");
 const db = require("../../db");
 
-
 /**
  * Notification Service
  * Centralized service for creating notifications across all routes and actions
@@ -477,7 +476,7 @@ class NotificationService {
 
     // Temporarily disable authentication notifications to prevent WebsiteID issues
     // TODO: Fix WebsiteID column requirement in Notifications table
-    logger.info(
+    logger.debug(
       `📢 Auth notification (disabled): ${action} ${
         success ? "successful" : "failed"
       }${additionalInfo ? ` - ${additionalInfo}` : ""}`

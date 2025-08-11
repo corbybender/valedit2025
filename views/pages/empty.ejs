@@ -3,29 +3,32 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dashboard</title>
+    <title>Dashboard - <%= process.env.APP_NAME || 'ValEdit' %></title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
     <link
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
       rel="stylesheet"
     />
     <link href="/public/css/dashboard.css" rel="stylesheet" />
   </head>
-  <body>
-    <div class="dashboard-container">
-      <!-- Sidebar -->
-      <%- include('../partials/sidebar') %>
+  <body class="bg-gray-50">
+    <!-- Tailwind Megamenu -->
+    <%- include('../partials/tailwind-megamenu') %>
 
-      <!-- Main Content -->
-      <div class="main-content">
-        <!-- Header -->
-        <%- include('../partials/header') %>
-
-        <!-- Content -->
-        <main class="content">
-         
-        </main>
+    <!-- Main Content -->
+    <main class="w-full px-2 py-8">
+      <div class="bg-white p-8 rounded-lg shadow-lg">
+        <h1 class="text-3xl font-bold text-gray-800 mb-4">
+          Welcome to ValEdit
+        </h1>
+        <p class="text-gray-600">
+          This is an empty page template. You can customize it as needed.
+        </p>
       </div>
-    </div>
+    </main>
 
     <script src="/public/js/dashboard.js"></script>
   </body>

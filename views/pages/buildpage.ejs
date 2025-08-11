@@ -30,15 +30,12 @@
       const currentWorkingSite = <%- JSON.stringify(typeof currentWorkingSite !== 'undefined' ? currentWorkingSite : null) %>;
     </script>
   </head>
-  <body>
-    <div class="dashboard-container">
-      <!-- Sidebar -->
-      <%- include('../partials/sidebar') %>
+  <body class="bg-gray-50">
+    <!-- Tailwind Megamenu -->
+    <%- include('../partials/tailwind-megamenu') %>
 
-      <!-- Main Content -->
-      <div class="main-content">
-        <!-- Header -->
-        <%- include('../partials/header') %>
+    <!-- Main Content -->
+    <main class="w-full px-2 py-8">
 
         <!-- Content -->
         <main
@@ -586,12 +583,9 @@
           </div>
 
           <% } %>
-        </main>
-      </div>
-    </div>
+    </main>
 
     <script src="/public/js/frontend-logger.js"></script>
-    <script src="/public/js/sidebar.js"></script>
     <script src="/public/js/dashboard.js"></script>
     <script src="/public/js/buildpage.js?v=20250127-1530"></script>
     <script src="/public/js/image-picker.js"></script>

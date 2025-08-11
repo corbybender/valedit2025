@@ -1,5 +1,5 @@
 const isAuthenticated = (req, res, next) => {
-  logger.info("🔐 Auth Check:", {
+  logger.debug("🔐 Auth Check:", {
     hasSession: !!req.session,
     hasUserInfo: !!req.session?.userInfo,
     authorID: req.session?.authorID,
@@ -12,19 +12,19 @@ const isAuthenticated = (req, res, next) => {
   if (req.session?.userInfo) {
     // Touch the session to extend its life
     req.session.touch();
-    logger.info("✅ User authenticated, session extended for path:", req.path);
+    logger.debug("✅ User authenticated, session extended for path:", req.path);
     return next();
   }
 
-  logger.info("❌ User not authenticated, path:", req.path);
+  logger.debug("❌ User not authenticated, path:", req.path);
 
   // For API routes, return JSON error instead of redirect
   if (req.path.startsWith("/api/")) {
-    logger.info("🚫 API route - returning 401 JSON response");
+    logger.debug("🚫 API route - returning 401 JSON response");
     return res.status(401).json({ error: "User not authenticated" });
   }
 
-  logger.info("🔄 Non-API route - redirecting to login");
+  logger.debug("🔄 Non-API route - redirecting to login");
   res.redirect("/auth/login");
 };
 

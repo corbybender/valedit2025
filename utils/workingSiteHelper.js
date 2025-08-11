@@ -1,7 +1,7 @@
 // utils/workingSiteHelper.js
 const db = require("../db"); // Use the shared database pool
 const sql = require("mssql"); // Use mssql for data types like sql.Int
-const logger = require("./logger");
+// const logger = require("./logger"); // logger is global
 
 /**
  * Get all websites from database
@@ -29,8 +29,9 @@ async function getAllWebsites() {
  */
 async function getWebsiteById(websiteID) {
   try {
-    const result = await (await db).request().input("WebsiteID", sql.Int, websiteID)
-      .query(`
+    const result = await (await db)
+      .request()
+      .input("WebsiteID", sql.Int, websiteID).query(`
             SELECT WebsiteID, Domain as WebsiteName, Domain as WebsiteURL 
             FROM [ValWebArchive].[dbo].[Websites] 
             WHERE WebsiteID = @WebsiteID AND IsActive = 1

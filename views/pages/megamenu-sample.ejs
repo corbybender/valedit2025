@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Megamenu Sample - <%= process.env.APP_NAME || 'ValEdit' %></title>
+  
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Megamenu CSS -->
+  <link rel="stylesheet" href="/public/css/megamenu.css">
+  
+  <style>
+    /* Demo content styling */
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f8fafc;
+    }
+
+    .demo-section {
+      background: white;
+      border-radius: 8px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .demo-section h2 {
+      color: #1e293b;
+      margin-top: 0;
+      margin-bottom: 16px;
+    }
+
+    .demo-section p {
+      color: #64748b;
+      line-height: 1.6;
+      margin-bottom: 12px;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .feature-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 20px;
+    }
+
+    .feature-card h3 {
+      color: #3b82f6;
+      margin-top: 0;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .feature-card p {
+      margin-bottom: 0;
+      font-size: 14px;
+    }
+
+    .back-to-sidebar {
+      background: #ef4444;
+      color: white;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 500;
+      transition: all 0.2s;
+      margin-bottom: 20px;
+    }
+
+    .back-to-sidebar:hover {
+      background: #dc2626;
+      transform: translateY(-1px);
+    }
+
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+    }
+
+    .comparison-table th,
+    .comparison-table td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .comparison-table th {
+      background: #f8fafc;
+      font-weight: 600;
+      color: #1e293b;
+    }
+
+    .comparison-table td {
+      color: #64748b;
+    }
+
+    .pros-cons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-top: 16px;
+    }
+
+    .pros, .cons {
+      background: #f8fafc;
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .pros h4 {
+      color: #10b981;
+      margin-top: 0;
+    }
+
+    .cons h4 {
+      color: #ef4444;
+      margin-top: 0;
+    }
+
+    .pros ul, .cons ul {
+      margin: 0;
+      padding-left: 16px;
+    }
+
+    .pros li, .cons li {
+      margin-bottom: 4px;
+      color: #64748b;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Include the megamenu -->
+  <%- include('../partials/megamenu') %>
+
+  <!-- Main content with megamenu layout -->
+  <div class="megamenu-layout">
+    <main class="megamenu-main-content">
+      
+      <!-- Back to sidebar link -->
+      <a href="/websites" class="back-to-sidebar">
+        <i class="fas fa-arrow-left"></i>
+        Back to Regular Dashboard
+      </a>
+
+      <!-- Demo Section -->
+      <div class="demo-section">
+        <h2>🎉 Horizontal Megamenu Demo</h2>
+        <p>This page demonstrates the new horizontal megamenu layout as an alternative to the current sidebar navigation. The megamenu includes all the same functionality as your current sidebar but in a horizontal format.</p>
+        <p><strong>Try hovering over the menu items above</strong> to see the dropdown menus in action!</p>
+      </div>
+
+      <!-- Features -->
+      <div class="demo-section">
+        <h2>Key Features</h2>
+        <div class="feature-grid">
+          <div class="feature-card">
+            <h3><i class="fas fa-expand-arrows-alt"></i> More Screen Space</h3>
+            <p>Horizontal layout frees up valuable vertical space for your content, especially useful on widescreen monitors.</p>
+          </div>
+          
+          <div class="feature-card">
+            <h3><i class="fas fa-mobile-alt"></i> Mobile Responsive</h3>
+            <p>Adapts beautifully to mobile devices with a collapsible menu system that works on all screen sizes.</p>
+          </div>
+          
+          <div class="feature-card">
+            <h3><i class="fas fa-bolt"></i> Quick Access</h3>
+            <p>All navigation items are immediately visible, reducing clicks and improving workflow efficiency.</p>
+          </div>
+          
+          <div class="feature-card">
+            <h3><i class="fas fa-eye"></i> Modern Design</h3>
+            <p>Contemporary horizontal navigation pattern that users expect from modern web applications.</p>
+          </div>
+          
+          <div class="feature-card">
+            <h3><i class="fas fa-search"></i> Built-in Search</h3>
+            <p>Integrated search functionality right in the header for quick content discovery.</p>
+          </div>
+          
+          <div class="feature-card">
+            <h3><i class="fas fa-undo"></i> Easy Rollback</h3>
+            <p>All changes are contained in separate files - easy to revert to sidebar if needed.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Comparison -->
+      <div class="demo-section">
+        <h2>Sidebar vs Megamenu Comparison</h2>
+        <table class="comparison-table">
+          <thead>
+            <tr>
+              <th>Feature</th>
+              <th>Current Sidebar</th>
+              <th>New Megamenu</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Screen Space Usage</td>
+              <td>Uses ~250px width permanently</td>
+              <td>Uses ~60px height, full width available</td>
+            </tr>
+            <tr>
+              <td>Navigation Access</td>
+              <td>Always visible on desktop</td>
+              <td>Always visible, more compact</td>
+            </tr>
+            <tr>
+              <td>Mobile Experience</td>
+              <td>Collapses off-screen</td>
+              <td>Responsive horizontal layout</td>
+            </tr>
+            <tr>
+              <td>Content Area</td>
+              <td>Narrower content width</td>
+              <td>Full-width content area</td>
+            </tr>
+            <tr>
+              <td>User Familiarity</td>
+              <td>Traditional application layout</td>
+              <td>Modern web application pattern</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="pros-cons">
+          <div class="pros">
+            <h4>✅ Megamenu Advantages</h4>
+            <ul>
+              <li>More horizontal space for content</li>
+              <li>Modern, familiar web pattern</li>
+              <li>Better mobile responsiveness</li>
+              <li>Integrated search and user actions</li>
+              <li>Cleaner, less cluttered feel</li>
+              <li>Easier to add new menu items</li>
+            </ul>
+          </div>
+          
+          <div class="cons">
+            <h4>❌ Potential Drawbacks</h4>
+            <ul>
+              <li>Uses some vertical screen space</li>
+              <li>Less menu items visible at once</li>
+              <li>Requires hover for dropdowns</li>
+              <li>Change in user workflow</li>
+              <li>May need user education</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Implementation Details -->
+      <div class="demo-section">
+        <h2>Implementation Details</h2>
+        <p>This megamenu implementation includes:</p>
+        <ul>
+          <li><strong>New CSS file:</strong> <code>/public/css/megamenu.css</code> - Contains all megamenu styling</li>
+          <li><strong>New EJS partial:</strong> <code>/views/partials/megamenu.ejs</code> - The megamenu HTML structure</li>
+          <li><strong>Sample page:</strong> <code>/views/pages/megamenu-sample.ejs</code> - This demonstration page</li>
+          <li><strong>Easy rollback:</strong> All original files remain unchanged - simply remove new files to revert</li>
+        </ul>
+        
+        <p>To implement site-wide:</p>
+        <ol>
+          <li>Replace <code><%- include('../partials/sidebar') %></code> with <code><%- include('../partials/megamenu') %></code></li>
+          <li>Add <code>&lt;link rel="stylesheet" href="/public/css/megamenu.css"&gt;</code> to your layout files</li>
+          <li>Update main content divs to use <code>megamenu-layout</code> and <code>megamenu-main-content</code> classes</li>
+        </ol>
+      </div>
+
+      <!-- Test Content -->
+      <div class="demo-section">
+        <h2>Sample Content Area</h2>
+        <p>This area demonstrates how your content would look with the megamenu layout. Notice how much more horizontal space is available compared to the sidebar layout.</p>
+        
+        <div style="background: linear-gradient(45deg, #f0f9ff, #e0f2fe); padding: 40px; border-radius: 8px; text-align: center; margin: 20px 0;">
+          <h3 style="margin-top: 0; color: #0369a1;">Full Width Content Area</h3>
+          <p style="margin-bottom: 0; color: #0c4a6e;">Your content now has the full width of the browser to work with!</p>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Optional JavaScript for enhanced functionality -->
+  <script>
+    // Add any additional megamenu JavaScript here
+    console.log('Megamenu sample page loaded');
+    
+    // Example: Add click tracking for demo purposes
+    document.querySelectorAll('.megamenu-item').forEach(item => {
+      item.addEventListener('click', function(e) {
+        console.log('Menu item clicked:', this.textContent.trim());
+      });
+    });
+  </script>
+</body>
+</html>

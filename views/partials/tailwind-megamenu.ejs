@@ -1,0 +1,399 @@
+<!-- Tailwind Megamenu Header -->
+<header
+  class="bg-white shadow-sm border-b border-gray-200 fixed top-0 left-0 right-0 z-50"
+>
+  <div class="w-full px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center h-16 justify-between">
+      <!-- Left Section: Logo + Website Indicator -->
+      <div class="flex items-center space-x-6">
+        <!-- Logo (Far Left) -->
+        <div class="flex items-center">
+          <a href="/" class="flex items-center space-x-2">
+            <img
+              src="/public/images/logo/logo.png"
+              alt="Logo"
+              class="h-8 w-auto"
+            />
+          </a>
+        </div>
+
+        <!-- Current Website Indicator -->
+        <div
+          class="flex items-center space-x-2 bg-gray-50 px-3 py-1 rounded-lg border"
+        >
+          <i class="fas fa-shuffle text-gray-500 text-sm"></i>
+
+          <% if (currentWebsite && currentWebsite.WebsiteName) { %>
+          <a
+            href="/websites"
+            class="text-emerald-600 font-medium text-sm hover:text-emerald-700"
+          >
+            <%= (currentWebsite.WebsiteName).replace(/^www\./, "") %>
+          </a>
+          <% } else if (currentWebsite && currentWebsite.CurrentWorkingSite) {
+          %>
+          <a
+            href="/websites"
+            class="text-emerald-600 font-medium text-sm hover:text-emerald-700"
+          >
+            <%= currentWebsite.CurrentWorkingSite %>
+          </a>
+          <% } else if (locals.user && locals.user.currentWorkingSite) { %>
+          <a
+            href="/websites"
+            class="text-emerald-600 font-medium text-sm hover:text-emerald-700"
+          >
+            <%= locals.user.currentWorkingSite %>
+          </a>
+          <% } else { %>
+          <a href="/websites" class="text-gray-500 text-sm hover:text-gray-700">
+            No site selected
+          </a>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- Center Section: Navigation Menu -->
+      <nav class="flex items-center space-x-8">
+        <!-- Sites -->
+        <a
+          href="/websites"
+          class="flex items-center space-x-2 text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+        >
+          <i class="fas fa-th-large"></i>
+          <span>Sites</span>
+        </a>
+
+        <!-- Pages Dropdown -->
+        <div class="relative group">
+          <button
+            class="flex items-center space-x-2 text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+          >
+            <i class="fa-solid fa-file-lines"></i>
+            <span>Pages</span>
+            <i
+              class="fas fa-chevron-down text-xs group-hover:rotate-180 transition-transform"
+            ></i>
+          </button>
+
+          <!-- Pages Dropdown Menu -->
+          <div
+            class="absolute top-full left-0 mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50"
+          >
+            <div class="py-1">
+              <% if (locals.currentWebsite && currentWebsite.CurrentWorkingSite)
+              { %>
+              <a
+                href="/websites/<%= currentWebsite.CurrentWorkingSite %>/website-pages"
+                class="flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600"
+              >
+                <i class="fa-solid fa-eye w-4"></i>
+                <span>View Pages</span>
+              </a>
+              <% } %>
+              <a
+                href="/buildpage"
+                class="flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600"
+              >
+                <i class="fa-solid fa-plus w-4"></i>
+                <span>New Page</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Content Dropdown -->
+        <div class="relative group">
+          <button
+            class="flex items-center space-x-2 text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+          >
+            <i class="fa-solid fa-puzzle-piece"></i>
+            <span>Content</span>
+            <i
+              class="fas fa-chevron-down text-xs group-hover:rotate-180 transition-transform"
+            ></i>
+          </button>
+
+          <!-- Content Dropdown Menu -->
+          <div
+            class="absolute top-full left-0 mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50"
+          >
+            <div class="py-1">
+              <a
+                href="/content"
+                class="flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600"
+              >
+                <i class="fa-solid fa-cube w-4"></i>
+                <span>Content Blocks</span>
+              </a>
+              <a
+                href="/content/images"
+                class="flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600"
+              >
+                <i class="fa-solid fa-image w-4"></i>
+                <span>Images</span>
+              </a>
+              <a
+                href="/content/documents"
+                class="flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600"
+              >
+                <i class="fa-solid fa-file w-4"></i>
+                <span>Documents</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Page Templates -->
+        <a
+          href="/pagetemplates"
+          class="flex items-center space-x-2 text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+        >
+          <i class="fa-solid fa-copy"></i>
+          <span>Page Templates</span>
+        </a>
+
+        <!-- Admin Dropdown (Admin Only) -->
+        <% if (locals.user && locals.user.isAdmin) { %>
+        <div class="relative group">
+          <button
+            class="flex items-center space-x-2 text-gray-600 hover:text-red-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+          >
+            <i class="fas fa-cog"></i>
+            <span>Admin</span>
+
+            <i
+              class="fas fa-chevron-down text-xs group-hover:rotate-180 transition-transform"
+            ></i>
+          </button>
+
+          <!-- Admin Dropdown Menu -->
+          <div
+            class="absolute top-full left-0 mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50"
+          >
+            <div class="py-1">
+              <a
+                href="/sync"
+                class="flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600"
+              >
+                <i class="fa-solid fa-rotate w-4"></i>
+                <span>Sync</span>
+              </a>
+              <a
+                href="/users"
+                class="flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600"
+              >
+                <i class="fas fa-users w-4"></i>
+                <span>Users</span>
+              </a>
+              <a
+                href="/logs"
+                class="flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600"
+              >
+                <i class="fas fa-file-text w-4"></i>
+                <span>Logs</span>
+              </a>
+            </div>
+          </div>
+        </div>
+        <% } %>
+      </nav>
+
+      <!-- Right Section: Font Controls + User Avatar -->
+      <div class="flex items-center space-x-4">
+        <!-- Font Size Controls -->
+        <div
+          class="flex items-center bg-gray-50 border border-gray-200 rounded-lg"
+        >
+          <button
+            id="decrease-font-btn"
+            class="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-l-lg transition-colors"
+            title="Decrease Font Size"
+          >
+            <i class="fas fa-search-minus text-sm"></i>
+          </button>
+          <button
+            id="increase-font-btn"
+            class="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-r-lg border-l border-gray-200 transition-colors"
+            title="Increase Font Size"
+          >
+            <i class="fas fa-search-plus text-sm"></i>
+          </button>
+        </div>
+
+        <!-- User Avatar (Far Right) -->
+        <div class="relative group">
+          <button
+            class="w-9 h-9 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-sm hover:from-blue-600 hover:to-blue-700 transition-all shadow-sm"
+          >
+            <% if (locals.user) { %> <%= user.firstName ?
+            user.firstName.charAt(0).toUpperCase() : (user.name ?
+            user.name.charAt(0).toUpperCase() : 'U') %> <% } else { %> U <% } %>
+          </button>
+
+          <!-- User Dropdown -->
+          <div
+            class="absolute top-full right-0 mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50"
+          >
+            <div class="py-1">
+              <div class="px-4 py-2 border-b border-gray-200">
+                <% if (locals.user) { %>
+                <div class="text-sm font-medium text-gray-900">
+                  <%= user.firstName || user.name || 'User' %>
+                </div>
+                <div class="text-xs text-gray-500">
+                  @<%= user.username || user.email || 'username' %>
+                </div>
+                <div class="text-xs text-gray-400 mt-1">
+                  <%= user.loginMethod || 'Local' %> login
+                </div>
+                <% } %>
+              </div>
+              <a
+                href="#"
+                class="flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+              >
+                <i class="fas fa-user w-4"></i>
+                <span>Profile</span>
+              </a>
+              <a
+                href="#"
+                class="flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+              >
+                <i class="fas fa-cog w-4"></i>
+                <span>Settings</span>
+              </a>
+              <hr class="my-1" />
+              <a
+                href="/auth/logout"
+                class="flex items-center space-x-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+              >
+                <i class="fas fa-sign-out-alt w-4"></i>
+                <span>Logout</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Spacer for fixed header -->
+<div class="h-16"></div>
+
+<script>
+  // Font size control functionality
+  document.addEventListener("DOMContentLoaded", function () {
+    const FONT_SIZE_KEY = "app-font-size";
+
+    // Font size control functions
+    function changePageFontSize(delta) {
+      const root = document.documentElement;
+      const currentSize = parseFloat(window.getComputedStyle(root).fontSize);
+      const newSize = Math.max(12, Math.min(20, currentSize + delta)); // Limit between 12px and 20px
+      root.style.fontSize = newSize + "px";
+      localStorage.setItem(FONT_SIZE_KEY, newSize);
+      showFontSizeIndicator(newSize);
+    }
+
+    // Show font size indicator
+    function showFontSizeIndicator(size) {
+      // Remove existing indicator
+      const existing = document.querySelector(".font-size-indicator");
+      if (existing) existing.remove();
+
+      // Create new indicator
+      const indicator = document.createElement("div");
+      indicator.className =
+        "font-size-indicator fixed top-20 right-4 bg-black bg-opacity-80 text-white px-3 py-2 rounded-md text-sm z-50 transition-opacity";
+      indicator.textContent = `Font Size: ${size}px`;
+      document.body.appendChild(indicator);
+
+      // Fade out after 1.5 seconds
+      setTimeout(() => {
+        indicator.style.opacity = "0";
+        setTimeout(() => indicator.remove(), 300);
+      }, 1500);
+    }
+
+    // Apply stored font size on page load
+    function applyStoredFontSize() {
+      const storedSize = localStorage.getItem(FONT_SIZE_KEY);
+      if (storedSize) {
+        document.documentElement.style.fontSize = storedSize + "px";
+      }
+    }
+
+    // Event listeners for font buttons
+    const decreaseBtn = document.getElementById("decrease-font-btn");
+    const increaseBtn = document.getElementById("increase-font-btn");
+
+    if (decreaseBtn) {
+      decreaseBtn.addEventListener("click", () => changePageFontSize(-1));
+    }
+
+    if (increaseBtn) {
+      increaseBtn.addEventListener("click", () => changePageFontSize(1));
+    }
+
+    // Apply stored font size on page load
+    applyStoredFontSize();
+
+    // Keyboard shortcuts for font size
+    document.addEventListener("keydown", function (e) {
+      if (e.ctrlKey || e.metaKey) {
+        if (e.key === "=" || e.key === "+") {
+          e.preventDefault();
+          changePageFontSize(1);
+        } else if (e.key === "-") {
+          e.preventDefault();
+          changePageFontSize(-1);
+        }
+      }
+    });
+
+    // Mobile dropdown behavior
+    if (window.innerWidth <= 768) {
+      const dropdowns = document.querySelectorAll('[class*="group"]');
+      dropdowns.forEach((dropdown) => {
+        const button = dropdown.querySelector("button");
+        const menu = dropdown.querySelector('[class*="opacity-0"]');
+
+        if (button && menu) {
+          button.addEventListener("click", (e) => {
+            e.stopPropagation();
+
+            // Close other dropdowns
+            dropdowns.forEach((other) => {
+              if (other !== dropdown) {
+                const otherMenu = other.querySelector('[class*="opacity-0"]');
+                if (otherMenu) {
+                  otherMenu.classList.add("opacity-0", "invisible");
+                  otherMenu.classList.remove("opacity-100", "visible");
+                }
+              }
+            });
+
+            // Toggle current dropdown
+            menu.classList.toggle("opacity-0");
+            menu.classList.toggle("opacity-100");
+            menu.classList.toggle("invisible");
+            menu.classList.toggle("visible");
+          });
+        }
+      });
+
+      // Close dropdowns when clicking outside
+      document.addEventListener("click", () => {
+        dropdowns.forEach((dropdown) => {
+          const menu = dropdown.querySelector('[class*="opacity-0"]');
+          if (menu) {
+            menu.classList.add("opacity-0", "invisible");
+            menu.classList.remove("opacity-100", "visible");
+          }
+        });
+      });
+    }
+  });
+</script>

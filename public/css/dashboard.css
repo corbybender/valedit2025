@@ -90,6 +90,7 @@ body {
   display: flex;
   flex-direction: column;
   flex: 1; /* fill available height inside .sidebar */
+  justify-content: space-between; /* Push support-section to bottom */
 }
 
 .main-content {

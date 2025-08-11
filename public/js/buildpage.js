@@ -16,20 +16,20 @@ document.addEventListener("DOMContentLoaded", function () {
   logger.info("🚀 BUILDPAGE.JS LOADING - DOMContentLoaded fired");
   
   // Check if essential libraries are loaded
-  logger.info("📚 Library availability check:");
-  logger.info("  - jQuery:", typeof $ !== 'undefined' ? '✅' : '❌');
-  logger.info("  - Sortable:", typeof Sortable !== 'undefined' ? '✅' : '❌');
-  logger.info("  - window.logger:", typeof window.logger !== 'undefined' ? '✅' : '❌');
-  logger.info("📊 Initial data check:");
-  logger.info(
+  logger.debug("📚 Library availability check:");
+  logger.debug("  - jQuery:", typeof $ !== 'undefined' ? '✅' : '❌');
+  logger.debug("  - Sortable:", typeof Sortable !== 'undefined' ? '✅' : '❌');
+  logger.debug("  - window.logger:", typeof window.logger !== 'undefined' ? '✅' : '❌');
+  logger.debug("📊 Initial data check:");
+  logger.debug(
     "  - initialPageData:",
     typeof initialPageData !== "undefined" ? initialPageData : "UNDEFINED"
   );
-  logger.info(
+  logger.debug(
     "  - currentWebsite:",
     typeof currentWebsite !== "undefined" ? currentWebsite : "UNDEFINED"
   );
-  logger.info(
+  logger.debug(
     "  - currentWorkingSite:",
     typeof currentWorkingSite !== "undefined" ? currentWorkingSite : "UNDEFINED"
   );
@@ -44,7 +44,7 @@ document.addEventListener("DOMContentLoaded", function () {
   let currentPageInfo = {};
 
   // --- Page Element Variables ---
-  logger.info("🔍 Finding page elements...");
+  logger.debug("🔍 Finding page elements...");
   const createPageBtn = document.getElementById("create-page-btn");
   const savePageBtn = document.getElementById("save-page-btn");
   const viewPageBtn = document.getElementById("view-page-btn");
@@ -87,15 +87,15 @@ document.addEventListener("DOMContentLoaded", function () {
   const sharedCssEditor = document.getElementById("shared-css-editor");
   const sharedJsEditor = document.getElementById("shared-js-editor");
 
-  logger.info("📋 Element check results:");
-  logger.info("  - createPageBtn:", !!createPageBtn);
-  logger.info("  - savePageBtn:", !!savePageBtn);
-  logger.info("  - parentPathSelector:", !!parentPathSelector);
-  logger.info("  - pageNameInput:", !!pageNameInput);
-  logger.info("  - layoutSelector:", !!layoutSelector);
-  logger.info("  - canvasArea:", !!canvasArea);
-  logger.info("  - canvasTitle:", !!canvasTitle);
-  logger.info("  - allCards count:", allCards.length);
+  logger.debug("📋 Element check results:");
+  logger.debug("  - createPageBtn:", !!createPageBtn);
+  logger.debug("  - savePageBtn:", !!savePageBtn);
+  logger.debug("  - parentPathSelector:", !!parentPathSelector);
+  logger.debug("  - pageNameInput:", !!pageNameInput);
+  logger.debug("  - layoutSelector:", !!layoutSelector);
+  logger.debug("  - canvasArea:", !!canvasArea);
+  logger.debug("  - canvasTitle:", !!canvasTitle);
+  logger.debug("  - allCards count:", allCards.length);
 
   // --- Initialize Draggable Lists ---
   // Check if Sortable library is available with retry mechanism
@@ -114,22 +114,22 @@ document.addEventListener("DOMContentLoaded", function () {
           }
           return;
         } else {
-          logger.info("✅ Sortable library loaded on retry");
+          logger.debug("✅ Sortable library loaded on retry");
           setupSortableElements();
         }
       }, 1000); // Wait 1 second and try again
       return;
     }
     
-    logger.info("✅ Sortable library is available");
+    logger.debug("✅ Sortable library is available");
     setupSortableElements();
   }
   
   function setupSortableElements() {
-    logger.info("🎯 Setting up sortable elements...");
+    logger.debug("🎯 Setting up sortable elements...");
     
     if (document.getElementById("template-list")) {
-      logger.info("✅ Initializing template-list sortable");
+      logger.debug("✅ Initializing template-list sortable");
       new Sortable(document.getElementById("template-list"), {
         group: { name: "shared", pull: "clone", put: false },
         sort: false,
@@ -141,7 +141,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Initialize Empty Content Block draggable
     if (document.querySelector(".empty-block-container")) {
-      logger.info("✅ Initializing empty-block-container sortable");
+      logger.debug("✅ Initializing empty-block-container sortable");
       new Sortable(document.querySelector(".empty-block-container"), {
         group: { name: "shared", pull: "clone", put: false },
         sort: false,
@@ -151,19 +151,19 @@ document.addEventListener("DOMContentLoaded", function () {
       logger.warn("⚠️ empty-block-container element not found");
     }
     
-    logger.info("✅ Sortable elements setup completed");
+    logger.debug("✅ Sortable elements setup completed");
   }
   
   // Initialize drag and drop
   initializeDragAndDrop();
 
   // --- Event Listeners ---
-  logger.info("🎯 Setting up event listeners...");
+  logger.debug("🎯 Setting up event listeners...");
   if (createPageBtn) {
-    logger.info("✅ Adding click listener to Create Page button");
+    logger.debug("✅ Adding click listener to Create Page button");
     createPageBtn.addEventListener("click", handleCreatePage);
   } else {
-    logger.info("❌ Create Page button not found!");
+    logger.debug("❌ Create Page button not found!");
   }
 
   if (savePageBtn) savePageBtn.addEventListener("click", handleSavePage);
@@ -182,7 +182,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const saveMetadataBtn = document.getElementById("save-metadata");
 
   if (metadataBtn) {
-    logger.info("✅ Adding click listener to Metadata button");
+    logger.debug("✅ Adding click listener to Metadata button");
     metadataBtn.addEventListener("click", openMetadataModal);
   }
   if (metadataClose) {
@@ -251,29 +251,29 @@ document.addEventListener("DOMContentLoaded", function () {
   document.addEventListener("click", handleToolbarClick);
 
   // --- Debug Notification System ---
-  logger.info("🔔 DEBUG: Checking notification system on buildpage...");
-  logger.info("🔔 DEBUG: showNotification exists:", typeof showNotification);
-  logger.info(
+  logger.debug("🔔 DEBUG: Checking notification system on buildpage...");
+  logger.debug("🔔 DEBUG: showNotification exists:", typeof showNotification);
+  logger.debug(
     "🔔 DEBUG: notificationManager exists:",
     typeof notificationManager
   );
-  logger.info(
+  logger.debug(
     "🔔 DEBUG: header-actions exists:",
     !!document.querySelector(".header-actions")
   );
-  logger.info(
+  logger.debug(
     "🔔 DEBUG: notificationContainer exists:",
     !!document.querySelector("#notificationContainer")
   );
 
   // Add debugging function to test notification system
   window.testNotifications = function () {
-    logger.info("🧪 TESTING: Manual notification test...");
+    logger.debug("🧪 TESTING: Manual notification test...");
     if (typeof showNotification === "function") {
       showNotification("Test notification from buildpage", "success", {
         title: "Test",
       });
-      logger.info("🧪 TESTING: Notification sent");
+      logger.debug("🧪 TESTING: Notification sent");
     } else {
       console.error("🧪 TESTING: showNotification function not available");
     }
@@ -282,17 +282,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // --- Comprehensive Notification System (check after short delay to allow notifications.js to load) ---
   setTimeout(() => {
-    logger.info(
+    logger.debug(
       "🔔 DELAYED CHECK: showNotification exists:",
       typeof showNotification
     );
-    logger.info(
+    logger.debug(
       "🔔 DELAYED CHECK: notificationManager exists:",
       typeof notificationManager
     );
 
     if (typeof showNotification === "undefined") {
-      logger.info("🔔 FALLBACK: Creating comprehensive notification system...");
+      logger.debug("🔔 FALLBACK: Creating comprehensive notification system...");
 
       // Create bell icon manually
       // Toggle notification dropdown
@@ -417,7 +417,7 @@ document.addEventListener("DOMContentLoaded", function () {
               toggleNotificationDropdown();
             }
 
-            logger.info("✅ All notifications marked as read");
+            logger.debug("✅ All notifications marked as read");
           }
         } catch (error) {
           console.error("❌ Failed to mark notifications as read:", error);
@@ -488,7 +488,7 @@ document.addEventListener("DOMContentLoaded", function () {
           });
 
           if (response.ok) {
-            logger.info("✅ FALLBACK: Notification logged to database");
+            logger.debug("✅ FALLBACK: Notification logged to database");
             // Update badge count
             const badge = document.getElementById("notification-badge");
             if (badge) {
@@ -566,14 +566,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // --- Manual Notification System Debug Function ---
   window.debugNotifications = function () {
-    logger.info("🔔 === NOTIFICATION SYSTEM DEBUG ===");
-    logger.info("showNotification function:", typeof showNotification);
-    logger.info("notificationManager:", typeof notificationManager);
-    logger.info(
+    logger.debug("🔔 === NOTIFICATION SYSTEM DEBUG ===");
+    logger.debug("showNotification function:", typeof showNotification);
+    logger.debug("notificationManager:", typeof notificationManager);
+    logger.debug(
       "header-actions element:",
       !!document.querySelector(".header-actions")
     );
-    logger.info(
+    logger.debug(
       "notification container:",
       !!document.querySelector("#notificationContainer")
     );
@@ -581,7 +581,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Test notification
     if (typeof showNotification === "function") {
-      logger.info("🔔 Testing notification...");
+      logger.debug("🔔 Testing notification...");
       showNotification("Debug test notification", "info");
     }
   };
@@ -625,12 +625,12 @@ document.addEventListener("DOMContentLoaded", function () {
   // --- Shared Content Blocks Functions ---
   async function fetchAndPopulateSharedBlocks() {
     if (!currentWorkingSite || !currentWorkingSite.CurrentWorkingSite) {
-      logger.info("No working site selected, skipping shared blocks fetch");
+      logger.debug("No working site selected, skipping shared blocks fetch");
       return;
     }
 
     const websiteId = currentWorkingSite.CurrentWorkingSite;
-    logger.info("🔄 Fetching shared content blocks for website:", websiteId);
+    logger.debug("🔄 Fetching shared content blocks for website:", websiteId);
 
     try {
       const response = await fetch(`/api/sharedcontent/website/${websiteId}`);
@@ -649,7 +649,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       const sharedBlocks = await response.json();
-      logger.info("📦 Shared blocks fetched:", sharedBlocks);
+      logger.debug("📦 Shared blocks fetched:", sharedBlocks);
 
       if (!Array.isArray(sharedBlocks)) {
         console.error(
@@ -667,12 +667,12 @@ document.addEventListener("DOMContentLoaded", function () {
       if (sharedBlocks.length === 0) {
         sharedBlocksSelector.innerHTML =
           '<option value="">No shared blocks available</option>';
-        logger.info("📝 No shared blocks found for website:", websiteId);
+        logger.debug("📝 No shared blocks found for website:", websiteId);
         return;
       }
 
       sharedBlocks.forEach((block) => {
-        logger.info("📦 Processing shared block:", block);
+        logger.debug("📦 Processing shared block:", block);
         const option = document.createElement("option");
         option.value = block.SharedBlockID;
         option.textContent = block.Name;
@@ -756,7 +756,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     
     if (sharedBlocksContainer) {
-      logger.info("✅ Initializing shared-blocks-container sortable");
+      logger.debug("✅ Initializing shared-blocks-container sortable");
       new Sortable(sharedBlocksContainer, {
         group: { name: "shared", pull: "clone", put: false },
         sort: false,
@@ -770,7 +770,7 @@ document.addEventListener("DOMContentLoaded", function () {
   // --- Editor Tab Functions ---
   function handleTabClick(e) {
     const targetTab = e.currentTarget.dataset.tab;
-    logger.info("🔄 Switching to tab:", targetTab);
+    logger.debug("🔄 Switching to tab:", targetTab);
 
     // Remove active class from all tabs and content
     document
@@ -830,7 +830,7 @@ body {
         jsEditor,
         `$(document).ready(function() {
   // Your code here
-  logger.info('Document ready');
+  logger.debug('Document ready');
 });
 
 `
@@ -887,7 +887,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const cssContent = blockData.CssContent || "";
     const jsContent = blockData.JsContent || "";
 
-    logger.info("🎨 Initializing all editors with content:", {
+    logger.debug("🎨 Initializing all editors with content:", {
       html: htmlContent.length,
       css: cssContent.length,
       js: jsContent.length,
@@ -1149,22 +1149,22 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   async function loadPageLayout(layoutId) {
-    logger.info("=== LOAD LAYOUT START ===");
-    logger.info("Loading layout ID:", layoutId);
+    logger.debug("=== LOAD LAYOUT START ===");
+    logger.debug("Loading layout ID:", layoutId);
     try {
       const response = await fetch(`/api/pagetemplates/${layoutId}`);
-      logger.info("Template API response status:", response.status);
+      logger.debug("Template API response status:", response.status);
       if (!response.ok) throw new Error("Layout not found.");
 
       const data = await response.json();
-      logger.info("Template data received:", data);
+      logger.debug("Template data received:", data);
 
       let layoutHTML = data.HtmlStructure || "";
-      logger.info("Layout HTML length:", layoutHTML.length);
-      logger.info("Layout HTML preview:", layoutHTML.substring(0, 200) + "...");
+      logger.debug("Layout HTML length:", layoutHTML.length);
+      logger.debug("Layout HTML preview:", layoutHTML.substring(0, 200) + "...");
 
       // TEMPORARY FIX: Remove external CSS links that might be causing issues
-      logger.info("🔧 REMOVING EXTERNAL CSS LINKS FOR DEBUGGING...");
+      logger.debug("🔧 REMOVING EXTERNAL CSS LINKS FOR DEBUGGING...");
       layoutHTML = layoutHTML.replace(
         /<link[^>]*rel="stylesheet"[^>]*>/gi,
         "<!-- External CSS removed for debugging -->"
@@ -1197,20 +1197,20 @@ document.addEventListener('DOMContentLoaded', function() {
         .col { flex: 1; padding: 10px; }
       </style>`;
 
-      logger.info("Setting canvas area innerHTML...");
+      logger.debug("Setting canvas area innerHTML...");
       canvasArea.innerHTML = placeholderStyles + layoutHTML;
 
-      logger.info("Canvas area content set, checking for disabled overlay...");
+      logger.debug("Canvas area content set, checking for disabled overlay...");
       const disabledOverlay = canvasArea.querySelector(".disabled-overlay");
       if (disabledOverlay) {
-        logger.info("Removing disabled overlay");
+        logger.debug("Removing disabled overlay");
         disabledOverlay.remove();
       } else {
-        logger.info("No disabled overlay found");
+        logger.debug("No disabled overlay found");
       }
 
       const placeholders = canvasArea.querySelectorAll(".layout-placeholder");
-      logger.info("Found", placeholders.length, "placeholders");
+      logger.debug("Found", placeholders.length, "placeholders");
 
       placeholders.forEach((placeholder, index) => {
         logger.info(
@@ -1231,11 +1231,11 @@ document.addEventListener('DOMContentLoaded', function() {
           handle: ".content-block-header",
         });
         
-        logger.info(`✅ Sortable initialized for placeholder: ${placeholder.id}`);
+        logger.debug(`✅ Sortable initialized for placeholder: ${placeholder.id}`);
       });
 
       // Check if canvas area is visible
-      logger.info("Canvas area visibility:", {
+      logger.debug("Canvas area visibility:", {
         display: getComputedStyle(canvasArea).display,
         visibility: getComputedStyle(canvasArea).visibility,
         opacity: getComputedStyle(canvasArea).opacity,
@@ -1243,7 +1243,7 @@ document.addEventListener('DOMContentLoaded', function() {
         width: getComputedStyle(canvasArea).width,
       });
 
-      logger.info("=== LOAD LAYOUT SUCCESS ===");
+      logger.debug("=== LOAD LAYOUT SUCCESS ===");
       return true;
     } catch (error) {
       console.error("Failed to load page layout:", error);
@@ -1253,7 +1253,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   async function handleBlockDrop(evt) {
-    logger.info("🎯 handleBlockDrop called with:", evt);
+    logger.debug("🎯 handleBlockDrop called with:", evt);
 
     // Check if this is an existing block instance being moved (not a new block from sidebar)
     const originalCard = evt.item;
@@ -1279,14 +1279,14 @@ document.addEventListener('DOMContentLoaded', function() {
         }),
       });
     } catch (debugErr) {
-      logger.info("Debug logging failed:", debugErr);
+      logger.debug("Debug logging failed:", debugErr);
     }
 
     try {
       const placeholder = evt.to;
       const contentTemplateId = originalCard.dataset.id;
       const blockType = originalCard.dataset.blockType;
-      logger.info("📋 Block details:", {
+      logger.debug("📋 Block details:", {
         contentTemplateId,
         blockType,
         contentTemplateIdType: typeof contentTemplateId,
@@ -1310,7 +1310,7 @@ document.addEventListener('DOMContentLoaded', function() {
           }),
         });
       } catch (debugErr) {
-        logger.info("Debug logging failed:", debugErr);
+        logger.debug("Debug logging failed:", debugErr);
       }
 
       originalCard.remove();
@@ -1488,7 +1488,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }),
           });
         } catch (debugErr) {
-          logger.info("Debug logging failed:", debugErr);
+          logger.debug("Debug logging failed:", debugErr);
         }
       }
     } catch (outerError) {
@@ -1509,7 +1509,7 @@ document.addEventListener('DOMContentLoaded', function() {
           }),
         });
       } catch (debugErr) {
-        logger.info("Debug logging failed:", debugErr);
+        logger.debug("Debug logging failed:", debugErr);
       }
     }
   }

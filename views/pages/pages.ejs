@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dashboard</title>
+    <title>Pages - <%= process.env.APP_NAME || 'ValEdit' %></title>
     <script src="https://cdn.tailwindcss.com"></script>
 
     <link
@@ -13,20 +13,13 @@
     <link href="/public/css/dashboard.css" rel="stylesheet" />
     <link href="/public/css/pages.css" rel="stylesheet" />
   </head>
-  <body>
-    <div class="dashboard-container">
-      <!-- Sidebar -->
-      <%- include('../partials/sidebar') %>
+  <body class="bg-gray-50">
+    <!-- Tailwind Megamenu -->
+    <%- include('../partials/tailwind-megamenu') %>
 
-      <!-- Main Content -->
-      <div class="main-content">
-        <!-- Header -->
-        <%- include('../partials/header') %>
-
-        <!-- Content -->
-        <main
-          class="content bg-white p-8 rounded-lg shadow-lg w-full max-w-12xl"
-        >
+    <!-- Main Content -->
+    <main class="w-full px-2 py-8">
+      <div class="bg-white p-8 rounded-lg shadow-lg w-full">
           <header class="border-b pb-4 mb-6 flex justify-between items-center">
             <div>
               <h1 class="text-3xl font-bold text-gray-800">
@@ -39,7 +32,7 @@
           </header>
 
           <div class="flex justify-between gap-4 mb-6">
-            <div class="relative w-64">
+            <div class="relative flex-1">
               <span class="absolute inset-y-0 right-0 flex items-center pr-3">
                 <i class="fas fa-search text-gray-400"></i>
               </span>
@@ -65,12 +58,10 @@
             <%- include('../partials/page-tree-accordion', { pages: pageTree })
             %>
           </div>
-        </main>
       </div>
-    </div>
+    </main>
 
     <script src="/public/js/frontend-logger.js"></script>
-    <script src="/public/js/sidebar.js"></script>
     <script src="/public/js/dashboard.js"></script>
     <script src="/public/js/pages.js"></script>
   </body>

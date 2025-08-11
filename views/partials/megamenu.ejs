@@ -1,0 +1,234 @@
+<header class="megamenu-header">
+  <div class="megamenu-container">
+    <!-- Logo Section -->
+    <a href="/" class="megamenu-logo">
+      <img src="/public/images/logo/logo.png" alt="Logo" />
+    </a>
+
+    <!-- Current Website Indicator -->
+    <% if (currentWebsite && currentWebsite.WebsiteName) { %>
+      <a href="/websites" class="megamenu-website-indicator">
+        <i class="fa-solid fa-shuffle"></i>
+        <span class="megamenu-website-name"><%= (currentWebsite.WebsiteName).replace(/^www\./, "") %></span>
+      </a>
+    <% } else { %>
+      <a href="/websites" class="megamenu-website-indicator">
+        <i class="fa-solid fa-shuffle"></i>
+        <span>No site selected</span>
+      </a>
+    <% } %>
+
+    <!-- Navigation Menu -->
+    <nav class="megamenu-nav">
+      <!-- Sites -->
+      <a href="/websites" class="megamenu-item">
+        <i class="fas fa-th-large"></i>
+        <span>Sites</span>
+      </a>
+
+      <!-- Pages Dropdown -->
+      <div class="megamenu-item has-dropdown">
+        <i class="fa-solid fa-file-lines"></i>
+        <span>Pages</span>
+        <i class="arrow fas fa-chevron-down"></i>
+        <div class="megamenu-dropdown">
+          <% if (locals.currentWebsite && currentWebsite.CurrentWorkingSite) { %>
+            <a href="/websites/<%= currentWebsite.CurrentWorkingSite %>/website-pages" class="megamenu-dropdown-item">
+              <i class="fa-solid fa-eye"></i>
+              <span>View Pages</span>
+            </a>
+          <% } %>
+          <a href="/buildpage" class="megamenu-dropdown-item">
+            <i class="fa-solid fa-plus"></i>
+            <span>New Page</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Content Dropdown -->
+      <div class="megamenu-item has-dropdown">
+        <i class="fa-solid fa-puzzle-piece"></i>
+        <span>Content</span>
+        <i class="arrow fas fa-chevron-down"></i>
+        <div class="megamenu-dropdown">
+          <a href="/content" class="megamenu-dropdown-item">
+            <i class="fa-solid fa-cube"></i>
+            <span>Content Blocks</span>
+          </a>
+          <a href="/content/images" class="megamenu-dropdown-item">
+            <i class="fa-solid fa-image"></i>
+            <span>Images</span>
+          </a>
+          <a href="/content/documents" class="megamenu-dropdown-item">
+            <i class="fa-solid fa-file"></i>
+            <span>Documents</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Page Templates -->
+      <a href="/pagetemplates" class="megamenu-item">
+        <i class="fa-solid fa-copy"></i>
+        <span>Page Templates</span>
+      </a>
+
+      <!-- Administration Dropdown (Admin Only) -->
+      <% if (locals.user && locals.user.isAdmin) { %>
+        <div class="megamenu-item has-dropdown">
+          <i class="fas fa-cog"></i>
+          <span>Admin</span>
+          <span class="admin-badge">ADMIN</span>
+          <i class="arrow fas fa-chevron-down"></i>
+          <div class="megamenu-dropdown">
+            <a href="/sync" class="megamenu-dropdown-item">
+              <i class="fa-solid fa-rotate"></i>
+              <span>Sync</span>
+            </a>
+            <a href="/users" class="megamenu-dropdown-item">
+              <i class="fas fa-users"></i>
+              <span>Users</span>
+            </a>
+            <a href="/logs" class="megamenu-dropdown-item">
+              <i class="fas fa-file-text"></i>
+              <span>Logs</span>
+            </a>
+          </div>
+        </div>
+      <% } %>
+    </nav>
+
+    <!-- User Actions -->
+    <div class="megamenu-actions">
+      <!-- Search -->
+      <div class="megamenu-search">
+        <input type="text" placeholder="Search..." />
+        <i class="fas fa-search search-icon"></i>
+      </div>
+
+      <!-- User Menu -->
+      <div class="megamenu-user">
+        <% if (locals.user) { %>
+          <div class="megamenu-user-avatar" onclick="toggleUserDropdown()">
+            <%= user.firstName ? user.firstName.charAt(0).toUpperCase() : 'U' %>
+          </div>
+        <% } else { %>
+          <div class="megamenu-user-avatar">
+            U
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Include megamenu JavaScript -->
+<script src="/public/js/megamenu.js"></script>
+
+<style>
+/* PROFESSIONAL MEGAMENU WITH FIXED HOVER BEHAVIOR */
+
+/* Ensure parent containers allow dropdowns */
+.megamenu-header,
+.megamenu-container,
+.megamenu-nav {
+  overflow: visible !important;
+}
+
+/* Dropdown parent - CRITICAL: No gaps, seamless hover area */
+.megamenu-item.has-dropdown {
+  position: relative !important;
+}
+
+/* FORCE DROPDOWNS TO ALWAYS SHOW FOR TESTING */
+.megamenu-dropdown {
+  position: absolute !important;
+  top: 100% !important;
+  left: 0 !important;
+  background: #ff0000 !important; /* BRIGHT RED */
+  border: 3px solid #000000 !important; /* BLACK BORDER */
+  border-radius: 8px !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5) !important;
+  min-width: 220px !important;
+  padding: 12px 0 !important;
+  z-index: 999999 !important;
+  
+  /* ALWAYS VISIBLE FOR TESTING */
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* SIMPLE HOVER SYSTEM - Show on parent hover, hide when not hovering either */
+.megamenu-item.has-dropdown:hover .megamenu-dropdown {
+  display: block !important;
+}
+
+/* Keep dropdown visible when hovering over dropdown itself */
+.megamenu-dropdown:hover {
+  display: block !important;
+}
+
+/* SUPER VISIBLE DROPDOWN ITEMS FOR TESTING */
+.megamenu-dropdown-item {
+  display: block !important;
+  padding: 15px 20px !important;
+  color: #ffffff !important; /* WHITE TEXT */
+  text-decoration: none !important;
+  font-size: 16px !important;
+  font-weight: bold !important;
+  cursor: pointer !important;
+  border-bottom: 1px solid rgba(255,255,255,0.3) !important;
+}
+
+.megamenu-dropdown-item:hover {
+  background: #ff4444 !important;
+  color: #ffff00 !important; /* YELLOW TEXT */
+}
+
+.megamenu-dropdown-item:last-child {
+  border-bottom: none !important;
+}
+
+.megamenu-dropdown-item i {
+  width: 16px !important;
+  text-align: center !important;
+  font-size: 14px !important;
+  color: inherit !important;
+}
+
+/* Arrow indicator for dropdown items */
+.megamenu-item.has-dropdown .arrow {
+  font-size: 10px !important;
+  margin-left: 4px !important;
+  transition: transform 0.2s ease !important;
+}
+
+.megamenu-item.has-dropdown:hover .arrow {
+  transform: rotate(180deg) !important;
+}
+
+/* Admin badge styling */
+.admin-badge {
+  background: #ef4444 !important;
+  color: white !important;
+  font-size: 10px !important;
+  padding: 2px 6px !important;
+  border-radius: 10px !important;
+  margin-left: 4px !important;
+}
+</style>
+
+<script>
+// NO JAVASCRIPT INTERFERENCE - LET CSS HANDLE EVERYTHING
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('Megamenu loaded - dropdowns should be ALWAYS VISIBLE for testing');
+  
+  // Count how many dropdowns we have
+  const dropdowns = document.querySelectorAll('.megamenu-dropdown');
+  console.log('Found', dropdowns.length, 'dropdowns - they should all be bright red and visible');
+});
+
+function toggleUserDropdown() {
+  console.log('User dropdown clicked');
+}
+</script>

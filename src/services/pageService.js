@@ -1,7 +1,7 @@
 const db = require("../config/database");
 const sql = require("mssql");
 const SyncQueue = require("../../utils/syncQueue");
-const logger = require("../../utils/logger");
+// const logger = require("../../utils/logger"); // logger is global
 
 const getAllPages = async (websiteId) => {
   try {

@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Documents - CMS</title>
+    <title>Documents - <%= process.env.APP_NAME || 'ValEdit' %></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
@@ -13,73 +13,69 @@
     <link href="/public/css/AzureStorage.css" rel="stylesheet" />
     <script src="/public/js/notifications.js"></script>
   </head>
-  <body>
-    <div class="dashboard-container">
-      <%- include('../partials/sidebar') %>
+  <body class="bg-gray-50">
+    <!-- Tailwind Megamenu -->
+    <%- include('../partials/tailwind-megamenu') %>
 
-      <div class="main-content">
-        <%- include('../partials/header') %>
-
-        <main class="content">
-          <div class="container mx-auto p-6">
-            <div class="flex justify-between items-center mb-8">
-              <div>
-                <h1 class="text-3xl font-bold text-gray-800">Documents</h1>
-                <p class="text-gray-600 mt-2">
-                  Manage your website documents and downloadable files
-                </p>
-              </div>
-            </div>
-
-            <div class="azure-storage-container">
-              <section class="card">
-                <h2>Upload New Document</h2>
-                <form id="upload-form">
-                  <input type="hidden" name="folder" value="docs" />
-                  <div class="form-group">
-                    <label for="file-input">Select File:</label>
-                    <input type="file" id="file-input" name="file" required />
-                  </div>
-                  <button
-                    type="submit"
-                    class="bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700"
-                  >
-                    <i class="fas fa-upload mr-2"></i>Upload Document
-                  </button>
-                </form>
-                <div id="upload-status" class="status-message"></div>
-              </section>
-
-              <section class="card">
-                <div class="flex justify-between items-center">
-                  <h2>
-                    <i class="fas fa-folder text-2xl text-gray-500 mr-2"></i>
-                    /docs/
-                  </h2>
-                  <button id="refresh-button" title="Refresh List">
-                    <i class="fas fa-sync-alt"></i>
-                  </button>
-                </div>
-                <div class="table-container">
-                  <table id="files-table">
-                    <thead>
-                      <tr>
-                        <th>Filename</th>
-                        <th>Last Modified</th>
-                        <th>Size</th>
-                        <th>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody id="files-list"></tbody>
-                  </table>
-                </div>
-                <div id="files-status" class="status-message"></div>
-              </section>
-            </div>
+    <!-- Main Content -->
+    <main class="w-full px-2 py-8">
+      <div class="bg-white p-8 rounded-lg shadow-lg w-full">
+        <div class="flex justify-between items-center mb-8">
+          <div>
+            <h1 class="text-3xl font-bold text-gray-800">Documents</h1>
+            <p class="text-gray-600 mt-2">
+              Manage your website documents and downloadable files
+            </p>
           </div>
-        </main>
+        </div>
+
+        <div class="azure-storage-container">
+          <section class="card">
+            <h2>Upload New Document</h2>
+            <form id="upload-form">
+              <input type="hidden" name="folder" value="docs" />
+              <div class="form-group">
+                <label for="file-input">Select File:</label>
+                <input type="file" id="file-input" name="file" required />
+              </div>
+              <button
+                type="submit"
+                class="bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700"
+              >
+                <i class="fas fa-upload mr-2"></i>Upload Document
+              </button>
+            </form>
+            <div id="upload-status" class="status-message"></div>
+          </section>
+
+          <section class="card">
+            <div class="flex justify-between items-center">
+              <h2>
+                <i class="fas fa-folder text-2xl text-gray-500 mr-2"></i>
+                /docs/
+              </h2>
+              <button id="refresh-button" title="Refresh List">
+                <i class="fas fa-sync-alt"></i>
+              </button>
+            </div>
+            <div class="table-container">
+              <table id="files-table">
+                <thead>
+                  <tr>
+                    <th>Filename</th>
+                    <th>Last Modified</th>
+                    <th>Size</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="files-list"></tbody>
+              </table>
+            </div>
+            <div id="files-status" class="status-message"></div>
+          </section>
+        </div>
       </div>
-    </div>
+    </main>
 
     <div id="edit-modal" class="modal">
       <div class="modal-content">
@@ -110,7 +106,6 @@
       </div>
     </div>
 
-    <script src="/public/js/sidebar.js"></script>
     <script src="/public/js/dashboard.js"></script>
     <script src="/public/js/content-documents.js"></script>
   </body>

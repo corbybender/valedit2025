@@ -25,16 +25,16 @@ async function checkNotifications() {
           notification.Title
         }`
       );
-      logger.info(`   Message: ${notification.Message}`);
-      logger.info(`   Category: ${notification.Category}`);
-      logger.info(
+      logger.debug(`   Message: ${notification.Message}`);
+      logger.debug(`   Category: ${notification.Category}`);
+      logger.debug(
         `   Entity: ${notification.RelatedEntityType || "N/A"} (ID: ${
           notification.RelatedEntityID || "N/A"
         })`
       );
-      logger.info(`   Website ID: ${notification.WebsiteID || "N/A"}`);
-      logger.info(`   Created: ${notification.CreatedAt}`);
-      logger.info("   ---");
+      logger.debug(`   Website ID: ${notification.WebsiteID || "N/A"}`);
+      logger.debug(`   Created: ${notification.CreatedAt}`);
+      logger.debug("   ---");
     });
 
     logger.info("\n🔍 Checking notification categories:");

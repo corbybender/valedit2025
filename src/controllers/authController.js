@@ -28,7 +28,7 @@ const handleLocalLogin = async (req, res) => {
     if (result.success) {
       req.session.userInfo = result.user;
       req.session.authorID = result.user.authorID;
-      logger.info("✅ Local login successful:", result.user.username);
+      logger.info("✅ User logged in:", result.user.username);
 
       // Create success notification (after session is established)
       await NotificationService.notifyAuthAction({
@@ -86,7 +86,7 @@ const handleAzureCallback = async (req, res) => {
     if (result.success) {
       req.session.userInfo = result.user;
       req.session.authorID = result.user.authorID;
-      logger.info("✅ Azure login successful:", result.user.username);
+      logger.info("✅ User logged in via Azure:", result.user.username);
 
       // Create success notification (after session is established)
       await NotificationService.notifyAuthAction({

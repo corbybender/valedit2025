@@ -163,7 +163,7 @@
 .edit-btn { background-color: #e0e7ff; color: #4338ca; border-color: #c7d2fe; }
 .edit-btn:hover { background-color: #c7d2fe; }
 
-/* Styles for the page search input to match websites */
+/* Styles for the page search input to match website search input */
 #page-search-input {
     font-size: 1.125rem;
     padding-top: 1rem;
@@ -182,3 +182,5 @@
     border-color: #3b82f6;
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
 }
+
+

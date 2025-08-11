@@ -69,4 +69,30 @@ router.get(
 router.get("/test-z-index", testController.showTestZIndex);
 router.get("/test-content-debug", contentController.showTestContentDebug);
 
+// Megamenu sample page (with authentication to access user context)
+router.get("/megamenu-sample", isAuthenticated, (req, res) => {
+  res.render("pages/megamenu-sample", {
+    user: req.session.userInfo,
+    currentWebsite: res.locals.currentWebsite || null,
+    pageTitle: "Megamenu Demo"
+  });
+});
+
+// Tailwind megamenu sample page (WORKING VERSION)
+router.get("/tailwind-megamenu-sample", isAuthenticated, (req, res) => {
+  // DEBUG: Log all the available data
+  console.log("=== DEBUGGING CURRENT WEBSITE DATA ===");
+  console.log("res.locals.currentWebsite:", JSON.stringify(res.locals.currentWebsite, null, 2));
+  console.log("res.locals.currentWebsiteID:", res.locals.currentWebsiteID);
+  console.log("req.session.currentWebsite:", JSON.stringify(req.session.currentWebsite, null, 2));
+  console.log("req.session.userInfo:", JSON.stringify(req.session.userInfo, null, 2));
+  console.log("=========================================");
+  
+  res.render("pages/tailwind-megamenu-sample", {
+    user: req.session.userInfo,
+    currentWebsite: res.locals.currentWebsite || null,
+    pageTitle: "Tailwind Megamenu Demo"
+  });
+});
+
 module.exports = router;

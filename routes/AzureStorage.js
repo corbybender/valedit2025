@@ -54,20 +54,20 @@ async function listBlobsByPrefix(prefix) {
 }
 
 async function getAllowedLibraryProviders(websiteID) {
-  logger.info(
+  logger.debug(
     `🔍 [DEBUG] getAllowedLibraryProviders called with websiteID: ${websiteID} (type: ${typeof websiteID})`
   );
 
   if (!websiteID) {
-    logger.info("⚠️  [DEBUG] No websiteID provided, returning empty array");
+    logger.debug("⚠️  [DEBUG] No websiteID provided, returning empty array");
     return [];
   }
 
   try {
-    logger.info(
+    logger.debug(
       `📊 [DEBUG] Starting database query for WebsiteID: ${websiteID}`
     );
-    logger.info(
+    logger.debug(
       `🔗 [DEBUG] Database connection status: ${
         db ? "Connected" : "Not connected"
       }`
@@ -75,22 +75,22 @@ async function getAllowedLibraryProviders(websiteID) {
 
     const pool = await db;
     const request = pool.request();
-    logger.info(
+    logger.debug(
       `📝 [DEBUG] Adding SQL parameter - WebsiteID: ${websiteID} (BigInt)`
     );
     request.input("WebsiteID", sql.BigInt, websiteID);
 
     const sqlQuery =
       "SELECT LibraryProviderName, DisplayName FROM dbo.WebsiteLibraryProviderLinks WHERE WebsiteID = @WebsiteID";
-    logger.info(`🎯 [DEBUG] Executing SQL query: ${sqlQuery}`);
-    logger.info(`🔢 [DEBUG] Query parameters: WebsiteID = ${websiteID}`);
+    logger.debug(`🎯 [DEBUG] Executing SQL query: ${sqlQuery}`);
+    logger.debug(`🔢 [DEBUG] Query parameters: WebsiteID = ${websiteID}`);
 
     const startTime = Date.now();
     const result = await request.query(sqlQuery);
     const queryTime = Date.now() - startTime;
 
-    logger.info(`⏱️  [DEBUG] Query completed in ${queryTime}ms`);
-    logger.info(`📋 [DEBUG] Raw database result:`, {
+    logger.debug(`⏱️  [DEBUG] Query completed in ${queryTime}ms`);
+    logger.debug(`📋 [DEBUG] Raw database result:`, {
       recordsetLength: result.recordset ? result.recordset.length : 0,
       recordset: result.recordset,
       rowsAffected: result.rowsAffected,
@@ -98,16 +98,16 @@ async function getAllowedLibraryProviders(websiteID) {
     });
 
     if (!result.recordset) {
-      logger.info("❌ [DEBUG] No recordset returned from query");
+      logger.debug("❌ [DEBUG] No recordset returned from query");
       return [];
     }
 
-    logger.info(
+    logger.debug(
       `📊 [DEBUG] Database query returned ${result.recordset.length} records for WebsiteID ${websiteID}:`
     );
 
     result.recordset.forEach((row, index) => {
-      logger.info(`  📝 [DEBUG] Record ${index + 1}:`, {
+      logger.debug(`  📝 [DEBUG] Record ${index + 1}:`, {
         LibraryProviderName: row.LibraryProviderName,
         DisplayName: row.DisplayName,
         rawRow: row,
@@ -119,18 +119,18 @@ async function getAllowedLibraryProviders(websiteID) {
         providerName: row.LibraryProviderName,
         displayName: row.DisplayName || row.LibraryProviderName, // Fallback to provider name if no display name
       };
-      logger.info(`🔄 [DEBUG] Mapping record ${index + 1}:`, {
+      logger.debug(`🔄 [DEBUG] Mapping record ${index + 1}:`, {
         original: row,
         mapped: mapped,
       });
       return mapped;
     });
 
-    logger.info(
+    logger.debug(
       `✅ [DEBUG] Final mapped library providers for WebsiteID ${websiteID}:`,
       providers
     );
-    logger.info(`📊 [DEBUG] Returning ${providers.length} providers`);
+    logger.debug(`📊 [DEBUG] Returning ${providers.length} providers`);
 
     return providers;
   } catch (error) {
@@ -188,7 +188,7 @@ router.get("/debug/current-website", (req, res) => {
 router.get("/debug/library-providers", async (req, res) => {
   try {
     const websiteID = res.locals.currentWebsiteID;
-    logger.info(
+    logger.debug(
       `🔍 [DEBUG-ENDPOINT] WebsiteLibraryProviderLinks debug requested for websiteID: ${websiteID}`
     );
 
@@ -206,14 +206,14 @@ router.get("/debug/library-providers", async (req, res) => {
     // Also do a raw query to see what's actually in the database
     const rawQuery =
       "SELECT * FROM dbo.WebsiteLibraryProviderLinks WHERE WebsiteID = @WebsiteID";
-    logger.info(`📝 [DEBUG-ENDPOINT] Executing raw query: ${rawQuery}`);
+    logger.debug(`📝 [DEBUG-ENDPOINT] Executing raw query: ${rawQuery}`);
 
     const rawResult = await db
       .request()
       .input("WebsiteID", sql.BigInt, websiteID)
       .query(rawQuery);
 
-    logger.info(
+    logger.debug(
       `📊 [DEBUG-ENDPOINT] Raw query returned ${rawResult.recordset.length} records`
     );
 
@@ -279,10 +279,10 @@ router.post("/api/browse", async (req, res) => {
   const continuationToken = req.body.continuationToken || undefined;
   const websiteID = res.locals.currentWebsiteID;
 
-  logger.info(
+  logger.debug(
     `📝 [DEBUG] Browse API called with prefix: "${prefix}", websiteID: ${websiteID} (type: ${typeof websiteID})`
   );
-  logger.info(`📊 [DEBUG] Browse - Request details:`, {
+  logger.debug(`📊 [DEBUG] Browse - Request details:`, {
     prefix: prefix,
     websiteID: websiteID,
     continuationToken: continuationToken,
@@ -316,21 +316,21 @@ router.post("/api/browse", async (req, res) => {
 
     // Special handling for images/ root directory - show virtual library provider folders
     if (prefix === "images/" && !continuationToken) {
-      logger.info(
+      logger.debug(
         `Debug: Entering images/ root handling for WebsiteID: ${websiteID}`
       );
       const allowedProviders = await getAllowedLibraryProviders(websiteID);
-      logger.info(
+      logger.debug(
         `Debug: WebsiteID ${websiteID}, Allowed providers for images/ root:`,
         allowedProviders
       );
 
       // For each allowed provider, check for case variations that actually exist in Azure storage
-      logger.info(
+      logger.debug(
         `🔍 [DEBUG] Processing ${allowedProviders.length} allowed providers for case variations...`
       );
       for (const provider of allowedProviders) {
-        logger.info(
+        logger.debug(
           `📝 [DEBUG] Checking variations for provider: "${provider.providerName}" (Display: "${provider.displayName}")`
         );
 
@@ -341,14 +341,14 @@ router.post("/api/browse", async (req, res) => {
           provider.providerName.charAt(0).toLowerCase() +
             provider.providerName.slice(1), // First letter lowercase (e.g., librariesProvider120)
         ];
-        logger.info(
+        logger.debug(
           `🔄 [DEBUG] Generated variations for "${provider.providerName}":`,
           variations
         );
 
         // Remove duplicates
         const uniqueVariations = [...new Set(variations)];
-        logger.info(
+        logger.debug(
           `🎯 [DEBUG] Unique variations after deduplication:`,
           uniqueVariations
         );
@@ -356,7 +356,7 @@ router.post("/api/browse", async (req, res) => {
         // Check which variations actually exist in Azure storage
         for (const variation of uniqueVariations) {
           const testPath = `images/${variation}/`;
-          logger.info(
+          logger.debug(
             `🔍 [DEBUG] Testing if variation exists in Azure: "${testPath}"`
           );
 
@@ -366,7 +366,7 @@ router.post("/api/browse", async (req, res) => {
               .byPage({ maxPageSize: 1 });
             const testPage = await testPages.next();
 
-            logger.info(`📊 [DEBUG] Azure test result for "${testPath}":`, {
+            logger.debug(`📊 [DEBUG] Azure test result for "${testPath}":`, {
               done: testPage.done,
               blobItems: testPage.done
                 ? 0
@@ -379,7 +379,7 @@ router.post("/api/browse", async (req, res) => {
             // Always show library provider folders, regardless of whether they exist in Azure yet
             // This allows users to navigate into empty folders and upload files
             const displayName = provider.displayName || variation;
-            logger.info(`🏷️  [DEBUG] Creating folder entry for library provider:`, {
+            logger.debug(`🏷️  [DEBUG] Creating folder entry for library provider:`, {
               name: displayName,
               path: `images/${variation}/`,
               actualProvider: variation,
@@ -397,9 +397,9 @@ router.post("/api/browse", async (req, res) => {
             if (!testPage.done &&
               (testPage.value.segment.blobItems.length > 0 ||
                 testPage.value.segment.blobPrefixes.length > 0)) {
-              logger.info(`✅ [DEBUG] Library provider "${variation}" has existing content in Azure`);
+              logger.debug(`✅ [DEBUG] Library provider "${variation}" has existing content in Azure`);
             } else {
-              logger.info(`📝 [DEBUG] Library provider "${variation}" is empty - users can upload files to create it`);
+              logger.debug(`📝 [DEBUG] Library provider "${variation}" is empty - users can upload files to create it`);
             }
             
             // Break after adding the first variation that matches the provider
@@ -418,17 +418,17 @@ router.post("/api/browse", async (req, res) => {
         }
       }
 
-      logger.info(
+      logger.debug(
         `Debug: Found ${folders.length} existing library provider variations`
       );
 
       // Don't add any other folders from Azure storage for images/ root
       // Only show the existing library provider variations
 
-      logger.info(
+      logger.debug(
         `Debug: Returning ${folders.length} folders and ${files.length} files for images/ root`
       );
-      logger.info(
+      logger.debug(
         `Debug: Folders being returned:`,
         folders.map((f) => f.name)
       );
@@ -443,13 +443,13 @@ router.post("/api/browse", async (req, res) => {
       // Handle browsing inside any folder under images/ - could be a library provider or other folder
       const folderName = prefix.replace("images/", "").split("/")[0]; // Get first folder name
 
-      logger.info(
+      logger.debug(
         `Debug: Browsing folder "${folderName}" under images/, full prefix: "${prefix}"`
       );
 
       // Check if this is a library provider variation from our allowed list
       const allowedProviders = await getAllowedLibraryProviders(websiteID);
-      logger.info(
+      logger.debug(
         `📊 [DEBUG] Browse - Retrieved ${allowedProviders.length} allowed providers for folder validation:`,
         allowedProviders
       );
@@ -458,7 +458,7 @@ router.post("/api/browse", async (req, res) => {
       let isAllowedProvider = false;
       let matchedProvider = null;
 
-      logger.info(
+      logger.debug(
         `🔍 [DEBUG] Browse - Checking if folder "${folderName}" matches any allowed provider variations...`
       );
 
@@ -470,7 +470,7 @@ router.post("/api/browse", async (req, res) => {
             provider.providerName.slice(1), // First letter lowercase (e.g., librariesProvider120)
         ];
 
-        logger.info(
+        logger.debug(
           `🔄 [DEBUG] Browse - Testing provider "${provider.providerName}" variations against "${folderName}":`,
           variations
         );
@@ -478,52 +478,52 @@ router.post("/api/browse", async (req, res) => {
         if (variations.includes(folderName)) {
           isAllowedProvider = true;
           matchedProvider = provider;
-          logger.info(
+          logger.debug(
             `✅ [DEBUG] Browse - MATCH FOUND! Provider "${provider.providerName}" matches folder "${folderName}"`
           );
           break;
         } else {
-          logger.info(
+          logger.debug(
             `❌ [DEBUG] Browse - No match for provider "${provider.providerName}" against folder "${folderName}"`
           );
         }
       }
 
-      logger.info(
+      logger.debug(
         `🎯 [DEBUG] Browse - Final result: isAllowedProvider=${isAllowedProvider}, matchedProvider=${
           matchedProvider ? matchedProvider.providerName : "null"
         }`
       );
 
       if (isAllowedProvider && matchedProvider) {
-        logger.info(
+        logger.debug(
           `✅ [DEBUG] Browse - "${folderName}" is an allowed library provider (matched: "${matchedProvider.providerName}") - using exact database path`
         );
 
         // Use the exact prefix as provided - no case conversion
         const actualPrefix = prefix;
-        logger.info(`Debug: Using exact prefix: ${actualPrefix}`);
+        logger.debug(`Debug: Using exact prefix: ${actualPrefix}`);
 
         const pages = containerClient
           .listBlobsByHierarchy("/", { prefix: actualPrefix })
           .byPage({ continuationToken, maxPageSize });
         const page = await pages.next();
 
-        logger.info(`Debug: Azure API response - page.done: ${page.done}`);
+        logger.debug(`Debug: Azure API response - page.done: ${page.done}`);
         if (!page.done) {
-          logger.info(
+          logger.debug(
             `Debug: Found ${page.value.segment.blobItems.length} blob items and ${page.value.segment.blobPrefixes.length} blob prefixes`
           );
 
           // Log all found items for debugging
           page.value.segment.blobItems.forEach((item, index) => {
-            logger.info(`Debug: Blob item ${index}: ${item.name}`);
+            logger.debug(`Debug: Blob item ${index}: ${item.name}`);
           });
           page.value.segment.blobPrefixes.forEach((item, index) => {
-            logger.info(`Debug: Blob prefix ${index}: ${item.name}`);
+            logger.debug(`Debug: Blob prefix ${index}: ${item.name}`);
           });
         } else {
-          logger.info(
+          logger.debug(
             `Debug: Azure API returned empty result for prefix: ${actualPrefix}`
           );
         }
@@ -559,7 +559,7 @@ router.post("/api/browse", async (req, res) => {
           }
         }
 
-        logger.info(
+        logger.debug(
           `Debug: Found ${files.length} files and ${folders.length} folders in ${actualPrefix}`
         );
 
@@ -570,7 +570,7 @@ router.post("/api/browse", async (req, res) => {
           continuationToken: page.value.continuationToken || null,
         });
       } else {
-        logger.info(
+        logger.debug(
           `Debug: "${folderName}" is not a library provider - treating as regular folder`
         );
         // This is a regular folder browsing (non-library provider)
@@ -724,13 +724,13 @@ router.post("/api/upload", (req, res, next) => {
     folder = req.body.folder; // Assign to the function-scoped variable
 
     // Debug logging
-    logger.info(
+    logger.debug(
       `📋 [DEBUG] Upload request - folder: "${
         folder || folderPath
       }", websiteID: ${websiteID}, files:`,
       req.files.map((file) => file.originalname)
     );
-    logger.info(`📊 [DEBUG] Upload - Request details:`, {
+    logger.debug(`📊 [DEBUG] Upload - Request details:`, {
       folderPath: folderPath,
       folder: folder,
       websiteID: websiteID,
@@ -743,12 +743,12 @@ router.post("/api/upload", (req, res, next) => {
     // Handle virtual library provider paths - check for allowed variations
     if (folder.startsWith("images/")) {
       const folderName = folder.replace("images/", "").split("/")[0];
-      logger.info(
+      logger.debug(
         `📝 [DEBUG] Upload - Checking library provider access for folder: "${folderName}" (from path: "${folder}")`
       );
 
       const allowedProviders = await getAllowedLibraryProviders(websiteID);
-      logger.info(
+      logger.debug(
         `📊 [DEBUG] Upload - Retrieved ${allowedProviders.length} allowed providers for websiteID ${websiteID}:`,
         allowedProviders
       );
@@ -765,7 +765,7 @@ router.post("/api/upload", (req, res, next) => {
             provider.providerName.slice(1), // First letter lowercase (e.g., librariesProvider120)
         ];
 
-        logger.info(
+        logger.debug(
           `🔄 [DEBUG] Upload - Checking provider "${provider.providerName}" variations:`,
           variations
         );
@@ -773,24 +773,24 @@ router.post("/api/upload", (req, res, next) => {
         if (variations.includes(folderName)) {
           isAllowedProvider = true;
           matchedProvider = provider;
-          logger.info(
+          logger.debug(
             `✅ [DEBUG] Upload - Found matching provider: "${provider.providerName}" for folder "${folderName}"`
           );
           break;
         } else {
-          logger.info(
+          logger.debug(
             `❌ [DEBUG] Upload - No match for provider "${provider.providerName}" against folder "${folderName}"`
           );
         }
       }
 
       if (isAllowedProvider && matchedProvider) {
-        logger.info(
+        logger.debug(
           `✅ [DEBUG] Upload - Access granted for library provider variation. Using exact path: "${folder}" (matched provider: "${matchedProvider.providerName}")`
         );
         // Use the folder path exactly as provided - no case conversion
       } else {
-        logger.info(
+        logger.debug(
           `❌ [DEBUG] Upload - Access denied. Folder "${folderName}" is not a variation of any allowed provider`
         );
       }
@@ -1053,14 +1053,14 @@ router.delete("/api/delete", async (req, res) => {
 
 // Create folder endpoint
 router.post("/api/create-folder", async (req, res) => {
-  logger.info(`📝 [DEBUG] Create-folder API called`);
-  logger.info(`📊 [DEBUG] Create-folder - Request body:`, req.body);
-  logger.info(`📊 [DEBUG] Create-folder - Session info:`, {
+  logger.debug(`📝 [DEBUG] Create-folder API called`);
+  logger.debug(`📊 [DEBUG] Create-folder - Request body:`, req.body);
+  logger.debug(`📊 [DEBUG] Create-folder - Session info:`, {
     hasSession: !!req.session,
     authorID: req.session?.authorID,
     sessionKeys: req.session ? Object.keys(req.session) : [],
   });
-  logger.info(`📊 [DEBUG] Create-folder - Response locals:`, {
+  logger.debug(`📊 [DEBUG] Create-folder - Response locals:`, {
     currentWebsiteID: res.locals.currentWebsiteID,
     currentWebsite: res.locals.currentWebsite,
     authorID: res.locals.authorID,
@@ -1070,7 +1070,7 @@ router.post("/api/create-folder", async (req, res) => {
     const { folderPath, folderName, websiteId } = req.body;
     const authorID = req.session.authorID;
 
-    logger.info(`📝 [DEBUG] Create-folder - Extracted parameters:`, {
+    logger.debug(`📝 [DEBUG] Create-folder - Extracted parameters:`, {
       folderPath: folderPath,
       folderName: folderName,
       websiteId: websiteId,
@@ -1079,7 +1079,7 @@ router.post("/api/create-folder", async (req, res) => {
 
     // Use websiteId from request body, fallback to res.locals.currentWebsiteID
     const currentWebsiteID = websiteId || res.locals.currentWebsiteID;
-    logger.info(
+    logger.debug(
       `🎯 [DEBUG] Create-folder - Final websiteID: ${currentWebsiteID} (from: ${
         websiteId ? "request body" : "res.locals"
       })`
@@ -1097,16 +1097,16 @@ router.post("/api/create-folder", async (req, res) => {
     }
 
     // Sanitize folder name
-    logger.info(
+    logger.debug(
       `🧼 [DEBUG] Create-folder - Sanitizing folder name: "${folderName}"`
     );
     const sanitizedFolderName = sanitizeFilename(folderName.trim());
-    logger.info(
+    logger.debug(
       `🧼 [DEBUG] Create-folder - Sanitized result: "${sanitizedFolderName}"`
     );
 
     if (!sanitizedFolderName) {
-      logger.info(
+      logger.debug(
         `❌ [DEBUG] Create-folder - Sanitization failed, rejecting request`
       );
       return res.status(400).json({
@@ -1168,7 +1168,7 @@ router.post("/api/create-folder", async (req, res) => {
         );
 
         // Check if this is an allowed provider variation
-        logger.info(
+        logger.debug(
           `🔍 [DEBUG] Create-folder - Checking if provider "${providerName}" is allowed for websiteID ${currentWebsiteID}`
         );
         let isAllowedProvider = false;
@@ -1182,7 +1182,7 @@ router.post("/api/create-folder", async (req, res) => {
               provider.providerName.slice(1),
           ];
 
-          logger.info(
+          logger.debug(
             `🔄 [DEBUG] Create-folder - Checking provider "${provider.providerName}" variations:`,
             variations
           );
@@ -1190,19 +1190,19 @@ router.post("/api/create-folder", async (req, res) => {
           if (variations.includes(providerName)) {
             isAllowedProvider = true;
             matchedProvider = provider;
-            logger.info(
+            logger.debug(
               `✅ [DEBUG] Create-folder - Found matching provider: "${provider.providerName}" for folder "${providerName}"`
             );
             break;
           } else {
-            logger.info(
+            logger.debug(
               `❌ [DEBUG] Create-folder - No match for provider "${provider.providerName}" against folder "${providerName}"`
             );
           }
         }
 
         if (matchedProvider) {
-          logger.info(
+          logger.debug(
             `✅ [DEBUG] Create-folder - Access granted for library provider (matched: "${matchedProvider.providerName}")`
           );
         }
@@ -1237,7 +1237,7 @@ router.post("/api/create-folder", async (req, res) => {
 
     // Azure Blob Storage doesn't have true folders, so we need to create a placeholder file
     // to make the folder visible in the browser immediately
-    logger.info(
+    logger.debug(
       `📁 [DEBUG] Creating folder in Azure Blob Storage: ${fullFolderPath}`
     );
 
@@ -1246,7 +1246,7 @@ router.post("/api/create-folder", async (req, res) => {
     const placeholderContent = `This is a placeholder file to create the folder structure in Azure Blob Storage.\nFolder: ${fullFolderPath}\nCreated: ${new Date().toISOString()}\nCreated by: AuthorID ${authorID}`;
 
     try {
-      logger.info(
+      logger.debug(
         `📝 [DEBUG] Creating placeholder file: ${placeholderFileName}`
       );
       const placeholderBlobClient =
@@ -1268,7 +1268,7 @@ router.post("/api/create-folder", async (req, res) => {
         }
       );
 
-      logger.info(
+      logger.debug(
         `✅ [DEBUG] Placeholder file created successfully: ${placeholderFileName}`
       );
     } catch (azureError) {
@@ -1283,10 +1283,10 @@ router.post("/api/create-folder", async (req, res) => {
     }
 
     // Insert into WebsiteLibraryProviderLinks
-    logger.info(
+    logger.debug(
       `📝 [DEBUG] Starting WebsiteLibraryProviderLinks INSERT operation`
     );
-    logger.info(`📊 [DEBUG] INSERT parameters:`, {
+    logger.debug(`📊 [DEBUG] INSERT parameters:`, {
       WebsiteID: currentWebsiteID,
       LibraryProviderName: sanitizedFolderName,
       DisplayName: sanitizedFolderName,
@@ -1295,7 +1295,7 @@ router.post("/api/create-folder", async (req, res) => {
     });
 
     try {
-      logger.info(
+      logger.debug(
         `🔗 [DEBUG] Database connection status for INSERT: ${
           db ? "Connected" : "Not connected"
         }`
@@ -1303,10 +1303,10 @@ router.post("/api/create-folder", async (req, res) => {
 
       const pool = await db;
       const insertRequest = pool.request();
-      logger.info(`📝 [DEBUG] Adding INSERT SQL parameters...`);
+      logger.debug(`📝 [DEBUG] Adding INSERT SQL parameters...`);
 
       insertRequest.input("WebsiteID", sql.BigInt, currentWebsiteID);
-      logger.info(
+      logger.debug(
         `  ✅ WebsiteID parameter added: ${currentWebsiteID} (BigInt)`
       );
 
@@ -1315,43 +1315,43 @@ router.post("/api/create-folder", async (req, res) => {
         sql.NVarChar,
         sanitizedFolderName
       );
-      logger.info(
+      logger.debug(
         `  ✅ LibraryProviderName parameter added: "${sanitizedFolderName}" (NVarChar)`
       );
 
       insertRequest.input("DisplayName", sql.NVarChar, sanitizedFolderName);
-      logger.info(
+      logger.debug(
         `  ✅ DisplayName parameter added: "${sanitizedFolderName}" (NVarChar)`
       );
 
       const insertQuery =
         "INSERT INTO dbo.WebsiteLibraryProviderLinks (WebsiteID, LibraryProviderName, DisplayName) VALUES (@WebsiteID, @LibraryProviderName, @DisplayName)";
-      logger.info(`🎯 [DEBUG] Executing INSERT query: ${insertQuery}`);
+      logger.debug(`🎯 [DEBUG] Executing INSERT query: ${insertQuery}`);
 
       const insertStartTime = Date.now();
       const insertResult = await insertRequest.query(insertQuery);
       const insertTime = Date.now() - insertStartTime;
 
-      logger.info(`⏱️  [DEBUG] INSERT completed in ${insertTime}ms`);
-      logger.info(`✅ [DEBUG] INSERT result:`, {
+      logger.debug(`⏱️  [DEBUG] INSERT completed in ${insertTime}ms`);
+      logger.debug(`✅ [DEBUG] INSERT result:`, {
         rowsAffected: insertResult.rowsAffected,
         returnValue: insertResult.returnValue,
         recordset: insertResult.recordset,
       });
 
       if (insertResult.rowsAffected && insertResult.rowsAffected[0] > 0) {
-        logger.info(
+        logger.debug(
           `🎉 [DEBUG] Successfully inserted ${insertResult.rowsAffected[0]} row(s) into WebsiteLibraryProviderLinks`
         );
       } else {
-        logger.info(
+        logger.debug(
           `⚠️  [DEBUG] INSERT completed but no rows were affected. rowsAffected:`,
           insertResult.rowsAffected
         );
       }
 
       // Verify the insert by querying back
-      logger.info(`🔍 [DEBUG] Verifying INSERT by querying back the record...`);
+      logger.debug(`🔍 [DEBUG] Verifying INSERT by querying back the record...`);
       const verifyPool = await db;
       const verifyRequest = verifyPool.request();
       verifyRequest.input("VerifyWebsiteID", sql.BigInt, currentWebsiteID);
@@ -1363,10 +1363,10 @@ router.post("/api/create-folder", async (req, res) => {
 
       const verifyQuery =
         "SELECT * FROM dbo.WebsiteLibraryProviderLinks WHERE WebsiteID = @VerifyWebsiteID AND LibraryProviderName = @VerifyProviderName";
-      logger.info(`🔍 [DEBUG] Verification query: ${verifyQuery}`);
+      logger.debug(`🔍 [DEBUG] Verification query: ${verifyQuery}`);
 
       const verifyResult = await verifyRequest.query(verifyQuery);
-      logger.info(`🔍 [DEBUG] Verification result:`, {
+      logger.debug(`🔍 [DEBUG] Verification result:`, {
         recordsFound: verifyResult.recordset
           ? verifyResult.recordset.length
           : 0,
@@ -1391,24 +1391,24 @@ router.post("/api/create-folder", async (req, res) => {
       throw insertError; // Re-throw to maintain original error handling
     }
 
-    logger.info(
+    logger.debug(
       `🎉 [SUCCESS] Folder created: ${fullFolderPath} by user ${authorID} and linked to website ${currentWebsiteID}`
     );
 
     // Final verification - query all providers for this website to confirm the insert
-    logger.info(
+    logger.debug(
       `🔍 [DEBUG] Final verification - querying all providers for websiteID ${currentWebsiteID}...`
     );
     try {
       const finalVerifyProviders = await getAllowedLibraryProviders(
         currentWebsiteID
       );
-      logger.info(
+      logger.debug(
         `📊 [DEBUG] Final verification result - Total providers now:`,
         finalVerifyProviders.length
       );
       finalVerifyProviders.forEach((provider, index) => {
-        logger.info(
+        logger.debug(
           `  📝 [DEBUG] Provider ${index + 1}: "${
             provider.providerName
           }" (Display: "${provider.displayName}")`
@@ -1438,8 +1438,8 @@ router.post("/api/create-folder", async (req, res) => {
 
 // Delete folder endpoint
 router.delete("/api/delete-folder", async (req, res) => {
-  logger.info(`📝 [DEBUG] Delete-folder API called`);
-  logger.info(`📊 [DEBUG] Delete-folder - Request body:`, req.body);
+  logger.debug(`📝 [DEBUG] Delete-folder API called`);
+  logger.debug(`📊 [DEBUG] Delete-folder - Request body:`, req.body);
 
   try {
     const { folderPath } = req.body;
@@ -1473,7 +1473,7 @@ router.delete("/api/delete-folder", async (req, res) => {
       });
     }
 
-    logger.info(
+    logger.debug(
       `📁 [DEBUG] Attempting to delete folder: ${normalizedFolderPath}`
     );
 
@@ -1514,11 +1514,11 @@ router.delete("/api/delete-folder", async (req, res) => {
 
       if (exists) {
         await placeholderBlobClient.delete();
-        logger.info(
+        logger.debug(
           `✅ [DEBUG] Placeholder file deleted: ${placeholderFileName}`
         );
       } else {
-        logger.info(
+        logger.debug(
           `ℹ️  [DEBUG] No placeholder file found: ${placeholderFileName}`
         );
       }
@@ -1546,7 +1546,7 @@ router.delete("/api/delete-folder", async (req, res) => {
           "DELETE FROM dbo.WebsiteLibraryProviderLinks WHERE WebsiteID = @WebsiteID AND LibraryProviderName = @LibraryProviderName";
         const deleteResult = await deleteRequest.query(deleteQuery);
 
-        logger.info(`📊 [DEBUG] Database deletion result:`, {
+        logger.debug(`📊 [DEBUG] Database deletion result:`, {
           rowsAffected: deleteResult.rowsAffected,
           folderName: folderName,
           websiteID: currentWebsiteID,

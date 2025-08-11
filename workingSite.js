@@ -1,11 +1,11 @@
 const db = require("./db"); // Use the shared database pool
 const sql = require("mssql"); // Use for data types like sql.Int
 
-logger.info("=== workingSite.js loaded - CORRECTED VERSION ===");
+logger.debug("=== workingSite.js loaded - CORRECTED VERSION ===");
 
 async function setCurrentWorkingSite(authorID, websiteID = null) {
   try {
-    logger.info("Setting working site:", { authorID, websiteID });
+    logger.debug("Setting working site:", { authorID, websiteID });
     const result = await db
       .request()
       .input("AuthorID", sql.Int, authorID)
@@ -22,7 +22,7 @@ async function setCurrentWorkingSite(authorID, websiteID = null) {
 
 async function getCurrentWorkingSite(authorID) {
   try {
-    logger.info("Getting working site for authorID:", authorID);
+    logger.debug("Getting working site for authorID:", authorID);
     if (!authorID) return null;
 
     const result = await db.request().input("AuthorID", sql.Int, authorID)

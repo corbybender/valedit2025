@@ -1,0 +1,339 @@
+/* ─────────────── Horizontal Megamenu CSS ─────────────── */
+
+/* Megamenu Container */
+.megamenu-header {
+  background: white;
+  border-bottom: 1px solid #e2e8f0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  height: auto;
+  min-height: 60px;
+}
+
+.megamenu-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  height: 60px;
+}
+
+/* Logo Section */
+.megamenu-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 18px;
+  color: #1e293b;
+  text-decoration: none;
+}
+
+.megamenu-logo img {
+  height: 32px;
+  width: auto;
+}
+
+/* Current Website Indicator */
+.megamenu-website-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f8fafc;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  font-size: 14px;
+  color: #64748b;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.megamenu-website-indicator:hover {
+  background: #f1f5f9;
+  color: #3b82f6;
+}
+
+.megamenu-website-name {
+  color: #10b981;
+  font-weight: 500;
+}
+
+/* Navigation Menu */
+.megamenu-nav {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  flex: 1;
+  justify-content: center;
+}
+
+.megamenu-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  color: #64748b;
+  text-decoration: none;
+  font-weight: 500;
+  border-radius: 8px;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.megamenu-item:hover {
+  background: #f1f5f9;
+  color: #3b82f6;
+}
+
+.megamenu-item.has-dropdown .arrow {
+  font-size: 10px;
+  transition: transform 0.2s;
+}
+
+.megamenu-item.has-dropdown:hover .arrow {
+  transform: rotate(180deg);
+}
+
+.megamenu-item i {
+  width: 16px;
+  text-align: center;
+  font-size: 14px;
+}
+
+/* FORCE DROPDOWNS TO ALWAYS SHOW FOR DEBUGGING */
+.megamenu-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: #ff0000 !important; /* BRIGHT RED */
+  border: 4px solid #000000 !important; /* BLACK BORDER */
+  border-radius: 8px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.8) !important;
+  min-width: 250px;
+  padding: 12px 0;
+  z-index: 999999 !important;
+  
+  /* ALWAYS VISIBLE */
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: translateY(0) !important;
+  pointer-events: auto !important;
+  display: block !important;
+}
+
+/* Show dropdown on hover - multiple selectors to ensure it works */
+.megamenu-item.has-dropdown:hover .megamenu-dropdown,
+.megamenu-item:hover .megamenu-dropdown {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* Keep dropdown visible when hovering over the dropdown itself */
+.megamenu-dropdown:hover {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* Extend hover area to prevent dropdown from disappearing */
+.megamenu-item.has-dropdown::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  right: 0;
+  height: 8px;
+  background: transparent;
+}
+
+.megamenu-dropdown-item {
+  display: block !important;
+  padding: 15px 20px !important;
+  color: #ffffff !important; /* WHITE TEXT ON RED BACKGROUND */
+  text-decoration: none !important;
+  font-size: 16px !important;
+  font-weight: bold !important;
+  cursor: pointer !important;
+  border-bottom: 1px solid rgba(255,255,255,0.3) !important;
+}
+
+.megamenu-dropdown-item:hover {
+  background: #ff4444 !important;
+  color: #ffff00 !important; /* BRIGHT YELLOW */
+}
+
+.megamenu-dropdown-item:last-child {
+  border-bottom: none !important;
+}
+
+.megamenu-dropdown-item.disabled {
+  color: #cbd5e1;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.megamenu-dropdown-item.disabled:hover {
+  background: transparent;
+  color: #cbd5e1;
+}
+
+.megamenu-dropdown-item i {
+  width: 20px !important;
+  text-align: center !important;
+  font-size: 16px !important;
+  color: inherit !important;
+  display: inline-block !important;
+  margin-right: 10px !important;
+}
+
+/* User Actions */
+.megamenu-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.megamenu-search {
+  position: relative;
+}
+
+.megamenu-search input {
+  padding: 8px 40px 8px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #f8fafc;
+  width: 250px;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.megamenu-search input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  background: white;
+}
+
+.megamenu-search .search-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+.megamenu-user {
+  position: relative;
+}
+
+.megamenu-user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.megamenu-user-avatar:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+/* Main Content Adjustments */
+.megamenu-layout {
+  padding-top: 80px; /* Account for fixed megamenu height */
+}
+
+.megamenu-main-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px 24px;
+  min-height: calc(100vh - 80px);
+}
+
+/* Admin Badge */
+.admin-badge {
+  background: #ef4444;
+  color: white;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  margin-left: 4px;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .megamenu-nav {
+    gap: 16px;
+  }
+  
+  .megamenu-search input {
+    width: 200px;
+  }
+}
+
+@media (max-width: 768px) {
+  .megamenu-container {
+    padding: 0 16px;
+    flex-wrap: wrap;
+    height: auto;
+    min-height: 60px;
+  }
+  
+  .megamenu-nav {
+    order: 3;
+    width: 100%;
+    justify-content: flex-start;
+    overflow-x: auto;
+    padding: 8px 0;
+  }
+  
+  .megamenu-search input {
+    width: 150px;
+  }
+  
+  .megamenu-layout {
+    padding-top: 100px; /* More space on mobile due to wrapping */
+  }
+}
+
+/* Animation for smooth transitions */
+.megamenu-item,
+.megamenu-dropdown-item {
+  position: relative;
+  overflow: hidden;
+}
+
+.megamenu-item::before,
+.megamenu-dropdown-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.1), transparent);
+  transition: left 0.5s;
+}
+
+.megamenu-item:hover::before,
+.megamenu-dropdown-item:hover::before {
+  left: 100%;
+}
