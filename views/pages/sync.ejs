@@ -14,6 +14,7 @@
     />
     <link href="/public/css/dashboard.css" rel="stylesheet" />
     <link href="/public/css/content.css" rel="stylesheet" />
+    <link href="/public/css/pages.css" rel="stylesheet" />
   </head>
   <body class="bg-gray-50">
     <!-- Tailwind Megamenu -->
@@ -92,12 +93,22 @@
               >
                 <i class="fas fa-refresh"></i> Refresh
               </button>
+              <div class="flex-grow"></div>
+                <button
+                    id="sync-selected-button"
+                    class="action-btn sync-selected-btn"
+                >
+                    <i class="fas fa-sync-alt"></i> Sync Selected
+                </button>
             </div>
           </div>
           <div class="overflow-x-auto">
             <table class="w-full">
               <thead class="bg-gray-50">
                 <tr>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <input type="checkbox" id="select-all-checkbox">
+                  </th>
                   <th
                     class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                   >
@@ -140,7 +151,7 @@
                 class="bg-white divide-y divide-gray-200"
               >
                 <tr>
-                  <td colspan="7" class="px-4 py-8 text-center text-gray-500">
+                  <td colspan="8" class="px-4 py-8 text-center text-gray-500">
                     <i class="fas fa-spinner fa-spin"></i> Loading sync queue...
                   </td>
                 </tr>
@@ -179,9 +190,9 @@
 
             if (data.items.length === 0) {
               const filterText = websiteSearch
-                ? ` matching "${websiteSearch}"`
+                ? ` matching \"${websiteSearch}\"`
                 : "";
-              tbody.innerHTML = `<tr><td colspan="7" class="px-4 py-8 text-center text-gray-500">No sync queue items found${filterText}</td></tr>`;
+              tbody.innerHTML = `<tr><td colspan="8" class="px-4 py-8 text-center text-gray-500">No sync queue items found${filterText}</td></tr>`;
               return;
             }
 
@@ -197,11 +208,14 @@
 
                 const retryButton =
                   item.Status.toUpperCase() === "FAILED"
-                    ? `<button onclick="retrySyncItem(${item.ID})" class="text-blue-600 hover:text-blue-900 text-sm"><i class="fas fa-redo"></i> Retry</button>`
+                    ? `<button onclick="retrySyncItem(${item.ID})" class="action-btn edit-btn"><i class="fas fa-redo"></i> Retry</button>`
                     : "";
+
+                const syncNowButton = `<button onclick="syncNow(${item.ID})" class="action-btn sync-now-btn"><i class="fas fa-sync-alt"></i> Sync Now</button>`;
 
                 return `
                 <tr>
+                  <td class="px-4 py-3 text-sm"><input type="checkbox" class="row-checkbox" value="${item.ID}"></td>
                   <td class="px-4 py-3 text-sm">${item.ID}</td>
                   <td class="px-4 py-3 text-sm">${item.PageTitle || "N/A"}</td>
                   <td class="px-4 py-3 text-sm">${
@@ -216,17 +230,46 @@
                   <td class="px-4 py-3 text-sm">${new Date(
                     item.QueuedAt
                   ).toLocaleString()}</td>
-                  <td class="px-4 py-3 text-sm">${retryButton}</td>
+                  <td class="px-4 py-3 text-sm">${retryButton}${syncNowButton}</td>
                 </tr>
               `;
               })
               .join("");
+              
+            // Add event listeners after rendering the table
+            addCheckboxListeners();
           })
           .catch((error) => {
             console.error("Error loading sync queue:", error);
             document.getElementById("sync-queue-tbody").innerHTML =
-              '<tr><td colspan="7" class="px-4 py-8 text-center text-red-500">Error loading sync queue</td></tr>';
+              '<tr><td colspan="8" class="px-4 py-8 text-center text-red-500">Error loading sync queue</td></tr>';
           });
+      }
+
+      function addCheckboxListeners() {
+        const selectAllCheckbox = document.getElementById('select-all-checkbox');
+        const rowCheckboxes = document.querySelectorAll('.row-checkbox');
+
+        if (selectAllCheckbox) {
+            selectAllCheckbox.addEventListener('change', function() {
+                rowCheckboxes.forEach(checkbox => {
+                    checkbox.checked = this.checked;
+                });
+            });
+        }
+
+        rowCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                if (!this.checked) {
+                    selectAllCheckbox.checked = false;
+                } else {
+                    const allChecked = Array.from(rowCheckboxes).every(c => c.checked);
+                    if (allChecked) {
+                        selectAllCheckbox.checked = true;
+                    }
+                }
+            });
+        });
       }
 
       function updateSyncStats() {
@@ -287,6 +330,11 @@
           });
       }
 
+      function syncNow(syncId) {
+        // Placeholder for future functionality
+        alert(`Sync Now clicked for item ${syncId}`);
+      }
+
       // Load sync queue on page load
       document.addEventListener("DOMContentLoaded", function () {
         loadSyncQueue();
@@ -309,4 +357,5 @@
       });
     </script>
   </body>
+</html>
 </html>

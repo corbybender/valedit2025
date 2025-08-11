@@ -162,6 +162,10 @@
 .view-btn:hover { background-color: #d1fae5; }
 .edit-btn { background-color: #e0e7ff; color: #4338ca; border-color: #c7d2fe; }
 .edit-btn:hover { background-color: #c7d2fe; }
+.sync-now-btn { background-color: #dbeafe; color: #1e40af; border-color: #3b82f6; }
+.sync-now-btn:hover { background-color: #bfdbfe; }
+.sync-selected-btn { background-color: #10b981; color: white; }
+.sync-selected-btn:hover { background-color: #059669; }
 
 /* Styles for the page search input to match website search input */
 #page-search-input {

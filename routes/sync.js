@@ -45,7 +45,7 @@ router.get("/", async (req, res) => {
     const currentSite = await workingSiteService.getCurrentWorkingSite(
       authorID
     );
-    const allWebsites = await workingSiteService.getAllUserWebsites(authorID);
+    const allWebsites = await workingSiteService.getAllUsersWorkingSites();
 
     // Render sync status page
     res.render("pages/sync", {
