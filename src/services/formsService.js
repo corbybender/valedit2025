@@ -45,7 +45,7 @@ class FormsService {
     successMessage = "Thank you for your submission!",
     errorMessage = "There was an error processing your submission.",
     redirectUrl = null,
-    isPublished = false,
+    isPublished = true,
     requiresAuthentication = false,
     allowMultipleSubmissions = true,
   }) {
@@ -448,6 +448,186 @@ class FormsService {
       return submission;
     } catch (error) {
       console.error("Error creating form submission:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create a test form submission with custom email options
+   * @param {Object} params - Test submission parameters
+   * @param {number} params.formId - Form ID
+   * @param {number} [params.authorId] - Author ID if authenticated
+   * @param {string} [params.userIP] - User IP address
+   * @param {string} [params.userAgent] - User agent string
+   * @param {string} [params.referrerUrl] - Referrer URL
+   * @param {Object} params.submissionData - Form submission data
+   * @param {Array} [params.testEmailRecipients] - Custom test email recipients
+   * @param {string} params.emailOption - Email option: 'form' or 'custom'
+   * @returns {Promise<Object>} Created submission object
+   */
+  static async createTestSubmission({
+    formId,
+    authorId = null,
+    userIP = null,
+    userAgent = null,
+    referrerUrl = null,
+    submissionData,
+    testEmailRecipients = null,
+    emailOption = 'form',
+  }) {
+    try {
+      const pool = await db;
+      const request = pool.request();
+
+      // Add test indicator to submission data
+      const testSubmissionData = {
+        ...submissionData,
+        _isTestSubmission: true,
+        _testEmailOption: emailOption,
+        _testEmailRecipients: testEmailRecipients
+      };
+
+      // First, create the submission record
+      const result = await request
+        .input("formId", sql.Int, formId)
+        .input("authorId", sql.Int, authorId)
+        .input("userIP", sql.NVarChar(50), userIP)
+        .input("userAgent", sql.NVarChar(500), userAgent)
+        .input("referrerUrl", sql.NVarChar(500), referrerUrl)
+        .input(
+          "submissionData",
+          sql.NVarChar(sql.MAX),
+          JSON.stringify(testSubmissionData)
+        ).query(`
+          INSERT INTO FormSubmissions (
+            FormID, AuthorID, UserIP, UserAgent, ReferrerUrl, SubmissionData, Notes
+          )
+          OUTPUT INSERTED.*
+          VALUES (
+            @formId, @authorId, @userIP, @userAgent, @referrerUrl, @submissionData, 'Test submission'
+          )
+        `);
+
+      const submission = result.recordset[0];
+
+      // Send test email notifications
+      try {
+        await this.sendTestEmailNotifications(submission, testEmailRecipients, emailOption);
+      } catch (emailError) {
+        console.error("Error sending test email notifications:", emailError);
+        // Don't fail the submission if email fails, just log the error
+      }
+
+      return submission;
+    } catch (error) {
+      console.error("Error creating test form submission:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Send test email notifications for form submission
+   * @param {Object} submission - Form submission object
+   * @param {Array} testEmailRecipients - Custom test email recipients
+   * @param {string} emailOption - Email option: 'form' or 'custom'
+   * @returns {Promise<void>}
+   */
+  static async sendTestEmailNotifications(submission, testEmailRecipients, emailOption) {
+    // Check if email service is available before attempting to send emails
+    if (!isEmailServiceAvailable()) {
+      console.warn("Email service not available, skipping test email notifications");
+      return;
+    }
+
+    try {
+      const pool = await db;
+      const request = pool.request();
+
+      // Get form and website information
+      const formResult = await request.input(
+        "formId",
+        sql.Int,
+        submission.FormID
+      ).query(`
+          SELECT f.*, w.Domain, w.WebsiteID
+          FROM Forms f
+          INNER JOIN Websites w ON f.WebsiteID = w.WebsiteID
+          WHERE f.FormID = @formId
+        `);
+
+      if (formResult.recordset.length === 0) {
+        console.error("Form not found for test submission:", submission.FormID);
+        return;
+      }
+
+      const form = formResult.recordset[0];
+      const website = { Domain: form.Domain, WebsiteID: form.WebsiteID };
+
+      // Parse form settings to get email configuration
+      const formSettings = form.FormSettings
+        ? JSON.parse(form.FormSettings)
+        : {};
+      const emailSettings = formSettings.notifications || {};
+
+      // Determine recipients based on email option
+      let recipients = [];
+      
+      if (emailOption === 'custom' && testEmailRecipients && testEmailRecipients.length > 0) {
+        recipients = testEmailRecipients;
+      } else if (emailSettings.emailRecipients) {
+        recipients = Array.isArray(emailSettings.emailRecipients)
+          ? emailSettings.emailRecipients
+          : [emailSettings.emailRecipients];
+      }
+
+      // Send test notification emails
+      for (const recipient of recipients) {
+        if (recipient && recipient.trim()) {
+          try {
+            await EmailService.sendFormSubmissionNotification({
+              to: recipient.trim(),
+              form: form,
+              submission: submission,
+              website: website,
+              isTest: true
+            });
+          } catch (error) {
+            console.error(
+              `Failed to send test notification to ${recipient}:`,
+              error
+            );
+          }
+        }
+      }
+
+      // If using custom emails, also send to original form recipients for comparison
+      if (emailOption === 'custom' && emailSettings.emailRecipients) {
+        const originalRecipients = Array.isArray(emailSettings.emailRecipients)
+          ? emailSettings.emailRecipients
+          : [emailSettings.emailRecipients];
+
+        for (const recipient of originalRecipients) {
+          if (recipient && recipient.trim()) {
+            try {
+              await EmailService.sendFormSubmissionNotification({
+                to: recipient.trim(),
+                form: form,
+                submission: submission,
+                website: website,
+                isTest: true,
+                note: `This is a test submission. The test was also sent to: ${testEmailRecipients.join(', ')}`
+              });
+            } catch (error) {
+              console.error(
+                `Failed to send test notification to original recipient ${recipient}:`,
+                error
+              );
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error in sendTestEmailNotifications:", error);
       throw error;
     }
   }

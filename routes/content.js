@@ -467,6 +467,71 @@ router.get("/forms/public/:formId", async (req, res) => {
   }
 });
 
+// TEST endpoint to verify route is working
+router.get("/forms/api/:formId/test", async (req, res) => {
+  console.log("🧪 GET Test endpoint hit for form:", req.params.formId);
+  res.json({ success: true, message: "Test endpoint working", formId: req.params.formId });
+});
+
+// TEST form submission (authenticated endpoint for testing forms)
+router.post("/forms/api/:formId/test", async (req, res) => {
+  try {
+    console.log("🧪 Test form submission endpoint hit:", req.params.formId);
+    console.log("🧪 Request body:", req.body);
+    
+    const authorID = req.session.authorID;
+    console.log("🧪 Author ID:", authorID);
+    
+    if (!authorID) {
+      console.log("🧪 No author ID found - not authenticated");
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+
+    // Get current working site
+    const workingSiteService = require("../src/services/workingSiteService");
+    const currentSite = await workingSiteService.getCurrentWorkingSite(authorID);
+    
+    if (!currentSite) {
+      return res.status(400).json({ error: "No working site selected" });
+    }
+
+    const formId = parseInt(req.params.formId);
+    const { submissionData, testEmailRecipients, emailOption } = req.body;
+
+    // Verify form exists and belongs to current website
+    const existingForm = await FormsService.getFormById(formId, currentSite.WebsiteID);
+    if (!existingForm) {
+      return res.status(404).json({ error: "Form not found" });
+    }
+
+    // Get client info
+    const userIP = req.ip || req.connection.remoteAddress;
+    const userAgent = req.get('User-Agent');
+    const referrerUrl = req.get('Referrer');
+
+    // For test submissions, we'll create a special submission that handles custom email logic
+    const submission = await FormsService.createTestSubmission({
+      formId,
+      authorId: authorID,
+      userIP,
+      userAgent,
+      referrerUrl,
+      submissionData,
+      testEmailRecipients,
+      emailOption
+    });
+
+    res.json({ 
+      success: true, 
+      submissionId: submission.SubmissionID,
+      message: "Test form submitted successfully! Check your email for notifications." 
+    });
+  } catch (error) {
+    console.error("Error creating test form submission:", error);
+    res.status(500).json({ error: "Failed to submit test form" });
+  }
+});
+
 // CREATE form submission (public endpoint for form submissions)
 router.post("/forms/submit/:formId", async (req, res) => {
   try {

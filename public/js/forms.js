@@ -190,6 +190,14 @@ document.addEventListener("DOMContentLoaded", function () {
             viewFormSubmissions(form.FormID)
           );
         }
+
+        // Test form button
+        const testBtn = card.querySelector(".test-form-btn");
+        if (testBtn) {
+          testBtn.addEventListener("click", () =>
+            showTestFormModal(form.FormID)
+          );
+        }
       }
     });
   }
@@ -366,9 +374,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 submission.UserIP || "N/A"
               }</td>
               <td class="px-4 py-3 text-sm text-gray-600 max-w-xs truncate" title="${
-                submission.UserAgent || "N/A"
-              }">${submission.UserAgent || "N/A"}</td>
-              <td class="px-4 py-3 text-sm text-gray-600 max-w-xs truncate" title="${
                 submission.ReferrerUrl || "N/A"
               }">${submission.ReferrerUrl || "N/A"}</td>
               <td class="px-4 py-3 text-sm text-gray-900">${submittedDate}</td>
@@ -396,7 +401,7 @@ document.addEventListener("DOMContentLoaded", function () {
           `;
             })
             .join("")
-        : '<tr><td colspan="7" class="px-4 py-8 text-center text-gray-500">No submissions found</td></tr>';
+        : '<tr><td colspan="6" class="px-4 py-8 text-center text-gray-500">No submissions found</td></tr>';
 
     modalDiv.innerHTML = `
       <div class="bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] overflow-hidden">
@@ -413,7 +418,6 @@ document.addEventListener("DOMContentLoaded", function () {
             <thead class="bg-gray-50 sticky top-0">
               <tr>
                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">IP Address</th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User Agent</th>
                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Referrer</th>
                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Submitted At</th>
                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
@@ -1158,7 +1162,7 @@ document.addEventListener("DOMContentLoaded", function () {
       },
       successMessage: "Thank you for your submission!",
       errorMessage: "There was an error processing your submission.",
-      isPublished: false,
+      isPublished: true,
     };
 
     try {
@@ -1347,6 +1351,361 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Check for URL parameters
   checkForUrlParameters();
+
+  // Test form functionality
+  let currentTestFormId = null;
+  let currentTestFormData = null;
+
+  async function showTestFormModal(formId) {
+    try {
+      const response = await fetch(`/content/forms/api/${formId}`);
+      const result = await response.json();
+
+      if (result.success && result.form) {
+        currentTestFormId = formId;
+        currentTestFormData = result.form;
+        
+        setupTestModal(result.form);
+        showTestModal();
+      } else {
+        showNotification(result.error || "Failed to load form for testing", "error");
+      }
+    } catch (error) {
+      console.error("Error loading form for testing:", error);
+      showNotification("Failed to load form for testing", "error");
+    }
+  }
+
+  function setupTestModal(form) {
+    // Display form email addresses
+    const formEmailContainer = document.getElementById("formEmailAddresses");
+    if (formEmailContainer) {
+      let emailInfo = "No email addresses configured";
+      
+      if (form.FormSettings) {
+        const settings = typeof form.FormSettings === "string" 
+          ? JSON.parse(form.FormSettings) 
+          : form.FormSettings;
+        
+        if (settings.notifications && settings.notifications.emailRecipients) {
+          const recipients = Array.isArray(settings.notifications.emailRecipients) 
+            ? settings.notifications.emailRecipients 
+            : [settings.notifications.emailRecipients];
+          
+          emailInfo = recipients.join(", ");
+        }
+      }
+      
+      formEmailContainer.textContent = emailInfo;
+    }
+
+    // Render the test form
+    const testFormContent = document.getElementById("testFormContent");
+    if (testFormContent && form.FormElements && form.FormElements.elements) {
+      const formHtml = renderTestForm(form);
+      testFormContent.innerHTML = formHtml;
+    }
+
+    // Setup email option radio buttons
+    const emailRadios = document.querySelectorAll('input[name="emailOption"]');
+    const customEmailInput = document.getElementById("customTestEmail");
+    
+    emailRadios.forEach(radio => {
+      radio.addEventListener("change", function() {
+        if (customEmailInput) {
+          customEmailInput.disabled = this.value !== "custom";
+          if (this.value === "custom") {
+            customEmailInput.focus();
+          }
+        }
+      });
+    });
+  }
+
+  function renderTestForm(form) {
+    let html = `<form id="testForm" class="space-y-4">`;
+    
+    if (form.FormElements && form.FormElements.elements) {
+      form.FormElements.elements.forEach(element => {
+        html += renderTestFormElement(element);
+      });
+    }
+    
+    html += `</form>`;
+    return html;
+  }
+
+  function renderTestFormElement(element) {
+    const props = element.properties;
+    let html = `<div class="mb-4">`;
+
+    switch (element.type) {
+      case "text":
+        html += `
+          <label class="block text-sm font-medium text-gray-700 mb-2">${props.label}</label>
+          <input type="text" name="${props.name}" placeholder="${props.placeholder}" ${props.required ? "required" : ""} 
+                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        `;
+        break;
+      case "textarea":
+        html += `
+          <label class="block text-sm font-medium text-gray-700 mb-2">${props.label}</label>
+          <textarea name="${props.name}" placeholder="${props.placeholder}" rows="${props.rows}" ${props.required ? "required" : ""}
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+        `;
+        break;
+      case "email":
+        html += `
+          <label class="block text-sm font-medium text-gray-700 mb-2">${props.label}</label>
+          <input type="email" name="${props.name}" placeholder="${props.placeholder}" ${props.required ? "required" : ""} 
+                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        `;
+        break;
+      case "select":
+        const options = props.options.split("\n");
+        html += `
+          <label class="block text-sm font-medium text-gray-700 mb-2">${props.label}</label>
+          <select name="${props.name}" ${props.required ? "required" : ""} 
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="">Please select...</option>
+            ${options.map(option => `<option value="${option.trim()}">${option.trim()}</option>`).join("")}
+          </select>
+        `;
+        break;
+      case "checkbox":
+        html += `
+          <div class="flex items-center">
+            <input type="checkbox" name="${props.name}" ${props.required ? "required" : ""} 
+                   class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" />
+            <label class="ml-2 text-sm text-gray-700">${props.text}</label>
+          </div>
+        `;
+        break;
+      case "radio":
+        const radioOptions = props.options.split("\n");
+        html += `
+          <fieldset>
+            <legend class="block text-sm font-medium text-gray-700 mb-2">${props.label}</legend>
+            ${radioOptions.map((option, index) => `
+              <div class="flex items-center mb-2">
+                <input type="radio" name="${props.name}" value="${option.trim()}" ${props.required && index === 0 ? "required" : ""}
+                       class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300" />
+                <label class="ml-2 text-sm text-gray-700">${option.trim()}</label>
+              </div>
+            `).join("")}
+          </fieldset>
+        `;
+        break;
+      case "submit":
+        // Skip submit button in test form - we have our own
+        return "";
+    }
+
+    html += "</div>";
+    return html;
+  }
+
+  function showTestModal() {
+    const modal = document.getElementById("testFormModal");
+    if (modal) {
+      modal.classList.remove("hidden");
+      // Attach event listeners after modal is shown
+      attachTestModalEventListeners();
+    }
+  }
+
+  // Event listeners for test modal - attach when modal is shown
+  function attachTestModalEventListeners() {
+    const closeTestModal = document.getElementById("closeTestModal");
+    const cancelTestBtn = document.getElementById("cancelTestBtn");
+    const submitTestBtn = document.getElementById("submitTestBtn");
+    const testModal = document.getElementById("testFormModal");
+
+    if (closeTestModal) {
+      closeTestModal.removeEventListener("click", hideTestModal);
+      closeTestModal.addEventListener("click", hideTestModal);
+    }
+
+    if (cancelTestBtn) {
+      cancelTestBtn.removeEventListener("click", hideTestModal);
+      cancelTestBtn.addEventListener("click", hideTestModal);
+    }
+
+    if (submitTestBtn) {
+      submitTestBtn.removeEventListener("click", submitTestForm);
+      submitTestBtn.addEventListener("click", submitTestForm);
+    }
+
+    // Close modal when clicking outside
+    if (testModal) {
+      testModal.removeEventListener("click", handleTestModalOutsideClick);
+      testModal.addEventListener("click", handleTestModalOutsideClick);
+    }
+
+    // Close modal on escape key
+    document.removeEventListener("keydown", handleTestModalEscape);
+    document.addEventListener("keydown", handleTestModalEscape);
+  }
+
+  function handleTestModalOutsideClick(e) {
+    const testModal = document.getElementById("testFormModal");
+    if (e.target === testModal) {
+      hideTestModal();
+    }
+  }
+
+  function handleTestModalEscape(e) {
+    if (e.key === "Escape") {
+      const testModal = document.getElementById("testFormModal");
+      if (testModal && !testModal.classList.contains("hidden")) {
+        hideTestModal();
+      }
+    }
+  }
+
+  function hideTestModal() {
+    const modal = document.getElementById("testFormModal");
+    if (modal) {
+      modal.classList.add("hidden");
+    }
+    
+    // Remove event listeners
+    document.removeEventListener("keydown", handleTestModalEscape);
+    
+    // Reset form data
+    currentTestFormId = null;
+    currentTestFormData = null;
+    
+    // Reset email option to form default
+    const formRadio = document.querySelector('input[name="emailOption"][value="form"]');
+    if (formRadio) {
+      formRadio.checked = true;
+    }
+    
+    // Clear custom email
+    const customEmailInput = document.getElementById("customTestEmail");
+    if (customEmailInput) {
+      customEmailInput.value = "";
+      customEmailInput.disabled = true;
+    }
+  }
+
+  async function submitTestForm() {
+    if (!currentTestFormId || !currentTestFormData) {
+      showNotification("No form loaded for testing", "error");
+      return;
+    }
+
+    const testForm = document.getElementById("testForm");
+    if (!testForm) {
+      showNotification("Test form not found", "error");
+      return;
+    }
+
+    // Validate form
+    if (!testForm.checkValidity()) {
+      testForm.reportValidity();
+      return;
+    }
+
+    // Collect form data
+    const formData = new FormData(testForm);
+    const submissionData = {};
+    
+    for (let [key, value] of formData.entries()) {
+      submissionData[key] = value;
+    }
+
+    // Determine email destination
+    const emailOption = document.querySelector('input[name="emailOption"]:checked').value;
+    let testEmailRecipients = null;
+    
+    if (emailOption === "custom") {
+      const customEmail = document.getElementById("customTestEmail").value;
+      if (!customEmail) {
+        showNotification("Please enter a custom test email address", "error");
+        return;
+      }
+      testEmailRecipients = [customEmail];
+    }
+
+    try {
+      // Show loading state
+      const submitBtn = document.getElementById("submitTestBtn");
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Submitting...';
+      }
+
+      console.log("🧪 Submitting test form:", {
+        formId: currentTestFormId,
+        submissionData: submissionData,
+        testEmailRecipients: testEmailRecipients,
+        emailOption: emailOption
+      });
+
+      // First test GET to verify auth and route
+      console.log("🧪 Testing GET endpoint first...");
+      const testGet = await fetch(`/content/forms/api/${currentTestFormId}/test`);
+      console.log("🧪 GET test status:", testGet.status);
+      
+      if (testGet.ok) {
+        const testResult = await testGet.json();
+        console.log("🧪 GET test result:", testResult);
+      } else {
+        console.error("🧪 GET test failed");
+      }
+
+      const response = await fetch(`/content/forms/api/${currentTestFormId}/test`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          submissionData: submissionData,
+          testEmailRecipients: testEmailRecipients,
+          emailOption: emailOption
+        }),
+      });
+
+      console.log("🧪 Response status:", response.status);
+      console.log("🧪 Response OK:", response.ok);
+
+      // Check if response is JSON
+      const contentType = response.headers.get("content-type");
+      console.log("🧪 Content-Type:", contentType);
+
+      let result;
+      if (contentType && contentType.includes("application/json")) {
+        result = await response.json();
+      } else {
+        const text = await response.text();
+        console.error("🧪 Non-JSON response:", text);
+        throw new Error(`Server returned non-JSON response: ${response.status}`);
+      }
+
+      if (result.success) {
+        showNotification("Test submission successful! Check your email for notifications.", "success");
+        hideTestModal();
+      } else {
+        showNotification(result.error || "Test submission failed", "error");
+      }
+    } catch (error) {
+      console.error("Error submitting test form:", error);
+      showNotification("Failed to submit test form", "error");
+    } finally {
+      // Restore button state
+      const submitBtn = document.getElementById("submitTestBtn");
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-paper-plane mr-2"></i>Submit Test';
+      }
+    }
+  }
+
+
+  // Make functions globally accessible
+  window.showTestFormModal = showTestFormModal;
 
   // Initialize based on current state
   initializeCurrentTab();

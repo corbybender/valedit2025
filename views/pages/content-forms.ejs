@@ -377,6 +377,76 @@
       </div>
     </div>
 
+    <!-- Test Form Modal -->
+    <div
+      id="testFormModal"
+      class="fixed inset-0 bg-black bg-opacity-50 hidden z-50"
+    >
+      <div class="flex items-center justify-center h-full p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full">
+          <div class="flex justify-between items-center p-6 border-b">
+            <h2 class="text-xl font-bold">Test Form Submission</h2>
+            <button id="closeTestModal" class="text-gray-400 hover:text-gray-600">
+              <i class="fas fa-times text-xl"></i>
+            </button>
+          </div>
+          <div class="p-6">
+            <div class="mb-6">
+              <h3 class="text-lg font-medium text-gray-900 mb-4">Email Options</h3>
+              <div class="space-y-4">
+                <div>
+                  <label class="flex items-center">
+                    <input type="radio" name="emailOption" value="form" class="mr-3" checked>
+                    <span class="text-sm">Use form's configured email addresses</span>
+                  </label>
+                  <div id="formEmailAddresses" class="ml-6 mt-2 text-sm text-gray-600">
+                    <!-- Form email addresses will be displayed here -->
+                  </div>
+                </div>
+                <div>
+                  <label class="flex items-start">
+                    <input type="radio" name="emailOption" value="custom" class="mr-3 mt-1">
+                    <div class="flex-1">
+                      <span class="text-sm">Use custom test email address</span>
+                      <input 
+                        type="email" 
+                        id="customTestEmail" 
+                        class="w-full mt-2 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                        placeholder="test@example.com"
+                        disabled
+                      >
+                    </div>
+                  </label>
+                </div>
+              </div>
+            </div>
+            
+            <div class="mb-6">
+              <h3 class="text-lg font-medium text-gray-900 mb-4">Test Form</h3>
+              <div id="testFormContent" class="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                <!-- Form content will be rendered here -->
+              </div>
+            </div>
+            
+            <div class="flex justify-end space-x-3">
+              <button 
+                id="cancelTestBtn" 
+                class="px-4 py-2 bg-gray-300 text-gray-700 text-sm font-medium rounded hover:bg-gray-400"
+              >
+                Cancel
+              </button>
+              <button 
+                id="submitTestBtn" 
+                class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700"
+              >
+                <i class="fas fa-paper-plane mr-2"></i>Submit Test
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Form Card Template (Hidden) -->
     <template id="formCardTemplate">
       <div
@@ -420,6 +490,11 @@
               class="view-submissions-btn text-green-600 hover:text-green-800 text-sm font-medium"
             >
               <i class="fas fa-eye mr-1"></i>Submissions
+            </button>
+            <button
+              class="test-form-btn text-orange-600 hover:text-orange-800 text-sm font-medium"
+            >
+              <i class="fas fa-vial mr-1"></i>Test
             </button>
             <button
               class="publish-toggle-btn text-purple-600 hover:text-purple-800 text-sm font-medium"
