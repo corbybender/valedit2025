@@ -2,20 +2,20 @@
  * Megamenu JavaScript - Enhanced interactions and functionality
  */
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener("DOMContentLoaded", function () {
   initializeMegamenu();
 });
 
 function initializeMegamenu() {
   // Handle dropdown interactions
   setupDropdownInteractions();
-  
+
   // Handle mobile responsive behavior
   setupResponsiveHandling();
-  
+
   // Handle search functionality
   setupSearchHandling();
-  
+
   // Handle user dropdown
   setupUserDropdown();
 }
@@ -24,32 +24,34 @@ function initializeMegamenu() {
  * Setup dropdown hover and click interactions
  */
 function setupDropdownInteractions() {
-  const dropdownItems = document.querySelectorAll('.megamenu-item.has-dropdown');
-  
-  dropdownItems.forEach(item => {
-    const dropdown = item.querySelector('.megamenu-dropdown');
+  const dropdownItems = document.querySelectorAll(
+    ".megamenu-item.has-dropdown"
+  );
+
+  dropdownItems.forEach((item) => {
+    const dropdown = item.querySelector(".megamenu-dropdown");
     let hoverTimeout;
     let isOpen = false;
-    
+
     // Mouse enter - show dropdown
-    item.addEventListener('mouseenter', function() {
+    item.addEventListener("mouseenter", function () {
       clearTimeout(hoverTimeout);
       if (!isOpen) {
         showDropdown(item, dropdown);
         isOpen = true;
       }
     });
-    
+
     // Mouse leave - hide dropdown after delay
-    item.addEventListener('mouseleave', function() {
+    item.addEventListener("mouseleave", function () {
       hoverTimeout = setTimeout(() => {
         hideDropdown(item, dropdown);
         isOpen = false;
       }, 150);
     });
-    
+
     // Click handling for mobile
-    item.addEventListener('click', function(e) {
+    item.addEventListener("click", function (e) {
       if (window.innerWidth <= 768) {
         e.preventDefault();
         if (isOpen) {
@@ -64,10 +66,10 @@ function setupDropdownInteractions() {
       }
     });
   });
-  
+
   // Close dropdowns when clicking outside
-  document.addEventListener('click', function(e) {
-    if (!e.target.closest('.megamenu-item.has-dropdown')) {
+  document.addEventListener("click", function (e) {
+    if (!e.target.closest(".megamenu-item.has-dropdown")) {
       closeAllDropdowns();
     }
   });
@@ -77,29 +79,31 @@ function setupDropdownInteractions() {
  * Show dropdown with animation
  */
 function showDropdown(item, dropdown) {
-  dropdown.style.opacity = '1';
-  dropdown.style.transform = 'translateY(0)';
-  dropdown.style.pointerEvents = 'auto';
-  item.classList.add('dropdown-open');
+  dropdown.style.opacity = "1";
+  dropdown.style.transform = "translateY(0)";
+  dropdown.style.pointerEvents = "auto";
+  item.classList.add("dropdown-open");
 }
 
 /**
  * Hide dropdown with animation
  */
 function hideDropdown(item, dropdown) {
-  dropdown.style.opacity = '0';
-  dropdown.style.transform = 'translateY(-10px)';
-  dropdown.style.pointerEvents = 'none';
-  item.classList.remove('dropdown-open');
+  dropdown.style.opacity = "0";
+  dropdown.style.transform = "translateY(-10px)";
+  dropdown.style.pointerEvents = "none";
+  item.classList.remove("dropdown-open");
 }
 
 /**
  * Close all open dropdowns
  */
 function closeAllDropdowns() {
-  const openDropdowns = document.querySelectorAll('.megamenu-item.has-dropdown');
-  openDropdowns.forEach(item => {
-    const dropdown = item.querySelector('.megamenu-dropdown');
+  const openDropdowns = document.querySelectorAll(
+    ".megamenu-item.has-dropdown"
+  );
+  openDropdowns.forEach((item) => {
+    const dropdown = item.querySelector(".megamenu-dropdown");
     hideDropdown(item, dropdown);
   });
 }
@@ -109,30 +113,30 @@ function closeAllDropdowns() {
  */
 function setupResponsiveHandling() {
   let resizeTimeout;
-  
-  window.addEventListener('resize', function() {
+
+  window.addEventListener("resize", function () {
     clearTimeout(resizeTimeout);
     resizeTimeout = setTimeout(() => {
       handleResize();
     }, 250);
   });
-  
+
   // Initial call
   handleResize();
 }
 
 function handleResize() {
   const isMobile = window.innerWidth <= 768;
-  const nav = document.querySelector('.megamenu-nav');
-  
+  const nav = document.querySelector(".megamenu-nav");
+
   if (isMobile) {
     // Close all dropdowns on resize to mobile
     closeAllDropdowns();
-    
+
     // Add mobile class for specific styling
-    nav.classList.add('mobile-nav');
+    nav.classList.add("mobile-nav");
   } else {
-    nav.classList.remove('mobile-nav');
+    nav.classList.remove("mobile-nav");
   }
 }
 
@@ -140,28 +144,28 @@ function handleResize() {
  * Setup search functionality
  */
 function setupSearchHandling() {
-  const searchInput = document.querySelector('.megamenu-search input');
-  
+  const searchInput = document.querySelector(".megamenu-search input");
+
   if (searchInput) {
     // Search input focus/blur effects
-    searchInput.addEventListener('focus', function() {
-      this.parentElement.classList.add('search-focused');
+    searchInput.addEventListener("focus", function () {
+      this.parentElement.classList.add("search-focused");
     });
-    
-    searchInput.addEventListener('blur', function() {
-      this.parentElement.classList.remove('search-focused');
+
+    searchInput.addEventListener("blur", function () {
+      this.parentElement.classList.remove("search-focused");
     });
-    
+
     // Handle search submission
-    searchInput.addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') {
+    searchInput.addEventListener("keypress", function (e) {
+      if (e.key === "Enter") {
         performSearch(this.value);
       }
     });
-    
+
     // Real-time search suggestions (if needed)
     let searchTimeout;
-    searchInput.addEventListener('input', function() {
+    searchInput.addEventListener("input", function () {
       clearTimeout(searchTimeout);
       searchTimeout = setTimeout(() => {
         if (this.value.length > 2) {
@@ -179,7 +183,7 @@ function setupSearchHandling() {
  */
 function performSearch(query) {
   if (query.trim()) {
-    console.log('Performing search for:', query);
+    console.log("Performing search for:", query);
     // Implement your search logic here
     // For example: window.location.href = `/search?q=${encodeURIComponent(query)}`;
   }
@@ -190,7 +194,7 @@ function performSearch(query) {
  */
 function showSearchSuggestions(query) {
   // Implement search suggestions dropdown if needed
-  console.log('Showing suggestions for:', query);
+  console.log("Showing suggestions for:", query);
 }
 
 /**
@@ -204,10 +208,10 @@ function hideSearchSuggestions() {
  * Setup user dropdown functionality
  */
 function setupUserDropdown() {
-  const userAvatar = document.querySelector('.megamenu-user-avatar');
-  
+  const userAvatar = document.querySelector(".megamenu-user-avatar");
+
   if (userAvatar) {
-    userAvatar.addEventListener('click', function(e) {
+    userAvatar.addEventListener("click", function (e) {
       e.stopPropagation();
       toggleUserDropdown();
     });
@@ -220,8 +224,8 @@ function setupUserDropdown() {
 function toggleUserDropdown() {
   // This can be integrated with your existing user dropdown functionality
   // For now, just log the action
-  console.log('User dropdown toggled');
-  
+  console.log("User dropdown toggled");
+
   // Example: Show a simple user menu
   showUserMenu();
 }
@@ -231,25 +235,23 @@ function toggleUserDropdown() {
  */
 function showUserMenu() {
   // Check if user menu already exists
-  let existingMenu = document.querySelector('.megamenu-user-dropdown');
-  
+  let existingMenu = document.querySelector(".megamenu-user-dropdown");
+
   if (existingMenu) {
     existingMenu.remove();
     return;
   }
-  
+
   // Create user dropdown menu
-  const userContainer = document.querySelector('.megamenu-user');
-  const dropdown = document.createElement('div');
-  dropdown.className = 'megamenu-user-dropdown';
+  const userContainer = document.querySelector(".megamenu-user");
+  const dropdown = document.createElement("div");
+  dropdown.className = "megamenu-user-dropdown";
   dropdown.innerHTML = `
     <div class="user-menu-item">
-      <i class="fas fa-user"></i>
-      <span>Profile</span>
+      
     </div>
     <div class="user-menu-item">
-      <i class="fas fa-cog"></i>
-      <span>Settings</span>
+      
     </div>
     <hr>
     <div class="user-menu-item logout">
@@ -257,7 +259,7 @@ function showUserMenu() {
       <span>Logout</span>
     </div>
   `;
-  
+
   // Style the dropdown
   dropdown.style.cssText = `
     position: absolute;
@@ -272,10 +274,10 @@ function showUserMenu() {
     z-index: 1002;
     margin-top: 8px;
   `;
-  
+
   // Style menu items
-  const menuItems = dropdown.querySelectorAll('.user-menu-item');
-  menuItems.forEach(item => {
+  const menuItems = dropdown.querySelectorAll(".user-menu-item");
+  menuItems.forEach((item) => {
     item.style.cssText = `
       display: flex;
       align-items: center;
@@ -286,37 +288,37 @@ function showUserMenu() {
       transition: background-color 0.2s;
       font-size: 14px;
     `;
-    
-    item.addEventListener('mouseenter', () => {
-      item.style.backgroundColor = '#f8fafc';
-      item.style.color = '#3b82f6';
+
+    item.addEventListener("mouseenter", () => {
+      item.style.backgroundColor = "#f8fafc";
+      item.style.color = "#3b82f6";
     });
-    
-    item.addEventListener('mouseleave', () => {
-      item.style.backgroundColor = 'transparent';
-      item.style.color = '#64748b';
+
+    item.addEventListener("mouseleave", () => {
+      item.style.backgroundColor = "transparent";
+      item.style.color = "#64748b";
     });
-    
-    item.addEventListener('click', () => {
+
+    item.addEventListener("click", () => {
       const text = item.textContent.trim();
-      console.log('User menu item clicked:', text);
-      
-      if (text === 'Logout') {
+      console.log("User menu item clicked:", text);
+
+      if (text === "Logout") {
         // Handle logout
-        window.location.href = '/auth/logout';
+        window.location.href = "/auth/logout";
       }
-      
+
       dropdown.remove();
     });
   });
-  
+
   userContainer.appendChild(dropdown);
-  
+
   // Close when clicking outside
   setTimeout(() => {
-    document.addEventListener('click', function closeUserMenu() {
+    document.addEventListener("click", function closeUserMenu() {
       dropdown.remove();
-      document.removeEventListener('click', closeUserMenu);
+      document.removeEventListener("click", closeUserMenu);
     });
   }, 100);
 }
@@ -326,7 +328,7 @@ function showUserMenu() {
  */
 function addClassWithAnimation(element, className, duration = 300) {
   element.classList.add(className);
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     setTimeout(() => resolve(), duration);
   });
 }
@@ -336,7 +338,7 @@ function addClassWithAnimation(element, className, duration = 300) {
  */
 function removeClassWithAnimation(element, className, duration = 300) {
   element.classList.remove(className);
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     setTimeout(() => resolve(), duration);
   });
 }
@@ -345,5 +347,5 @@ function removeClassWithAnimation(element, className, duration = 300) {
 window.MegaMenu = {
   closeAllDropdowns,
   toggleUserDropdown,
-  performSearch
+  performSearch,
 };

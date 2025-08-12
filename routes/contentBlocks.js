@@ -513,7 +513,8 @@ router.post("/page", async (req, res) => {
       isEmpty ||
       clientBlockType === "empty" ||
       clientBlockType === "javascript" ||
-      clientBlockType === "css"
+      clientBlockType === "css" ||
+      clientBlockType === "form"
     ) {
       const actualBlockType = clientBlockType || "empty";
       logger.debug(`Processing as a ${actualBlockType.toUpperCase()} block.`);
@@ -538,6 +539,15 @@ router.post("/page", async (req, res) => {
               '<div style="padding: 20px; text-align: center; color: #6c757d; border: 2px dashed #28a745; border-radius: 4px;"><p><i class="fab fa-css3-alt" style="font-size: 24px; margin-bottom: 10px; color: #1572b6;"></i></p><p>CSS Block - Click "Edit" to add your CSS styles</p></div>',
             CssContent:
               "/* Add your CSS styles here */\n.my-custom-style {\n  color: #333;\n}",
+            JsContent: "",
+          };
+          break;
+        case "form":
+          templateContent = {
+            Name: "Form Block",
+            HtmlContent: req.body.customHtml || 
+              '<div style="padding: 20px; text-align: center; color: #6c757d; border: 2px dashed #007bff; border-radius: 4px;"><p><i class="fas fa-wpforms" style="font-size: 24px; margin-bottom: 10px; color: #007bff;"></i></p><p>Form Block - Click "Edit" to configure form settings</p></div>',
+            CssContent: "",
             JsContent: "",
           };
           break;
@@ -571,11 +581,13 @@ router.post("/page", async (req, res) => {
           "Empty Content Block": "empty-content-block",
           "JavaScript Block": "javascript-block",
           "CSS Block": "css-block",
+          "Form Block": "form-block",
         };
         const descriptionMap = {
           "Empty Content Block": "A blank, editable content block.",
           "JavaScript Block": "A JavaScript-focused content block.",
           "CSS Block": "A CSS-focused content block.",
+          "Form Block": "A form-focused content block.",
         };
 
         const createResult = await pool
@@ -653,6 +665,16 @@ router.post("/page", async (req, res) => {
     logger.debug(
       `Proceeding to create PageContentBlock with ContentTemplateID: ${contentTemplateId}`
     );
+    
+    // Check if we have form-specific data to store
+    const formId = req.body.formId;
+    let instanceName = templateData.Name;
+    
+    if (clientBlockType === "form" && formId) {
+      instanceName = `Form Block (ID: ${formId})`;
+      logger.debug(`Setting instance name for form block: ${instanceName}`);
+    }
+    
     const result = await pool
       .request()
       .input("PageID", sql.BigInt, pageId)
@@ -662,8 +684,9 @@ router.post("/page", async (req, res) => {
       .input("HtmlContent", sql.NVarChar, templateData.HtmlContent)
       .input("CssContent", sql.NVarChar, templateData.CssContent)
       .input("JsContent", sql.NVarChar, templateData.JsContent)
+      .input("InstanceName", sql.NVarChar, instanceName)
       .query(
-        "INSERT INTO PageContentBlocks (PageID, ContentTemplateID, PlaceholderID, SortOrder, HtmlContent, CssContent, JsContent) OUTPUT INSERTED.ID VALUES (@PageID, @ContentTemplateID, @PlaceholderID, @SortOrder, @HtmlContent, @CssContent, @JsContent)"
+        "INSERT INTO PageContentBlocks (PageID, ContentTemplateID, PlaceholderID, SortOrder, HtmlContent, CssContent, JsContent, InstanceName) OUTPUT INSERTED.ID VALUES (@PageID, @ContentTemplateID, @PlaceholderID, @SortOrder, @HtmlContent, @CssContent, @JsContent, @InstanceName)"
       );
 
     const newBlockId = result.recordset[0].ID;
