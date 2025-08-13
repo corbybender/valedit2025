@@ -377,6 +377,75 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
+// Duplicate page template
+router.post("/:id/duplicate", async (req, res) => {
+  try {
+    const { newName, categoryId } = req.body;
+    const sourceId = req.params.id;
+    
+    if (!newName) {
+      return res.status(400).json({ error: "New template name is required." });
+    }
+
+    const pool = await db;
+    
+    // First get the source template
+    const sourceResult = await pool
+      .request()
+      .input("ID", sql.Int, sourceId)
+      .query("SELECT Name, Description, HtmlStructure FROM PageTemplates WHERE ID = @ID");
+
+    if (sourceResult.recordset.length === 0) {
+      return res.status(404).json({ error: "Source template not found." });
+    }
+
+    const sourceTemplate = sourceResult.recordset[0];
+    
+    // Create the duplicate
+    const result = await pool
+      .request()
+      .input("Name", sql.NVarChar, newName)
+      .input("Description", sql.NVarChar, `Copy of ${sourceTemplate.Description || sourceTemplate.Name}`)
+      .input("HtmlStructure", sql.NVarChar, sourceTemplate.HtmlStructure)
+      .input("CategoryID", sql.Int, categoryId || null)
+      .query(
+        "INSERT INTO PageTemplates (Name, Description, HtmlStructure, CategoryID) OUTPUT INSERTED.ID VALUES (@Name, @Description, @HtmlStructure, @CategoryID)"
+      );
+
+    // Create success notification
+    await NotificationService.notifyTemplateAction({
+      req,
+      action: "Page template duplicated",
+      templateId: result.recordset[0].ID,
+      templateName: newName,
+      success: true,
+      additionalInfo: `Duplicated from "${sourceTemplate.Name}" to "${newName}"`,
+    });
+
+    res.status(201).json({ 
+      success: true, 
+      id: result.recordset[0].ID,
+      message: `Template duplicated successfully as "${newName}"` 
+    });
+  } catch (err) {
+    // Create error notification
+    await NotificationService.notifyTemplateAction({
+      req,
+      action: "Duplicate page template",
+      templateName: newName || "Unknown",
+      success: false,
+      additionalInfo: `Template duplication failed: ${err.message}`,
+    });
+
+    if (err.number === 2627) {
+      // Unique constraint violation
+      res.status(400).json({ error: "A template with this name already exists." });
+    } else {
+      res.status(500).json({ error: "Failed to duplicate page template." });
+    }
+  }
+});
+
 // Get ContentTemplates (for shared content blocks)
 router.get("/contentTemplates", async (req, res) => {
   try {

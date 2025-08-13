@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sitemap Generator - <%= process.env.APP_NAME || 'ValEdit' %></title>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link href="/public/css/dashboard.css" rel="stylesheet" />
+    <script src="/public/js/notifications.js"></script>
+  </head>
+  <body class="bg-gray-50">
+    <!-- Tailwind Megamenu -->
+    <%- include('../partials/tailwind-megamenu') %>
+
+    <!-- Main Content -->
+    <main class="w-full px-2 py-8">
+      <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-4xl mx-auto">
+        <!-- Hidden field for website ID needed by JavaScript -->
+        <input
+          type="hidden"
+          id="websiteId"
+          value="<%= currentWebsiteID || '' %>"
+        />
+        
+        <header class="border-b pb-4 mb-6">
+          <h1 class="text-3xl font-bold text-gray-800">Sitemap Generator</h1>
+          <p class="text-gray-500 mt-1">
+            Generate an XML sitemap for your website to help search engines index your pages.
+          </p>
+          <% if (currentWebsiteID) { %>
+          <div class="mt-3 p-3 bg-blue-50 rounded-lg">
+            <p class="text-sm text-blue-800">
+              <i class="fas fa-globe text-blue-600 mr-2"></i>
+              Currently editing: <strong><%= currentWebsite && currentWebsite.WebsiteName ? currentWebsite.WebsiteName : `Website ID ${currentWebsiteID}` %></strong>
+            </p>
+          </div>
+          <% } else { %>
+          <div class="mt-3 p-3 bg-amber-50 rounded-lg">
+            <p class="text-sm text-amber-800">
+              <i class="fas fa-info-circle text-amber-600 mr-2"></i>
+              No website selected. Please select a website using the website switcher in the top navigation to generate a sitemap.
+            </p>
+          </div>
+          <% } %>
+        </header>
+
+        <% if (currentWebsiteID) { %>
+        <!-- Sitemap Generator Section -->
+        <div class="space-y-6">
+          <div class="bg-gray-50 p-6 rounded-lg">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">
+              <i class="fas fa-sitemap text-blue-600 mr-2"></i>
+              Generate Sitemap
+            </h2>
+            <p class="text-gray-600 mb-4">
+              Click the button below to generate a new sitemap.xml file for your website. This will include all published pages with their URLs.
+            </p>
+            
+            <button
+              id="generateSitemapBtn"
+              class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center space-x-2"
+            >
+              <i class="fas fa-cog"></i>
+              <span>Generate Sitemap</span>
+            </button>
+          </div>
+
+          <!-- Results Section -->
+          <div id="resultsSection" class="hidden">
+            <div class="bg-green-50 border border-green-200 p-6 rounded-lg">
+              <h3 class="text-lg font-semibold text-green-800 mb-2">
+                <i class="fas fa-check-circle mr-2"></i>
+                Sitemap Generated Successfully
+              </h3>
+              <div id="resultsContent" class="text-green-700">
+                <!-- Results will be populated here -->
+              </div>
+              <div class="mt-4">
+                <a
+                  href="/public/sitemap.xml"
+                  target="_blank"
+                  class="inline-flex items-center space-x-2 text-green-600 hover:text-green-800 font-medium"
+                >
+                  <i class="fas fa-external-link-alt"></i>
+                  <span>View Generated Sitemap</span>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Error Section -->
+          <div id="errorSection" class="hidden">
+            <div class="bg-red-50 border border-red-200 p-6 rounded-lg">
+              <h3 class="text-lg font-semibold text-red-800 mb-2">
+                <i class="fas fa-exclamation-triangle mr-2"></i>
+                Error Generating Sitemap
+              </h3>
+              <div id="errorContent" class="text-red-700">
+                <!-- Error message will be populated here -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Information Section -->
+          <div class="bg-blue-50 p-6 rounded-lg">
+            <h3 class="text-lg font-semibold text-blue-800 mb-4">
+              <i class="fas fa-info-circle mr-2"></i>
+              About XML Sitemaps
+            </h3>
+            <div class="text-blue-700 space-y-2">
+              <p>• XML sitemaps help search engines discover and index your website pages</p>
+              <p>• The generated sitemap will be saved as <code class="bg-blue-100 px-2 py-1 rounded">/public/sitemap.xml</code></p>
+              <p>• Submit your sitemap URL to search engines like Google and Bing</p>
+              <p>• Regenerate your sitemap whenever you add or modify pages</p>
+            </div>
+          </div>
+        </div>
+        <% } %>
+      </div>
+    </main>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const generateBtn = document.getElementById('generateSitemapBtn');
+        const resultsSection = document.getElementById('resultsSection');
+        const errorSection = document.getElementById('errorSection');
+        const resultsContent = document.getElementById('resultsContent');
+        const errorContent = document.getElementById('errorContent');
+
+        if (generateBtn) {
+          generateBtn.addEventListener('click', async function() {
+            // Update button state
+            generateBtn.disabled = true;
+            generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Generating...';
+            
+            // Hide previous results
+            resultsSection.classList.add('hidden');
+            errorSection.classList.add('hidden');
+
+            try {
+              const response = await fetch('/sitemap/generate', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+              });
+
+              const data = await response.json();
+
+              if (data.success) {
+                resultsContent.innerHTML = `
+                  <p><strong>Pages included:</strong> ${data.pageCount}</p>
+                  <p><strong>Sitemap saved to:</strong> ${data.sitemapUrl}</p>
+                `;
+                resultsSection.classList.remove('hidden');
+              } else {
+                errorContent.textContent = data.error || 'Unknown error occurred';
+                errorSection.classList.remove('hidden');
+              }
+            } catch (error) {
+              console.error('Error generating sitemap:', error);
+              errorContent.textContent = 'Network error: Failed to generate sitemap';
+              errorSection.classList.remove('hidden');
+            } finally {
+              // Reset button state
+              generateBtn.disabled = false;
+              generateBtn.innerHTML = '<i class="fas fa-cog mr-2"></i>Generate Sitemap';
+            }
+          });
+        }
+      });
+    </script>
+  </body>
+</html>

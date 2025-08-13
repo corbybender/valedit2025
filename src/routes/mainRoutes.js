@@ -38,6 +38,36 @@ router.get(
 router.get("/buildpage", isAuthenticated, pageController.showBuildPage);
 router.get("/pagetemplates", isAuthenticated, pageController.showPageTemplates);
 
+// Analytics
+router.get("/analytics", isAuthenticated, (req, res) => {
+  res.render("pages/analytics", {
+    user: res.locals.user,
+    currentWebsite: res.locals.currentWebsite,
+    currentWebsiteID: res.locals.currentWebsiteID,
+    title: "Analytics Settings"
+  });
+});
+
+// Sitemap
+router.get("/sitemap", isAuthenticated, (req, res) => {
+  res.render("pages/sitemap", {
+    user: res.locals.user,
+    currentWebsite: res.locals.currentWebsite,
+    currentWebsiteID: res.locals.currentWebsiteID,
+    title: "Sitemap Generator"
+  });
+});
+
+router.post("/sitemap/generate", isAuthenticated, async (req, res) => {
+  try {
+    const sitemapController = require("../controllers/sitemapController");
+    await sitemapController.generateSitemap(req, res);
+  } catch (error) {
+    console.error('Error generating sitemap:', error);
+    res.status(500).json({ success: false, error: 'Failed to generate sitemap' });
+  }
+});
+
 // Content - handled by legacy routes
 
 // Working site management

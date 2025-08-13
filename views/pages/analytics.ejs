@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Analytics Settings - <%= process.env.APP_NAME || 'ValEdit' %></title>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link href="/public/css/dashboard.css" rel="stylesheet" />
+    <script src="/public/js/notifications.js"></script>
+  </head>
+  <body class="bg-gray-50">
+    <!-- Tailwind Megamenu -->
+    <%- include('../partials/tailwind-megamenu') %>
+
+    <!-- Main Content -->
+    <main class="w-full px-2 py-8">
+      <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-4xl mx-auto">
+        <!-- Hidden field for website ID needed by JavaScript -->
+        <input
+          type="hidden"
+          id="websiteId"
+          value="<%= currentWebsiteID || '' %>"
+        />
+        
+        <header class="border-b pb-4 mb-6">
+          <h1 class="text-3xl font-bold text-gray-800">Analytics Settings</h1>
+          <p class="text-gray-500 mt-1">
+            Configure Google Analytics and other tracking codes for your website.
+          </p>
+          <% if (currentWebsiteID) { %>
+          <div class="mt-3 p-3 bg-blue-50 rounded-lg">
+            <p class="text-sm text-blue-800">
+              <i class="fas fa-globe text-blue-600 mr-2"></i>
+              Currently editing: <strong><%= currentWebsite && currentWebsite.WebsiteName ? currentWebsite.WebsiteName : `Website ID ${currentWebsiteID}` %></strong>
+            </p>
+          </div>
+          <% } else { %>
+          <div class="mt-3 p-3 bg-amber-50 rounded-lg">
+            <p class="text-sm text-amber-800">
+              <i class="fas fa-info-circle text-amber-600 mr-2"></i>
+              No website selected. Please select a website using the website switcher in the top navigation to configure analytics.
+            </p>
+          </div>
+          <% } %>
+        </header>
+
+        <% if (currentWebsiteID) { %>
+        <form id="analytics-form" class="space-y-6">
+          <!-- Google Analytics Section -->
+          <div class="border rounded-lg p-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">
+              <i class="fab fa-google text-blue-600 mr-2"></i>
+              Google Analytics (GA4)
+            </h2>
+            <div class="space-y-4">
+              <div>
+                <label for="googleAnalyticsId" class="block text-sm font-medium text-gray-700 mb-2">
+                  Measurement ID
+                </label>
+                <input
+                  type="text"
+                  id="googleAnalyticsId"
+                  name="googleAnalyticsId"
+                  placeholder="G-XXXXXXXXXX"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                />
+                <p class="mt-1 text-sm text-gray-500">
+                  Enter your GA4 Measurement ID (starts with G-). Find this in your Google Analytics property settings.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Google Tag Manager Section -->
+          <div class="border rounded-lg p-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">
+              <i class="fab fa-google text-orange-600 mr-2"></i>
+              Google Tag Manager
+            </h2>
+            <div class="space-y-4">
+              <div>
+                <label for="googleTagManagerId" class="block text-sm font-medium text-gray-700 mb-2">
+                  Container ID
+                </label>
+                <input
+                  type="text"
+                  id="googleTagManagerId"
+                  name="googleTagManagerId"
+                  placeholder="GTM-XXXXXXX"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                />
+                <p class="mt-1 text-sm text-gray-500">
+                  Enter your GTM Container ID (starts with GTM-). Leave blank if using direct Google Analytics.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Facebook Pixel Section -->
+          <div class="border rounded-lg p-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">
+              <i class="fab fa-facebook text-blue-700 mr-2"></i>
+              Facebook Pixel
+            </h2>
+            <div class="space-y-4">
+              <div>
+                <label for="facebookPixelId" class="block text-sm font-medium text-gray-700 mb-2">
+                  Pixel ID
+                </label>
+                <input
+                  type="text"
+                  id="facebookPixelId"
+                  name="facebookPixelId"
+                  placeholder="123456789012345"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                />
+                <p class="mt-1 text-sm text-gray-500">
+                  Enter your Facebook Pixel ID (15-16 digit number).
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Custom Tracking Code Section -->
+          <div class="border rounded-lg p-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">
+              <i class="fas fa-code text-gray-600 mr-2"></i>
+              Custom Tracking Code
+            </h2>
+            <div class="space-y-4">
+              <div>
+                <label for="customTrackingCode" class="block text-sm font-medium text-gray-700 mb-2">
+                  Custom HTML/JavaScript
+                </label>
+                <textarea
+                  id="customTrackingCode"
+                  name="customTrackingCode"
+                  rows="8"
+                  placeholder="<!-- Add any custom tracking scripts here -->"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 font-mono text-sm"
+                ></textarea>
+                <p class="mt-1 text-sm text-gray-500">
+                  Add any custom tracking scripts, pixels, or HTML that should be injected into the head section.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Status Toggle -->
+          <div class="border rounded-lg p-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">
+              <i class="fas fa-toggle-on text-green-600 mr-2"></i>
+              Status
+            </h2>
+            <div class="flex items-center">
+              <input
+                type="checkbox"
+                id="isActive"
+                name="isActive"
+                checked
+                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              />
+              <label for="isActive" class="ml-2 block text-sm text-gray-900">
+                Enable analytics tracking for this website
+              </label>
+            </div>
+            <p class="mt-1 text-sm text-gray-500">
+              Uncheck to temporarily disable all tracking codes without deleting them.
+            </p>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex gap-4 pt-6 border-t">
+            <button
+              type="submit"
+              class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition duration-200"
+            >
+              <i class="fas fa-save mr-2"></i>
+              Save Settings
+            </button>
+            <button
+              type="button"
+              id="preview-button"
+              class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-6 rounded-lg transition duration-200"
+            >
+              <i class="fas fa-eye mr-2"></i>
+              Preview Code
+            </button>
+            <button
+              type="button"
+              id="test-button"
+              class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-lg transition duration-200"
+            >
+              <i class="fas fa-vial mr-2"></i>
+              Test Tracking
+            </button>
+          </div>
+        </form>
+        <% } else { %>
+        <!-- No website selected message -->
+        <div class="text-center py-12">
+          <i class="fas fa-globe text-gray-300 text-6xl mb-4"></i>
+          <h3 class="text-xl font-semibold text-gray-600 mb-2">Select a Website</h3>
+          <p class="text-gray-500 mb-6">
+            Choose a website from the dropdown above to configure analytics tracking.
+          </p>
+          <a
+            href="/websites"
+            class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <i class="fas fa-th-large mr-2"></i>
+            Browse Websites
+          </a>
+        </div>
+        <% } %>
+
+        <!-- Preview Modal -->
+        <div id="preview-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+          <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-96 relative" onclick="event.stopPropagation()">
+              <div class="p-6 border-b relative">
+                <h3 class="text-lg font-semibold pr-12">Generated Tracking Code Preview</h3>
+                <button
+                  id="close-preview"
+                  type="button"
+                  class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100 transition-colors z-10"
+                  title="Close preview (Press ESC)"
+                  aria-label="Close modal"
+                >
+                  <i class="fas fa-times text-lg"></i>
+                </button>
+              </div>
+              <div class="p-6 overflow-auto">
+                <div class="mb-4">
+                  <h4 class="font-semibold text-sm text-gray-700 mb-2">HEAD Section:</h4>
+                  <pre
+                    id="head-code-preview"
+                    class="bg-gray-100 p-3 rounded text-xs overflow-auto max-h-32 font-mono"
+                  ></pre>
+                </div>
+                <div>
+                  <h4 class="font-semibold text-sm text-gray-700 mb-2">BODY Section:</h4>
+                  <pre
+                    id="body-code-preview"
+                    class="bg-gray-100 p-3 rounded text-xs overflow-auto max-h-32 font-mono"
+                  ></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Analytics JavaScript -->
+    <script src="/public/js/analytics.js"></script>
+  </body>
+</html>

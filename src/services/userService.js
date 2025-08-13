@@ -137,27 +137,86 @@ const updateUser = async (userId, userData) => {
     console.log("User ID:", userId);
     console.log("Request data:", userData);
     console.log("Current user from DB:", currentUser);
-    console.log("Safe values:", { safeAuthorLogin, safeAuthorName, safeAuthorEmail });
+    console.log("Safe values:", {
+      safeAuthorLogin,
+      safeAuthorName,
+      safeAuthorEmail,
+    });
 
     if (!safeAuthorLogin || !safeAuthorName || !safeAuthorEmail) {
       console.log("ERROR: Required fields are missing or null");
-      throw new Error("AuthorLogin, AuthorName, and AuthorEmail are required and cannot be null");
+      throw new Error(
+        "AuthorLogin, AuthorName, and AuthorEmail are required and cannot be null"
+      );
     }
 
     const pool = await db;
-    
-    const finalIsActive = isActive !== undefined ? isActive : currentUser.IsActive;
-    console.log("Final isActive value being sent to DB:", finalIsActive);
-    
+
+    // Normalize boolean values from payload (support both camelCase and PascalCase, and string/number inputs)
+    const normalizeBool = (v) => {
+      if (v === undefined || v === null) return undefined;
+      if (typeof v === "boolean") return v;
+      if (typeof v === "number") return v !== 0;
+      if (typeof v === "string") {
+        const s = v.toLowerCase().trim();
+        if (["1", "true", "on", "yes", "y"].includes(s)) return true;
+        if (["0", "false", "off", "no", "n"].includes(s)) return false;
+      }
+      return undefined;
+    };
+
+    const hasIsActive =
+      Object.prototype.hasOwnProperty.call(userData, "isActive") ||
+      Object.prototype.hasOwnProperty.call(userData, "IsActive");
+    const incomingIsActive = Object.prototype.hasOwnProperty.call(
+      userData,
+      "isActive"
+    )
+      ? userData.isActive
+      : userData.IsActive;
+    const normIsActive = hasIsActive
+      ? normalizeBool(incomingIsActive)
+      : undefined;
+    const finalIsActive =
+      normIsActive !== undefined ? normIsActive : currentUser.IsActive;
+
+    const hasIsAdmin =
+      Object.prototype.hasOwnProperty.call(userData, "isAdmin") ||
+      Object.prototype.hasOwnProperty.call(userData, "IsAdmin");
+    const incomingIsAdmin = Object.prototype.hasOwnProperty.call(
+      userData,
+      "isAdmin"
+    )
+      ? userData.isAdmin
+      : userData.IsAdmin;
+    const normIsAdmin = hasIsAdmin ? normalizeBool(incomingIsAdmin) : undefined;
+    const finalIsAdmin =
+      normIsAdmin !== undefined ? normIsAdmin : currentUser.IsAdmin;
+
+    console.log(
+      "Final booleans -> IsActive:",
+      finalIsActive,
+      "IsAdmin:",
+      finalIsAdmin
+    );
+
     const result = await pool
       .request()
       .input("userId", sql.Int, userId)
       .input("authorLogin", sql.NVarChar, safeAuthorLogin)
       .input("authorName", sql.NVarChar, safeAuthorName)
       .input("authorEmail", sql.NVarChar, safeAuthorEmail)
-      .input("isAdmin", sql.Bit, isAdmin !== undefined ? isAdmin : currentUser.IsAdmin)
-      .input("authorCategory", sql.NVarChar, authorCategory || currentUser.AuthorCategory || "")
-      .input("authorType", sql.NVarChar, authorType || currentUser.AuthorType || "")
+      .input("isAdmin", sql.Bit, finalIsAdmin)
+      .input(
+        "authorCategory",
+        sql.NVarChar,
+        authorCategory || currentUser.AuthorCategory || ""
+      )
+      .input(
+        "authorType",
+        sql.NVarChar,
+        authorType || currentUser.AuthorType || ""
+      )
       .input("isActive", sql.Bit, finalIsActive).query(`
         UPDATE Authors
         SET AuthorLogin = @authorLogin,
@@ -169,17 +228,17 @@ const updateUser = async (userId, userData) => {
             IsActive = @isActive
         WHERE AuthorID = @userId
       `);
-    
+
     console.log("UPDATE result:", result);
     console.log("Rows affected:", result.rowsAffected[0]);
-    
+
     const updateSuccess = result.rowsAffected[0] > 0;
     console.log("Update successful:", updateSuccess);
-    
+
     // Verify the update by fetching the user again
     const updatedUser = await getUserById(userId);
     console.log("User after update:", updatedUser);
-    
+
     return updateSuccess;
   } catch (error) {
     console.error("Error updating user:", error);

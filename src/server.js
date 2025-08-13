@@ -38,6 +38,7 @@ const websitesApiRoutes = require("./routes/api/websitesApiRoutes");
 const sharedContentApiRoutes = require("./routes/api/sharedContentApiRoutes");
 const notificationsApiRoutes = require("./routes/api/notificationsApiRoutes");
 const azureStorageApiRoutes = require("./routes/api/azureStorageApiRoutes");
+const analyticsRoutes = require("../routes/analytics");
 
 // Initialize Express app
 const app = express();
@@ -85,6 +86,7 @@ app.use("/api/websites", websitesApiRoutes);
 app.use("/api/sharedcontent", sharedContentApiRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/notifications", notificationsApiRoutes);
+app.use("/api/analytics", isAuthenticated, analyticsRoutes);
 
 // Azure Storage routes (with authentication)
 app.use(

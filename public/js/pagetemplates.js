@@ -15,6 +15,7 @@ document.addEventListener("DOMContentLoaded", () => {
     templateDescription: G("template-description"),
     addNewBtn: G("add-new-btn"),
     deleteBtn: G("delete-btn"),
+    duplicateBtn: G("duplicate-btn"),
     cancelBtn: G("cancel-btn"),
     categoryFilter: G("category-filter"),
     manageCategoriesBtn: G("manage-categories-btn"),
@@ -26,6 +27,14 @@ document.addEventListener("DOMContentLoaded", () => {
     fullscreenToggle: G("fullscreen-toggle"),
     fullscreenIcon: G("fullscreen-icon"),
     fullscreenText: G("fullscreen-text"),
+    // Duplicate modal elements
+    duplicateModal: G("duplicate-modal"),
+    closeDuplicateModalBtn: G("close-duplicate-modal-btn"),
+    duplicateForm: G("duplicate-form"),
+    duplicateName: G("duplicate-name"),
+    duplicateCategory: G("duplicate-category"),
+    cancelDuplicateBtn: G("cancel-duplicate-btn"),
+    confirmDuplicateBtn: G("confirm-duplicate-btn"),
   };
   let htmlEditor;
   let isFullscreen = false;
@@ -177,6 +186,7 @@ document.addEventListener("DOMContentLoaded", () => {
     els.placeholderView.classList.add("hidden");
     els.editorContainer.classList.remove("hidden");
     els.deleteBtn.classList.toggle("hidden", isNew);
+    els.duplicateBtn.classList.toggle("hidden", isNew);
   }
 
   function resetForm() {
@@ -594,6 +604,99 @@ document.addEventListener("DOMContentLoaded", () => {
       console.error("❌ Error deleting template:", err);
       showNotification("❌ " + err.message, "error");
     }
+  });
+
+  // Duplicate functionality
+  els.duplicateBtn.addEventListener("click", () => {
+    const currentId = els.templateId.value;
+    if (!currentId) return;
+    
+    // Load categories for the duplicate modal
+    loadCategoriesForDuplicateModal();
+    
+    // Pre-populate with a suggested name
+    const currentName = els.templateName.value;
+    els.duplicateName.value = `Copy of ${currentName}`;
+    els.duplicateCategory.value = els.templateCategory.value || "";
+    
+    openDuplicateModal();
+  });
+
+  function loadCategoriesForDuplicateModal() {
+    const duplicateSelect = els.duplicateCategory;
+    const mainSelect = els.templateCategory;
+    
+    // Copy options from main category select
+    duplicateSelect.innerHTML = '<option value="">-- Select Category --</option>';
+    for (let i = 1; i < mainSelect.options.length; i++) {
+      const option = mainSelect.options[i].cloneNode(true);
+      duplicateSelect.appendChild(option);
+    }
+  }
+
+  function openDuplicateModal() {
+    els.duplicateModal.classList.remove("hidden");
+    setTimeout(() => {
+      els.duplicateName.focus();
+      els.duplicateName.select();
+    }, 100);
+  }
+
+  function closeDuplicateModal() {
+    els.duplicateModal.classList.add("hidden");
+    els.duplicateForm.reset();
+  }
+
+  async function handleDuplicateTemplate(sourceId, newName, categoryId) {
+    try {
+      logger.info("📋 Duplicating template:", { sourceId, newName, categoryId });
+      
+      const requestBody = { newName };
+      if (categoryId) requestBody.categoryId = parseInt(categoryId);
+      
+      const response = await fetch(`/api/pagetemplates/${sourceId}/duplicate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestBody),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to duplicate template.");
+      }
+
+      logger.info("✅ Template duplicated successfully:", result);
+      showSimpleNotification(`✅ Template "${newName}" created successfully!`, "success");
+      
+      closeDuplicateModal();
+      await loadAllTemplates();
+      
+      // Select the newly created template
+      handleTemplateSelect(result.id);
+    } catch (err) {
+      console.error("❌ Error duplicating template:", err);
+      showSimpleNotification("❌ " + err.message, "error");
+    }
+  }
+
+  // Duplicate modal event handlers
+  els.closeDuplicateModalBtn.addEventListener("click", closeDuplicateModal);
+  els.cancelDuplicateBtn.addEventListener("click", closeDuplicateModal);
+  
+  els.duplicateForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    
+    const sourceId = els.templateId.value;
+    const newName = els.duplicateName.value.trim();
+    const categoryId = els.duplicateCategory.value;
+    
+    if (!sourceId || !newName) {
+      showSimpleNotification("❌ Template name is required", "error");
+      return;
+    }
+    
+    await handleDuplicateTemplate(sourceId, newName, categoryId);
   });
 
   // Modal event handlers

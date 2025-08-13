@@ -4,6 +4,19 @@ const db = require("../db");
 const sql = require("mssql");
 const NotificationService = require("../src/services/notificationService");
 
+// Normalize various truthy/falsey representations from forms/APIs into real booleans
+function parseBoolean(value, defaultValue = false) {
+  if (value === undefined || value === null) return defaultValue;
+  if (typeof value === "boolean") return value;
+  if (typeof value === "number") return value !== 0;
+  if (typeof value === "string") {
+    const v = value.toLowerCase().trim();
+    if (["1", "true", "on", "yes", "y"].includes(v)) return true;
+    if (["0", "false", "off", "no", "n"].includes(v)) return false;
+  }
+  return defaultValue;
+}
+
 // GET all users (excluding password) with website access
 router.get("/", async (req, res) => {
   try {
@@ -189,11 +202,7 @@ router.post("/", async (req, res) => {
     request.input("IsAdmin", sql.Bit, IsAdmin || false);
     request.input("AuthorCategory", sql.NVarChar, AuthorCategory || "");
     request.input("AuthorType", sql.NVarChar, AuthorType || "");
-    request.input(
-      "IsActive",
-      sql.Bit,
-      IsActive !== undefined ? IsActive : true
-    );
+    request.input("IsActive", sql.Bit, IsActive);
     request.input("DateCreated", sql.DateTime2, now);
 
     const result = await request.query(`
@@ -259,7 +268,7 @@ router.put("/:id", async (req, res) => {
     const getCurrentRequest = pool.request();
     getCurrentRequest.input("id", sql.Int, parseInt(id));
     const currentUserResult = await getCurrentRequest.query(`
-      SELECT AuthorLogin, AuthorName, AuthorEmail 
+      SELECT AuthorLogin, AuthorName, AuthorEmail, IsActive, IsAdmin 
       FROM Authors 
       WHERE AuthorID = @id
     `);
@@ -269,16 +278,18 @@ router.put("/:id", async (req, res) => {
     }
 
     const currentUser = currentUserResult.recordset[0];
-    
+
     // Debug logging
     console.log("UPDATE USER DEBUG:");
     console.log("User ID:", id);
     console.log("Request body:", req.body);
     console.log("Current user from DB:", currentUser);
+    console.log("IsActive value from request:", IsActive);
+    console.log("IsActive type:", typeof IsActive);
 
     // Ensure we have valid values and don't pass null to required fields
     const safeAuthorLogin = AuthorLogin || currentUser.AuthorLogin;
-    const safeAuthorName = AuthorName || currentUser.AuthorName; 
+    const safeAuthorName = AuthorName || currentUser.AuthorName;
     const safeAuthorEmail = AuthorEmail || currentUser.AuthorEmail;
 
     console.log("Safe values:");
@@ -288,31 +299,98 @@ router.put("/:id", async (req, res) => {
 
     if (!safeAuthorLogin || !safeAuthorName || !safeAuthorEmail) {
       console.log("ERROR: Required fields are missing or null");
-      return res.status(400).json({ 
-        error: "AuthorLogin, AuthorName, and AuthorEmail are required and cannot be null",
+      return res.status(400).json({
+        error:
+          "AuthorLogin, AuthorName, and AuthorEmail are required and cannot be null",
         debug: {
           currentUser,
           requestBody: req.body,
-          safeValues: { safeAuthorLogin, safeAuthorName, safeAuthorEmail }
-        }
+          safeValues: { safeAuthorLogin, safeAuthorName, safeAuthorEmail },
+        },
       });
     }
+
+    // Normalize boolean flags from request.
+    // For HTML forms, unchecked checkboxes are omitted entirely -> treat as false so user can turn flags off.
+    // For JSON requests, fall back to existing DB values if omitted.
+    const isJson = req.is && req.is("application/json");
+
+    // Support both 'IsActive' and 'isActive' (same for Admin) from different clients
+    const hasIsAdmin =
+      Object.prototype.hasOwnProperty.call(req.body, "IsAdmin") ||
+      Object.prototype.hasOwnProperty.call(req.body, "isAdmin");
+    const hasIsActive =
+      Object.prototype.hasOwnProperty.call(req.body, "IsActive") ||
+      Object.prototype.hasOwnProperty.call(req.body, "isActive");
+
+    const incomingIsAdmin = Object.prototype.hasOwnProperty.call(
+      req.body,
+      "IsAdmin"
+    )
+      ? req.body.IsAdmin
+      : req.body.isAdmin;
+
+    const incomingIsActive = Object.prototype.hasOwnProperty.call(
+      req.body,
+      "IsActive"
+    )
+      ? req.body.IsActive
+      : req.body.isActive;
+
+    const safeIsAdmin = hasIsAdmin
+      ? parseBoolean(incomingIsAdmin)
+      : isJson
+      ? currentUser.IsAdmin
+      : false;
+
+    const safeIsActive = hasIsActive
+      ? parseBoolean(incomingIsActive)
+      : isJson
+      ? currentUser.IsActive
+      : false;
+
+    // Debug logging for boolean normalization
+    console.log("Content-Type is JSON:", Boolean(isJson));
+    console.log(
+      "Incoming IsActive (raw):",
+      incomingIsActive,
+      "type:",
+      typeof incomingIsActive,
+      "hasIsActive:",
+      hasIsActive
+    );
+    console.log(
+      "Computed safeIsActive:",
+      safeIsActive,
+      "type:",
+      typeof safeIsActive
+    );
+    console.log(
+      "Incoming IsAdmin (raw):",
+      incomingIsAdmin,
+      "type:",
+      typeof incomingIsAdmin,
+      "hasIsAdmin:",
+      hasIsAdmin
+    );
+    console.log(
+      "Computed safeIsAdmin:",
+      safeIsAdmin,
+      "type:",
+      typeof safeIsAdmin
+    );
 
     const request = pool.request();
     request.input("id", sql.Int, parseInt(id));
     request.input("AuthorLogin", sql.NVarChar, safeAuthorLogin);
     request.input("AuthorName", sql.NVarChar, safeAuthorName);
     request.input("AuthorEmail", sql.NVarChar, safeAuthorEmail);
-    request.input("IsAdmin", sql.Bit, IsAdmin || false);
+    request.input("IsAdmin", sql.Bit, safeIsAdmin);
     request.input("AuthorCategory", sql.NVarChar, AuthorCategory || "");
     request.input("AuthorType", sql.NVarChar, AuthorType || "");
-    request.input(
-      "IsActive",
-      sql.Bit,
-      IsActive !== undefined ? IsActive : true
-    );
+    request.input("IsActive", sql.Bit, safeIsActive);
 
-    await request.query(`
+    const updateResult = await request.query(`
       UPDATE Authors SET 
         AuthorLogin = @AuthorLogin,
         AuthorName = @AuthorName,
@@ -323,6 +401,9 @@ router.put("/:id", async (req, res) => {
         IsActive = @IsActive
       WHERE AuthorID = @id
     `);
+
+    console.log("Update result:", updateResult);
+    console.log("Rows affected:", updateResult.rowsAffected);
 
     // Fetch the updated record (excluding password)
     const selectRequest = pool.request();

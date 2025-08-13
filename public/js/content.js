@@ -1091,9 +1091,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Add event listener for the block type filter
   const blockTypeFilter = document.getElementById("blockTypeFilter");
+  const pageTitle = document.getElementById("pageTitle");
+  
   if (blockTypeFilter) {
     blockTypeFilter.addEventListener("change", (e) => {
       const filterValue = e.target.value;
+      
+      // Update page title based on filter selection
+      if (pageTitle) {
+        const selectedOption = e.target.options[e.target.selectedIndex];
+        pageTitle.textContent = selectedOption.text;
+      }
+      
       renderBlocks(filterValue);
     });
   }

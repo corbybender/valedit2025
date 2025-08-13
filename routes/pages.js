@@ -4,6 +4,7 @@ const cheerio = require("cheerio");
 const db = require("../db");
 const sql = require("mssql");
 const NotificationService = require("../src/services/notificationService");
+const AnalyticsService = require("../src/services/analyticsService");
 // const SyncQueue = require("../utils/syncQueue");
 // const logger = require("../utils/logger");
 
@@ -155,8 +156,38 @@ router.post("/:id/publish", async (req, res) => {
       }
     }
 
-    const finalHtml = $.html();
+    // Inject analytics tracking codes before finalizing HTML
+    let finalHtml = $.html();
     logger.debug("Final HTML generated. Length:", finalHtml.length);
+    
+    try {
+      // Inject analytics scripts for the website
+      const analyticsScripts = await AnalyticsService.generateTrackingScripts(pageData.WebsiteID);
+      
+      if (analyticsScripts.head || analyticsScripts.body) {
+        const $analytics = cheerio.load(finalHtml, { decodeEntities: false });
+        
+        // Inject head scripts
+        if (analyticsScripts.head) {
+          $analytics('head').append('\n' + analyticsScripts.head);
+          logger.debug("Analytics head scripts injected for website:", pageData.WebsiteID);
+        }
+        
+        // Inject body scripts (after opening body tag)
+        if (analyticsScripts.body) {
+          $analytics('body').prepend(analyticsScripts.body + '\n');
+          logger.debug("Analytics body scripts injected for website:", pageData.WebsiteID);
+        }
+        
+        finalHtml = $analytics.html();
+        logger.debug("Final HTML with analytics. Length:", finalHtml.length);
+      } else {
+        logger.debug("No analytics scripts to inject for website:", pageData.WebsiteID);
+      }
+    } catch (analyticsError) {
+      // Log the error but don't fail the page publish
+      logger.error("Error injecting analytics scripts:", analyticsError);
+    }
 
     // Here you would typically save the finalHtml to a file or another database table.
     // For this example, we'll just log it and send success.
@@ -531,6 +562,32 @@ router.get("/:id/preview", async (req, res) => {
     html = html.replace(/\{\{title\}\}/g, page.Title);
     html = html.replace(/\{\{url\}\}/g, page.URL || "");
     html = html.replace(/\{\{path\}\}/g, page.Path || "");
+
+    // Inject analytics tracking codes for preview
+    try {
+      const analyticsScripts = await AnalyticsService.generateTrackingScripts(page.WebsiteID);
+      
+      if (analyticsScripts.head || analyticsScripts.body) {
+        const $ = cheerio.load(html, { decodeEntities: false });
+        
+        // Inject head scripts
+        if (analyticsScripts.head) {
+          $('head').append('\n' + analyticsScripts.head);
+          logger.debug("Analytics head scripts injected in preview for website:", page.WebsiteID);
+        }
+        
+        // Inject body scripts (after opening body tag)
+        if (analyticsScripts.body) {
+          $('body').prepend(analyticsScripts.body + '\n');
+          logger.debug("Analytics body scripts injected in preview for website:", page.WebsiteID);
+        }
+        
+        html = $.html();
+      }
+    } catch (analyticsError) {
+      // Log the error but don't fail the preview
+      logger.error("Error injecting analytics scripts in preview:", analyticsError);
+    }
 
     res.send(html);
   } catch (error) {
