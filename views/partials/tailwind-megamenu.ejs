@@ -17,39 +17,60 @@
           </a>
         </div>
 
-        <!-- Current Website Indicator -->
-        <div
-          class="flex items-center space-x-2 bg-gray-50 px-3 py-1 rounded-lg border"
-        >
-          <i class="fas fa-shuffle text-gray-500 text-sm"></i>
+        <!-- Current Website Indicator with Dropdown -->
+        <div class="relative">
+          <div
+            id="current-website-indicator"
+            class="flex items-center space-x-2 bg-gray-50 px-3 py-1 rounded-lg border cursor-pointer hover:bg-gray-100 transition-colors"
+          >
+            <i class="fas fa-shuffle text-gray-500 text-sm"></i>
 
-          <% if (currentWebsite && currentWebsite.WebsiteName) { %>
-          <a
-            href="/websites"
-            class="text-emerald-600 font-medium text-sm hover:text-emerald-700"
+            <% if (currentWebsite && currentWebsite.WebsiteName) { %>
+            <span class="text-emerald-600 font-medium text-sm">
+              <%= (currentWebsite.WebsiteName).replace(/^www\./, "") %>
+            </span>
+            <% } else if (currentWebsite && currentWebsite.CurrentWorkingSite) { %>
+            <span class="text-emerald-600 font-medium text-sm">
+              <%= currentWebsite.CurrentWorkingSite %>
+            </span>
+            <% } else if (locals.user && locals.user.currentWorkingSite) { %>
+            <span class="text-emerald-600 font-medium text-sm">
+              <%= locals.user.currentWorkingSite %>
+            </span>
+            <% } else { %>
+            <span class="text-gray-500 text-sm">
+              No site selected
+            </span>
+            <% } %>
+
+            <i class="fas fa-chevron-down text-xs text-gray-400 transition-transform duration-200" id="dropdown-chevron"></i>
+          </div>
+
+          <!-- Dropdown Menu -->
+          <div
+            id="website-dropdown"
+            class="absolute top-full left-0 mt-1 w-80 bg-white rounded-md shadow-lg border border-gray-200 opacity-0 invisible transition-all duration-200 z-50"
           >
-            <%= (currentWebsite.WebsiteName).replace(/^www\./, "") %>
-          </a>
-          <% } else if (currentWebsite && currentWebsite.CurrentWorkingSite) {
-          %>
-          <a
-            href="/websites"
-            class="text-emerald-600 font-medium text-sm hover:text-emerald-700"
-          >
-            <%= currentWebsite.CurrentWorkingSite %>
-          </a>
-          <% } else if (locals.user && locals.user.currentWorkingSite) { %>
-          <a
-            href="/websites"
-            class="text-emerald-600 font-medium text-sm hover:text-emerald-700"
-          >
-            <%= locals.user.currentWorkingSite %>
-          </a>
-          <% } else { %>
-          <a href="/websites" class="text-gray-500 text-sm hover:text-gray-700">
-            No site selected
-          </a>
-          <% } %>
+            <!-- Search Input -->
+            <div class="p-3 border-b border-gray-200">
+              <div class="relative">
+                <input
+                  type="text"
+                  id="website-search"
+                  placeholder="Search websites..."
+                  class="w-full px-3 py-2 pl-8 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                />
+                <i class="fas fa-search absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm"></i>
+              </div>
+            </div>
+
+            <!-- Websites List -->
+            <div class="py-1 max-h-60 overflow-y-auto" id="websites-list">
+              <div class="px-4 py-2 text-sm text-gray-500">
+                Loading websites...
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -346,6 +367,166 @@
         }
       }
     });
+
+    // Website dropdown functionality
+    function initializeWebsiteDropdown() {
+      const indicator = document.getElementById('current-website-indicator');
+      const dropdown = document.getElementById('website-dropdown');
+      const chevron = document.getElementById('dropdown-chevron');
+      const searchInput = document.getElementById('website-search');
+      const websitesList = document.getElementById('websites-list');
+      
+      let allWebsites = [];
+      let isDropdownOpen = false;
+
+      // Toggle dropdown
+      function toggleDropdown() {
+        isDropdownOpen = !isDropdownOpen;
+        if (isDropdownOpen) {
+          dropdown.classList.remove('opacity-0', 'invisible');
+          dropdown.classList.add('opacity-100', 'visible');
+          chevron.style.transform = 'rotate(180deg)';
+          searchInput.focus();
+          loadWebsites();
+        } else {
+          dropdown.classList.add('opacity-0', 'invisible');
+          dropdown.classList.remove('opacity-100', 'visible');
+          chevron.style.transform = 'rotate(0deg)';
+          searchInput.value = '';
+        }
+      }
+
+      // Load websites from API
+      async function loadWebsites() {
+        try {
+          const response = await fetch('/websites/api/user-websites');
+          const data = await response.json();
+          
+          if (data.success) {
+            allWebsites = data.websites;
+            renderWebsites(allWebsites);
+          } else {
+            websitesList.innerHTML = '<div class="px-4 py-2 text-sm text-red-500">Failed to load websites</div>';
+          }
+        } catch (error) {
+          console.error('Error loading websites:', error);
+          websitesList.innerHTML = '<div class="px-4 py-2 text-sm text-red-500">Error loading websites</div>';
+        }
+      }
+
+      // Render websites list
+      function renderWebsites(websites) {
+        if (websites.length === 0) {
+          websitesList.innerHTML = '<div class="px-4 py-2 text-sm text-gray-500">No websites found</div>';
+          return;
+        }
+
+        const websitesHTML = websites.map(website => `
+          <div class="website-item px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 cursor-pointer flex items-center justify-between"
+               data-website-id="${website.WebsiteID}"
+               data-domain="${website.Domain}">
+            <div class="flex items-center space-x-2">
+              <i class="fas fa-globe w-4 text-gray-400"></i>
+              <span>${website.Domain.replace(/^www\./, '')}</span>
+            </div>
+          </div>
+        `).join('');
+
+        websitesList.innerHTML = websitesHTML;
+
+        // Add click handlers to website items
+        websitesList.querySelectorAll('.website-item').forEach(item => {
+          item.addEventListener('click', () => switchWebsite(item.dataset.websiteId, item.dataset.domain));
+        });
+      }
+
+      // Filter websites based on search
+      function filterWebsites(searchTerm) {
+        const filtered = allWebsites.filter(website =>
+          website.Domain.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        renderWebsites(filtered);
+      }
+
+      // Switch to selected website
+      async function switchWebsite(websiteID, domain) {
+        try {
+          const response = await fetch('/websites/api/switch-site', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ websiteID: parseInt(websiteID) })
+          });
+
+          const data = await response.json();
+          
+          if (data.success) {
+            // Update the indicator display
+            const indicatorSpan = indicator.querySelector('span');
+            if (indicatorSpan) {
+              indicatorSpan.textContent = domain.replace(/^www\./, '');
+              indicatorSpan.className = 'text-emerald-600 font-medium text-sm';
+            }
+            
+            // Close dropdown
+            toggleDropdown();
+            
+            // Show success message
+            showNotification('Website switched successfully', 'success');
+            
+            // Refresh the page to update all contexts
+            setTimeout(() => window.location.reload(), 500);
+          } else {
+            showNotification(data.error || 'Failed to switch website', 'error');
+          }
+        } catch (error) {
+          console.error('Error switching website:', error);
+          showNotification('Error switching website', 'error');
+        }
+      }
+
+      // Show notification
+      function showNotification(message, type) {
+        const notification = document.createElement('div');
+        notification.className = `fixed top-20 right-4 px-4 py-2 rounded-md text-sm z-50 transition-opacity ${
+          type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
+        }`;
+        notification.textContent = message;
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+          notification.style.opacity = '0';
+          setTimeout(() => notification.remove(), 300);
+        }, 3000);
+      }
+
+      // Event listeners
+      indicator.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleDropdown();
+      });
+
+      searchInput.addEventListener('input', (e) => {
+        filterWebsites(e.target.value);
+      });
+
+      // Close dropdown when clicking outside
+      document.addEventListener('click', (e) => {
+        if (!dropdown.contains(e.target) && !indicator.contains(e.target)) {
+          if (isDropdownOpen) {
+            toggleDropdown();
+          }
+        }
+      });
+
+      // Prevent dropdown from closing when clicking inside
+      dropdown.addEventListener('click', (e) => {
+        e.stopPropagation();
+      });
+    }
+
+    initializeWebsiteDropdown();
 
     // Mobile dropdown behavior
     if (window.innerWidth <= 768) {

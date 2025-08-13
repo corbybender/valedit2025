@@ -51,6 +51,12 @@ document.addEventListener("DOMContentLoaded", function () {
   const createPageBtn = document.getElementById("create-page-btn");
   const savePageBtn = document.getElementById("save-page-btn");
   const viewPageBtn = document.getElementById("view-page-btn");
+  const backToPagesBtn = document.getElementById("back-to-pages-btn");
+  const cancelPageBtn = document.getElementById("cancel-page-btn");
+  // Bottom buttons will be created dynamically
+  // const bottomSavePageBtn = document.getElementById("bottom-save-page-btn");
+  // const bottomBackToPagesBtn = document.getElementById("bottom-back-to-pages-btn");
+  // const bottomCancelPageBtn = document.getElementById("bottom-cancel-page-btn");
   const websiteSelector = document.getElementById("website-selector");
   const parentPathSelector = document.getElementById("parent-path-selector");
   const pageNameInput = document.getElementById("page-name-input");
@@ -185,6 +191,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
   if (savePageBtn) savePageBtn.addEventListener("click", handleSavePage);
   if (viewPageBtn) viewPageBtn.addEventListener("click", handleViewPage);
+  if (backToPagesBtn)
+    backToPagesBtn.addEventListener("click", handleBackToPages);
+  if (cancelPageBtn) cancelPageBtn.addEventListener("click", handleCancelPage);
+  // Bottom button event listeners are set up dynamically in createBottomPageControls()
   if (canvasArea) canvasArea.addEventListener("click", handleCanvasClick);
   if (saveBlockBtn) saveBlockBtn.addEventListener("click", handleSaveBlock);
   if (cancelEditBtn) cancelEditBtn.addEventListener("click", closeEditor);
@@ -1018,6 +1028,26 @@ document.addEventListener('DOMContentLoaded', function() {
 
 `
       );
+    } else if (buttonText.includes("Link to External") && e.target.closest("#css-tab")) {
+      const url = prompt("Enter the URL of the external CSS file:", "https://");
+      if (url && url !== "https://") {
+        insertTextIntoEditor(
+          cssEditor,
+          `<link href="${url}" rel="stylesheet" />
+
+`
+        );
+      }
+    } else if (buttonText.includes("Link to External") && e.target.closest("#js-tab")) {
+      const url = prompt("Enter the URL of the external JavaScript file:", "https://");
+      if (url && url !== "https://") {
+        insertTextIntoEditor(
+          jsEditor,
+          `<script src="${url}"></script>
+
+`
+        );
+      }
     }
   }
 
@@ -1285,6 +1315,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
       createPageBtn.style.display = "none";
       savePageBtn.disabled = false;
+      if (window.bottomSavePageBtn) window.bottomSavePageBtn.disabled = false;
       if (viewPageBtn) viewPageBtn.style.display = "inline-block";
       canvasTitle.textContent = `Editing Page: ${pageName}`;
       pageNameInput.value = "";
@@ -1376,6 +1407,9 @@ document.addEventListener('DOMContentLoaded', function() {
       } else {
         logger.debug("No disabled overlay found");
       }
+
+      // Create bottom buttons after layout is loaded
+      createBottomPageControls();
 
       const placeholders = canvasArea.querySelectorAll(".layout-placeholder");
       logger.debug("Found", placeholders.length, "placeholders");
@@ -1888,17 +1922,14 @@ document.addEventListener('DOMContentLoaded', function() {
           HtmlContent:
             '<div style="padding: 20px; text-align: center; color: #6c757d; border: 2px dashed #007bff; border-radius: 4px;"><p><i class="fab fa-js-square" style="font-size: 24px; margin-bottom: 10px; color: #f7df1e;"></i></p><p>JavaScript Block - Click "Edit" to add your JavaScript code</p></div>',
           CssContent: "",
-          JsContent:
-            "// Add your JavaScript code here\nlogger.info('JavaScript block loaded');",
+          JsContent: "",
         };
         break;
       case "css":
         blockTitle = blockData.InstanceName || blockData.Name || "CSS Block";
         defaultContent = {
-          HtmlContent:
-            '<div style="padding: 20px; text-align: center; color: #6c757d; border: 2px dashed #28a745; border-radius: 4px;"><p><i class="fab fa-css3-alt" style="font-size: 24px; margin-bottom: 10px; color: #1572b6;"></i></p><p>CSS Block - Click "Edit" to add your CSS styles</p></div>',
-          CssContent:
-            "/* Add your CSS styles here */\n.my-custom-style {\n  color: #333;\n}",
+          HtmlContent: "",
+          CssContent: "",
           JsContent: "",
         };
         break;
@@ -1906,8 +1937,7 @@ document.addEventListener('DOMContentLoaded', function() {
         blockTitle =
           blockData.InstanceName || blockData.Name || "Empty Content Block";
         defaultContent = {
-          HtmlContent:
-            '<div style="padding: 20px; text-align: center; color: #6c757d; border: 2px dashed #dee2e6; border-radius: 4px;"><p><i class="fas fa-edit" style="font-size: 24px; margin-bottom: 10px;"></i></p><p>Click "Edit" to add your content</p></div>',
+          HtmlContent: "",
           CssContent: "",
           JsContent: "",
         };
@@ -2794,6 +2824,10 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     savePageBtn.disabled = true;
     savePageBtn.textContent = "Saving...";
+    if (window.bottomSavePageBtn) {
+      window.bottomSavePageBtn.disabled = true;
+      window.bottomSavePageBtn.textContent = "Saving...";
+    }
     try {
       const response = await fetch(`/api/pages/${currentPageId}/publish`, {
         method: "POST",
@@ -2806,11 +2840,20 @@ document.addEventListener('DOMContentLoaded', function() {
       }
       const result = await response.json();
       showNotification(result.message, "success");
+
+      // Show the "Back To Pages" buttons after successful save
+      if (backToPagesBtn) backToPagesBtn.style.display = "inline-block";
+      if (window.bottomBackToPagesBtn)
+        window.bottomBackToPagesBtn.style.display = "inline-block";
     } catch (error) {
       showNotification(`Could not publish the page: ${error.message}`, "error");
     } finally {
       savePageBtn.disabled = false;
       savePageBtn.textContent = "Save Page";
+      if (window.bottomSavePageBtn) {
+        window.bottomSavePageBtn.disabled = false;
+        window.bottomSavePageBtn.textContent = "Save Page";
+      }
     }
   }
 
@@ -2823,6 +2866,123 @@ document.addEventListener('DOMContentLoaded', function() {
     // Open preview in new tab, same as the existing View button
     const previewUrl = `/pages/${currentPageId}/preview`;
     window.open(previewUrl, "_blank");
+  }
+
+  function handleBackToPages() {
+    if (!currentWorkingSite?.WebsiteID) {
+      showNotification("No website selected.", "error");
+      return;
+    }
+
+    // Redirect to the website pages list
+    window.location.href = `/websites/${currentWorkingSite.WebsiteID}/website-pages`;
+  }
+
+  function handleCancelPage() {
+    if (!currentWorkingSite?.WebsiteID) {
+      showNotification("No website selected.", "error");
+      return;
+    }
+
+    // Redirect to the website pages list without saving
+    window.location.href = `/websites/${currentWorkingSite.WebsiteID}/website-pages`;
+  }
+
+  function createBottomPageControls() {
+    // Remove existing bottom controls if they exist
+    const existingControls = document.getElementById("bottom-page-controls");
+    if (existingControls) {
+      existingControls.remove();
+    }
+
+    // Find the cphBottomJs placeholder to append buttons to it
+    const bottomJsPlaceholder = canvasArea.querySelector("#cphBottomJs");
+    if (!bottomJsPlaceholder) {
+      logger.debug(
+        "No cphBottomJs placeholder found, skipping bottom controls creation"
+      );
+      return;
+    }
+
+    // Create the bottom controls div
+    const bottomControls = document.createElement("div");
+    bottomControls.id = "bottom-page-controls";
+    bottomControls.style.cssText = `
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      padding: 15px 20px;
+      border-top: 1px solid #e0e0e0;
+      background-color: #f8f9fa;
+      margin-top: 20px;
+      z-index: 9999;
+    `;
+
+    // Create Back To Pages button
+    const backToPagesBtn = document.createElement("button");
+    backToPagesBtn.id = "bottom-back-to-pages-btn";
+    backToPagesBtn.innerHTML =
+      '<i class="fas fa-arrow-left" style="margin-right: 5px;"></i>Back To Pages';
+    backToPagesBtn.title = "Back to Pages List";
+    backToPagesBtn.style.cssText = `
+      background-color: #8e44ad;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+      display: none;
+    `;
+    backToPagesBtn.addEventListener("click", handleBackToPages);
+
+    // Create Cancel button
+    const cancelPageBtn = document.createElement("button");
+    cancelPageBtn.id = "bottom-cancel-page-btn";
+    cancelPageBtn.innerHTML =
+      '<i class="fas fa-times" style="margin-right: 5px;"></i>Cancel';
+    cancelPageBtn.title = "Cancel without saving";
+    cancelPageBtn.style.cssText = `
+      background-color: #6c757d;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+    `;
+    cancelPageBtn.addEventListener("click", handleCancelPage);
+
+    // Create Save Page button
+    const savePageBtn = document.createElement("button");
+    savePageBtn.id = "bottom-save-page-btn";
+    savePageBtn.innerHTML = "Save Page";
+    savePageBtn.disabled = !currentPageId;
+    savePageBtn.style.cssText = `
+      background-color: #28a745;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+    `;
+    savePageBtn.addEventListener("click", handleSavePage);
+
+    // Add buttons to container
+    bottomControls.appendChild(backToPagesBtn);
+    bottomControls.appendChild(cancelPageBtn);
+    bottomControls.appendChild(savePageBtn);
+
+    // Insert the buttons directly after the cphBottomJs placeholder (as sibling, not child)
+    bottomJsPlaceholder.insertAdjacentElement("afterend", bottomControls);
+
+    // Update the global references
+    window.bottomBackToPagesBtn = backToPagesBtn;
+    window.bottomCancelPageBtn = cancelPageBtn;
+    window.bottomSavePageBtn = savePageBtn;
+
+    logger.debug("Bottom page controls created and positioned");
   }
 
   function applyFilters() {
@@ -2914,6 +3074,7 @@ document.addEventListener('DOMContentLoaded', function() {
       if (websiteSelector) websiteSelector.parentElement.style.display = "none";
       if (createPageBtn) createPageBtn.style.display = "none";
       if (savePageBtn) savePageBtn.disabled = false;
+      if (window.bottomSavePageBtn) window.bottomSavePageBtn.disabled = false;
       if (viewPageBtn) viewPageBtn.style.display = "inline-block";
       if (canvasTitle)
         canvasTitle.textContent = `Editing Page: ${pageData.Title}`;
@@ -3007,9 +3168,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 const isCssBlock = templateData.Name === "CSS Block";
                 const isEmptyBlock =
                   templateData.Name === "Empty Content Block";
-                const isFormBlock = 
-                  templateData.Name === "Form Block" || 
-                  (blockData.InstanceName && blockData.InstanceName.includes("Form Block (ID:"));
+                const isFormBlock =
+                  templateData.Name === "Form Block" ||
+                  (blockData.InstanceName &&
+                    blockData.InstanceName.includes("Form Block (ID:"));
 
                 if (isJavaScriptBlock || isCssBlock || isEmptyBlock) {
                   // Use createSpecialBlockInstance for these block types
@@ -3037,33 +3199,43 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else if (isFormBlock) {
                   // Handle form blocks specifically
                   logger.info("🔄 Loading existing form block");
-                  
+
                   // Extract FormID from InstanceName (format: "Form Block (ID: 3)")
                   let formId = null;
                   let formName = "Unknown Form";
-                  
-                  if (blockData.InstanceName && blockData.InstanceName.includes("Form Block (ID:")) {
-                    const match = blockData.InstanceName.match(/Form Block \(ID:\s*(\d+)\)/);
+
+                  if (
+                    blockData.InstanceName &&
+                    blockData.InstanceName.includes("Form Block (ID:")
+                  ) {
+                    const match = blockData.InstanceName.match(
+                      /Form Block \(ID:\s*(\d+)\)/
+                    );
                     if (match) {
                       formId = match[1];
-                      logger.info(`📋 Extracted FormID: ${formId} from InstanceName: ${blockData.InstanceName}`);
-                      
+                      logger.info(
+                        `📋 Extracted FormID: ${formId} from InstanceName: ${blockData.InstanceName}`
+                      );
+
                       // Try to get form name from forms data if available
                       if (window.formsData) {
-                        const form = window.formsData.find(f => f.FormID == formId);
+                        const form = window.formsData.find(
+                          (f) => f.FormID == formId
+                        );
                         if (form) {
                           formName = form.Name;
                         }
                       }
                     }
                   }
-                  
+
                   createFormBlockInstance(
                     tempElement,
                     {
                       ...blockDataToUse,
                       ID: block.ID,
-                      InstanceName: blockData.InstanceName || block.InstanceName,
+                      InstanceName:
+                        blockData.InstanceName || block.InstanceName,
                     },
                     formId,
                     formName

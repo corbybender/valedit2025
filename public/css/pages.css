@@ -98,6 +98,19 @@
     color: #374151; 
 }
 
+.page-title-link {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #374151;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.page-title-link:hover {
+    color: #4338ca;
+    text-decoration: underline;
+}
+
 .header-actions {
     display: flex;
     align-items: center;

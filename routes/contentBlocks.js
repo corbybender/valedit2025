@@ -528,24 +528,22 @@ router.post("/page", async (req, res) => {
             HtmlContent:
               '<div style="padding: 20px; text-align: center; color: #6c757d; border: 2px dashed #007bff; border-radius: 4px;"><p><i class="fab fa-js-square" style="font-size: 24px; margin-bottom: 10px; color: #f7df1e;"></i></p><p>JavaScript Block - Click "Edit" to add your JavaScript code</p></div>',
             CssContent: "",
-            JsContent:
-              "// Add your JavaScript code here\nconsole.log('JavaScript block loaded');",
+            JsContent: "",
           };
           break;
         case "css":
           templateContent = {
             Name: "CSS Block",
-            HtmlContent:
-              '<div style="padding: 20px; text-align: center; color: #6c757d; border: 2px dashed #28a745; border-radius: 4px;"><p><i class="fab fa-css3-alt" style="font-size: 24px; margin-bottom: 10px; color: #1572b6;"></i></p><p>CSS Block - Click "Edit" to add your CSS styles</p></div>',
-            CssContent:
-              "/* Add your CSS styles here */\n.my-custom-style {\n  color: #333;\n}",
+            HtmlContent: "",
+            CssContent: "",
             JsContent: "",
           };
           break;
         case "form":
           templateContent = {
             Name: "Form Block",
-            HtmlContent: req.body.customHtml || 
+            HtmlContent:
+              req.body.customHtml ||
               '<div style="padding: 20px; text-align: center; color: #6c757d; border: 2px dashed #007bff; border-radius: 4px;"><p><i class="fas fa-wpforms" style="font-size: 24px; margin-bottom: 10px; color: #007bff;"></i></p><p>Form Block - Click "Edit" to configure form settings</p></div>',
             CssContent: "",
             JsContent: "",
@@ -554,8 +552,7 @@ router.post("/page", async (req, res) => {
         default: // empty
           templateContent = {
             Name: "Empty Content Block",
-            HtmlContent:
-              '<div style="padding: 20px; text-align: center; color: #6c757d; border: 2px dashed #dee2e6; border-radius: 4px;"><p><i class="fas fa-edit" style="font-size: 24px; margin-bottom: 10px;"></i></p><p>Click "Edit" to add your content</p></div>',
+            HtmlContent: "",
             CssContent: "",
             JsContent: "",
           };
@@ -665,16 +662,16 @@ router.post("/page", async (req, res) => {
     logger.debug(
       `Proceeding to create PageContentBlock with ContentTemplateID: ${contentTemplateId}`
     );
-    
+
     // Check if we have form-specific data to store
     const formId = req.body.formId;
     let instanceName = templateData.Name;
-    
+
     if (clientBlockType === "form" && formId) {
       instanceName = `Form Block (ID: ${formId})`;
       logger.debug(`Setting instance name for form block: ${instanceName}`);
     }
-    
+
     const result = await pool
       .request()
       .input("PageID", sql.BigInt, pageId)

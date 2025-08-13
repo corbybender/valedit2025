@@ -121,17 +121,44 @@ const updateUser = async (userId, userData) => {
       isActive,
     } = userData;
 
+    // First get current user data to preserve required fields
+    const currentUser = await getUserById(userId);
+    if (!currentUser) {
+      throw new Error("User not found");
+    }
+
+    // Ensure we have valid values for required fields
+    const safeAuthorLogin = authorLogin || currentUser.AuthorLogin;
+    const safeAuthorName = authorName || currentUser.AuthorName;
+    const safeAuthorEmail = authorEmail || currentUser.AuthorEmail;
+
+    // Debug logging
+    console.log("UPDATE USER SERVICE DEBUG:");
+    console.log("User ID:", userId);
+    console.log("Request data:", userData);
+    console.log("Current user from DB:", currentUser);
+    console.log("Safe values:", { safeAuthorLogin, safeAuthorName, safeAuthorEmail });
+
+    if (!safeAuthorLogin || !safeAuthorName || !safeAuthorEmail) {
+      console.log("ERROR: Required fields are missing or null");
+      throw new Error("AuthorLogin, AuthorName, and AuthorEmail are required and cannot be null");
+    }
+
     const pool = await db;
+    
+    const finalIsActive = isActive !== undefined ? isActive : currentUser.IsActive;
+    console.log("Final isActive value being sent to DB:", finalIsActive);
+    
     const result = await pool
       .request()
       .input("userId", sql.Int, userId)
-      .input("authorLogin", sql.NVarChar, authorLogin)
-      .input("authorName", sql.NVarChar, authorName)
-      .input("authorEmail", sql.NVarChar, authorEmail)
-      .input("isAdmin", sql.Bit, isAdmin)
-      .input("authorCategory", sql.NVarChar, authorCategory)
-      .input("authorType", sql.NVarChar, authorType)
-      .input("isActive", sql.Bit, isActive).query(`
+      .input("authorLogin", sql.NVarChar, safeAuthorLogin)
+      .input("authorName", sql.NVarChar, safeAuthorName)
+      .input("authorEmail", sql.NVarChar, safeAuthorEmail)
+      .input("isAdmin", sql.Bit, isAdmin !== undefined ? isAdmin : currentUser.IsAdmin)
+      .input("authorCategory", sql.NVarChar, authorCategory || currentUser.AuthorCategory || "")
+      .input("authorType", sql.NVarChar, authorType || currentUser.AuthorType || "")
+      .input("isActive", sql.Bit, finalIsActive).query(`
         UPDATE Authors
         SET AuthorLogin = @authorLogin,
             AuthorName = @authorName,
@@ -142,7 +169,18 @@ const updateUser = async (userId, userData) => {
             IsActive = @isActive
         WHERE AuthorID = @userId
       `);
-    return result.rowsAffected[0] > 0;
+    
+    console.log("UPDATE result:", result);
+    console.log("Rows affected:", result.rowsAffected[0]);
+    
+    const updateSuccess = result.rowsAffected[0] > 0;
+    console.log("Update successful:", updateSuccess);
+    
+    // Verify the update by fetching the user again
+    const updatedUser = await getUserById(userId);
+    console.log("User after update:", updatedUser);
+    
+    return updateSuccess;
   } catch (error) {
     console.error("Error updating user:", error);
     throw error;

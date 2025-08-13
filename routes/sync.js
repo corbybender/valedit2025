@@ -99,6 +99,7 @@ router.get("/queue", async (req, res) => {
     const limit = parseInt(req.query.limit) || 50;
     const offset = (page - 1) * limit;
     const websiteSearch = req.query.search; // Optional website search filter
+    const statusFilter = req.query.status; // Optional status filter
 
     if (!authorID) {
       return res.status(401).json({ error: "Not authenticated" });
@@ -116,11 +117,13 @@ router.get("/queue", async (req, res) => {
         psq.SyncCompletedAt as ProcessedAt,
         psq.SyncNotes as ErrorMessage,
         p.Title as PageTitle,
-        w.Domain as WebsiteDomain
+        w.Domain as WebsiteDomain,
+        COALESCE(a.AuthorName, 'Unknown User') as UserName
       FROM PageSyncQueue psq
       JOIN Pages p ON psq.PageID = p.PageID
       JOIN Websites w ON psq.WebsiteID = w.WebsiteID
       JOIN AuthorWebsiteAccess awa ON psq.WebsiteID = awa.WebsiteID
+      LEFT JOIN Authors a ON psq.QueuedBy = a.AuthorID
       WHERE awa.AuthorID = @AuthorID`;
 
     const request = pool
@@ -135,6 +138,12 @@ router.get("/queue", async (req, res) => {
       request.input("WebsiteSearch", sql.NVarChar, `%${websiteSearch.trim()}%`);
     }
 
+    // Add status filter if provided
+    if (statusFilter && statusFilter.trim() !== "" && statusFilter !== "all") {
+      query += ` AND psq.Status = @StatusFilter`;
+      request.input("StatusFilter", sql.NVarChar, statusFilter.trim().toLowerCase());
+    }
+
     query += `
       ORDER BY psq.QueuedAt DESC
       OFFSET @Offset ROWS
@@ -147,12 +156,14 @@ router.get("/queue", async (req, res) => {
       page: page,
       limit: limit,
       websiteSearch: websiteSearch,
+      statusFilter: statusFilter,
     });
   } catch (err) {
     logger.error("Error fetching sync queue", {
       error: err,
       authorID: req.session.authorID,
       websiteSearch: req.query.search,
+      statusFilter: req.query.status,
     });
     res.status(500).json({ error: "Failed to fetch sync queue" });
   }

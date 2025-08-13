@@ -25,8 +25,15 @@
 
 .builder-container {
   display: flex;
+  flex-direction: column;
   height: 100%;
   font-size: 12px;
+}
+
+.builder-main-content {
+  display: flex;
+  flex: 1;
+  min-height: 0;
 }
 
 .template-sidebar {

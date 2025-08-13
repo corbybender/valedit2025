@@ -357,5 +357,88 @@ module.exports = (db) => {
     }
   });
 
+  // API route to get user's accessible websites for dropdown
+  router.get("/api/user-websites", async (req, res) => {
+    try {
+      const authorID = req.session.authorID;
+
+      if (!authorID) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const pool = await db;
+      const result = await pool.request().input("AuthorID", sql.Int, authorID)
+        .query(`SELECT w.WebsiteID, w.Domain
+                FROM dbo.Websites w
+                JOIN dbo.AuthorWebsiteAccess awa ON w.WebsiteID = awa.WebsiteID
+                WHERE awa.AuthorID = @AuthorID AND w.IsActive = 1
+                ORDER BY w.Domain`);
+
+      res.json({ success: true, websites: result.recordset });
+    } catch (err) {
+      logger.error("Error fetching user websites for dropdown", {
+        error: err,
+        sessionID: req.sessionID,
+        authorID: req.session.authorID,
+      });
+
+      res.status(500).json({ error: "Failed to fetch websites" });
+    }
+  });
+
+  // API route to switch working site
+  router.post("/api/switch-site", async (req, res) => {
+    const workingSite = require("../src/services/workingSiteService");
+    try {
+      const authorID = req.session.authorID;
+      const { websiteID } = req.body;
+
+      if (!authorID) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      if (!websiteID) {
+        return res.status(400).json({ error: "Website ID is required" });
+      }
+
+      // Verify user has access to this website
+      const pool = await db;
+      const accessCheck = await pool
+        .request()
+        .input("AuthorID", sql.Int, authorID)
+        .input("WebsiteID", sql.Int, parseInt(websiteID))
+        .query(`SELECT COUNT(*) as AccessCount 
+                FROM dbo.AuthorWebsiteAccess 
+                WHERE AuthorID = @AuthorID AND WebsiteID = @WebsiteID`);
+
+      if (accessCheck.recordset[0].AccessCount === 0) {
+        return res.status(403).json({ error: "Access denied to this website" });
+      }
+
+      // Switch to the site
+      const success = await workingSite.setCurrentWorkingSite(authorID, parseInt(websiteID));
+
+      if (success) {
+        // Get the updated site info
+        const updatedSite = await workingSite.getCurrentWorkingSite(authorID);
+        res.json({ 
+          success: true, 
+          message: "Working site updated successfully",
+          currentSite: updatedSite
+        });
+      } else {
+        res.status(500).json({ error: "Failed to update working site" });
+      }
+    } catch (err) {
+      logger.error("Error switching working site", {
+        error: err,
+        sessionID: req.sessionID,
+        authorID: req.session.authorID,
+      });
+
+      res.status(500).json({ error: "Failed to switch working site" });
+    }
+  });
+
   return router;
 };

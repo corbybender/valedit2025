@@ -7,7 +7,7 @@
         <% if (page.children && page.children.length > 0) { %>
         <i class="arrow fas fa-chevron-right"></i>
         <% } %>
-        <span class="page-title"><%= page.Title %></span>
+        <a href="/buildpage?pageid=<%= page.PageID %>" class="page-title-link" title="Click Title To Edit" onclick="event.stopPropagation()"><%= page.Title %></a>
       </div>
       <div class="header-actions">
         <span class="page-path"><%= page.Path %></span>

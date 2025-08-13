@@ -80,9 +80,16 @@ const createUser = async (req, res) => {
 
 const updateUser = async (req, res) => {
   try {
+    console.log("UPDATE USER CONTROLLER DEBUG:");
+    console.log("Request params:", req.params);
+    console.log("Request body:", req.body);
+    console.log("User session:", req.session.userInfo);
+    
     const { id } = req.params;
     const userData = req.body;
     const success = await userService.updateUser(id, userData);
+
+    console.log("Service returned success:", success);
 
     if (success) {
       res.json({ message: "User updated successfully" });
@@ -90,8 +97,9 @@ const updateUser = async (req, res) => {
       res.status(404).json({ error: "User not found" });
     }
   } catch (error) {
-    console.error("Error updating user:", error);
-    res.status(500).json({ error: "Failed to update user" });
+    console.error("Error updating user in controller:", error);
+    console.error("Error stack:", error.stack);
+    res.status(500).json({ error: "Failed to update user", details: error.message });
   }
 };
 

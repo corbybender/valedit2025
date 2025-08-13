@@ -158,16 +158,42 @@
 
         <!-- Recent Logs Table -->
         <div class="bg-white border border-gray-200 rounded-lg">
-          <div class="p-4 border-b border-gray-200">
+          <div class="p-4 border-b border-gray-200 flex justify-between items-center">
             <h3 class="text-lg font-semibold" id="recent-logs-title">
-              <i class="fas fa-clock"></i> Recent Log Entries (Last 20)
+              <i class="fas fa-clock"></i> Recent Log Entries
             </h3>
+            <div class="flex items-center gap-4">
+              <label for="page-size" class="text-sm text-gray-600">Entries per page:</label>
+              <select id="page-size" class="border border-gray-300 rounded px-2 py-1 text-sm" onchange="changePageSize()">
+                <option value="20">20</option>
+                <option value="50" selected>50</option>
+                <option value="100">100</option>
+                <option value="200">200</option>
+              </select>
+            </div>
           </div>
           <div class="overflow-x-auto">
             <div id="recent-logs-container" class="p-4">
               <div class="text-center py-8 text-gray-500">
                 <i class="fas fa-spinner fa-spin"></i> Loading recent logs...
               </div>
+            </div>
+          </div>
+          <!-- Pagination Controls -->
+          <div id="pagination-controls" class="p-4 border-t border-gray-200 flex justify-between items-center" style="display: none;">
+            <div class="text-sm text-gray-600" id="pagination-info">
+              Showing 0-0 of 0 entries
+            </div>
+            <div class="flex gap-2">
+              <button id="prev-page" class="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed" onclick="changePage(-1)" disabled>
+                <i class="fas fa-chevron-left"></i> Previous
+              </button>
+              <div id="page-numbers" class="flex gap-1">
+                <!-- Page numbers will be inserted here -->
+              </div>
+              <button id="next-page" class="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed" onclick="changePage(1)" disabled>
+                Next <i class="fas fa-chevron-right"></i>
+              </button>
             </div>
           </div>
         </div>
@@ -184,6 +210,10 @@
       let countdownInterval;
       let countdownSeconds = 30;
       let currentFilter = "all"; // Track current filter state
+      let currentPage = 1;
+      let pageSize = 50;
+      let totalPages = 0;
+      let totalEntries = 0;
 
       function loadLogCounts() {
         // Load counts for each log level
@@ -217,6 +247,7 @@
 
       function filterLogsByLevel(level) {
         currentFilter = level;
+        currentPage = 1; // Reset to first page when filtering
 
         // Update visual state of cards - remove active styling from all cards
         document.querySelectorAll("[data-level]").forEach((card) => {
@@ -248,6 +279,7 @@
 
       function clearFilter() {
         currentFilter = "all";
+        currentPage = 1; // Reset to first page when clearing filter
 
         // Remove active state from all cards
         document.querySelectorAll("[data-level]").forEach((card) => {
@@ -260,7 +292,7 @@
 
         // Reset title
         document.getElementById("recent-logs-title").innerHTML =
-          '<i class="fas fa-clock"></i> Recent Log Entries (Last 20)';
+          '<i class="fas fa-clock"></i> Recent Log Entries';
 
         // Load all logs
         loadRecentLogs();
@@ -269,13 +301,17 @@
       function loadRecentLogs() {
         const url =
           currentFilter === "all"
-            ? "/logs/api?limit=20"
-            : `/logs/api?limit=20&level=${currentFilter}`;
+            ? `/logs/api?page=${currentPage}&limit=${pageSize}`
+            : `/logs/api?page=${currentPage}&limit=${pageSize}&level=${currentFilter}`;
 
         fetch(url)
           .then((response) => response.json())
           .then((data) => {
             const container = document.getElementById("recent-logs-container");
+            
+            // Update pagination variables
+            totalPages = data.pagination.totalPages;
+            totalEntries = data.pagination.total;
 
             if (data.logs.length === 0) {
               const filterText =
@@ -283,6 +319,7 @@
                   ? "recent log entries"
                   : `${currentFilter} log entries`;
               container.innerHTML = `<div class="text-center py-8 text-gray-500">No ${filterText} found</div>`;
+              document.getElementById("pagination-controls").style.display = "none";
               return;
             }
 
@@ -316,11 +353,15 @@
               `;
               })
               .join("");
+              
+            // Update pagination controls
+            updatePaginationControls();
           })
           .catch((error) => {
             console.error("Error loading recent logs:", error);
             document.getElementById("recent-logs-container").innerHTML =
               '<div class="text-center py-8 text-red-500">Error loading recent logs</div>';
+            document.getElementById("pagination-controls").style.display = "none";
           });
       }
 
@@ -377,6 +418,95 @@
             countdownSeconds = 30;
           }
         }, 1000);
+      }
+
+      // Pagination functions
+      function updatePaginationControls() {
+        if (totalPages <= 1) {
+          document.getElementById("pagination-controls").style.display = "none";
+          return;
+        }
+
+        document.getElementById("pagination-controls").style.display = "flex";
+
+        // Update pagination info
+        const start = (currentPage - 1) * pageSize + 1;
+        const end = Math.min(currentPage * pageSize, totalEntries);
+        document.getElementById("pagination-info").textContent = 
+          `Showing ${start}-${end} of ${totalEntries} entries`;
+
+        // Update prev/next buttons
+        document.getElementById("prev-page").disabled = currentPage === 1;
+        document.getElementById("next-page").disabled = currentPage === totalPages;
+
+        // Update page numbers
+        updatePageNumbers();
+      }
+
+      function updatePageNumbers() {
+        const pageNumbersContainer = document.getElementById("page-numbers");
+        pageNumbersContainer.innerHTML = "";
+
+        // Calculate visible page range
+        let startPage = Math.max(1, currentPage - 2);
+        let endPage = Math.min(totalPages, currentPage + 2);
+
+        // Show first page and ellipsis if needed
+        if (startPage > 1) {
+          pageNumbersContainer.appendChild(createPageButton(1));
+          if (startPage > 2) {
+            const ellipsis = document.createElement("span");
+            ellipsis.className = "px-3 py-1 text-gray-500";
+            ellipsis.textContent = "...";
+            pageNumbersContainer.appendChild(ellipsis);
+          }
+        }
+
+        // Show page numbers in range
+        for (let i = startPage; i <= endPage; i++) {
+          pageNumbersContainer.appendChild(createPageButton(i));
+        }
+
+        // Show last page and ellipsis if needed
+        if (endPage < totalPages) {
+          if (endPage < totalPages - 1) {
+            const ellipsis = document.createElement("span");
+            ellipsis.className = "px-3 py-1 text-gray-500";
+            ellipsis.textContent = "...";
+            pageNumbersContainer.appendChild(ellipsis);
+          }
+          pageNumbersContainer.appendChild(createPageButton(totalPages));
+        }
+      }
+
+      function createPageButton(pageNum) {
+        const button = document.createElement("button");
+        button.className = pageNum === currentPage 
+          ? "px-3 py-1 bg-blue-500 text-white rounded text-sm font-medium"
+          : "px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50";
+        button.textContent = pageNum;
+        if (pageNum !== currentPage) {
+          button.onclick = () => goToPage(pageNum);
+        }
+        return button;
+      }
+
+      function changePage(direction) {
+        const newPage = currentPage + direction;
+        if (newPage >= 1 && newPage <= totalPages) {
+          goToPage(newPage);
+        }
+      }
+
+      function goToPage(page) {
+        currentPage = page;
+        loadRecentLogs();
+      }
+
+      function changePageSize() {
+        pageSize = parseInt(document.getElementById("page-size").value);
+        currentPage = 1; // Reset to first page
+        loadRecentLogs();
       }
 
       // Initialize on page load

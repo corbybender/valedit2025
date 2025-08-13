@@ -127,6 +127,13 @@
                     >
                       <i class="fas fa-mobile-alt"></i> Responsive
                     </button>
+                    <button
+                      type="button"
+                      class="toolbar-btn"
+                      title="Link to external CSS file"
+                    >
+                      <i class="fas fa-external-link-alt"></i> Link to External
+                    </button>
                   </div>
                   <textarea
                     id="css-editor"
@@ -150,6 +157,13 @@
                       title="Add event listener template"
                     >
                       <i class="fas fa-mouse-pointer"></i> Event Listener
+                    </button>
+                    <button
+                      type="button"
+                      class="toolbar-btn"
+                      title="Link to external JavaScript file"
+                    >
+                      <i class="fas fa-external-link-alt"></i> Link to External
                     </button>
                   </div>
                   <textarea
@@ -301,7 +315,8 @@
           </div>
 
           <div class="builder-container">
-            <div class="template-sidebar">
+            <div class="builder-main-content">
+              <div class="template-sidebar">
               <h3>Content Library</h3>
 
               <!-- Empty Content Block Section -->
@@ -576,6 +591,37 @@
                     <i class="fas fa-eye" style="margin-right: 5px;"></i>View
                   </button>
                   <button
+                    id="back-to-pages-btn"
+                    style="
+                      background-color: #8e44ad;
+                      color: white;
+                      border: none;
+                      padding: 10px 20px;
+                      border-radius: 5px;
+                      font-weight: bold;
+                      cursor: pointer;
+                      display: none;
+                    "
+                    title="Back to Pages List"
+                  >
+                    <i class="fas fa-arrow-left" style="margin-right: 5px;"></i>Back To Pages
+                  </button>
+                  <button
+                    id="cancel-page-btn"
+                    style="
+                      background-color: #6c757d;
+                      color: white;
+                      border: none;
+                      padding: 10px 20px;
+                      border-radius: 5px;
+                      font-weight: bold;
+                      cursor: pointer;
+                    "
+                    title="Cancel without saving"
+                  >
+                    <i class="fas fa-times" style="margin-right: 5px;"></i>Cancel
+                  </button>
+                  <button
                     id="save-page-btn"
                     style="
                       background-color: #28a745;
@@ -592,12 +638,12 @@
                   </button>
                 </div>
               </div>
-              <div id="canvas-area" style="position: relative; flex-grow: 1">
+              <div id="canvas-area" style="position: relative; flex: 1 1 auto; min-height: 0">
                 <div class="disabled-overlay">
                   <div>Create a page to begin.</div>
                 </div>
               </div>
-            </div>
+          </div>
           </div>
 
           <% } %>

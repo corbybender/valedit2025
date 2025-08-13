@@ -254,12 +254,55 @@ router.put("/:id", async (req, res) => {
       IsActive,
     } = req.body;
 
+    // First, get current user data to preserve required fields
     const pool = await db;
+    const getCurrentRequest = pool.request();
+    getCurrentRequest.input("id", sql.Int, parseInt(id));
+    const currentUserResult = await getCurrentRequest.query(`
+      SELECT AuthorLogin, AuthorName, AuthorEmail 
+      FROM Authors 
+      WHERE AuthorID = @id
+    `);
+
+    if (currentUserResult.recordset.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const currentUser = currentUserResult.recordset[0];
+    
+    // Debug logging
+    console.log("UPDATE USER DEBUG:");
+    console.log("User ID:", id);
+    console.log("Request body:", req.body);
+    console.log("Current user from DB:", currentUser);
+
+    // Ensure we have valid values and don't pass null to required fields
+    const safeAuthorLogin = AuthorLogin || currentUser.AuthorLogin;
+    const safeAuthorName = AuthorName || currentUser.AuthorName; 
+    const safeAuthorEmail = AuthorEmail || currentUser.AuthorEmail;
+
+    console.log("Safe values:");
+    console.log("safeAuthorLogin:", safeAuthorLogin);
+    console.log("safeAuthorName:", safeAuthorName);
+    console.log("safeAuthorEmail:", safeAuthorEmail);
+
+    if (!safeAuthorLogin || !safeAuthorName || !safeAuthorEmail) {
+      console.log("ERROR: Required fields are missing or null");
+      return res.status(400).json({ 
+        error: "AuthorLogin, AuthorName, and AuthorEmail are required and cannot be null",
+        debug: {
+          currentUser,
+          requestBody: req.body,
+          safeValues: { safeAuthorLogin, safeAuthorName, safeAuthorEmail }
+        }
+      });
+    }
+
     const request = pool.request();
     request.input("id", sql.Int, parseInt(id));
-    request.input("AuthorLogin", sql.NVarChar, AuthorLogin);
-    request.input("AuthorName", sql.NVarChar, AuthorName);
-    request.input("AuthorEmail", sql.NVarChar, AuthorEmail);
+    request.input("AuthorLogin", sql.NVarChar, safeAuthorLogin);
+    request.input("AuthorName", sql.NVarChar, safeAuthorName);
+    request.input("AuthorEmail", sql.NVarChar, safeAuthorEmail);
     request.input("IsAdmin", sql.Bit, IsAdmin || false);
     request.input("AuthorCategory", sql.NVarChar, AuthorCategory || "");
     request.input("AuthorType", sql.NVarChar, AuthorType || "");

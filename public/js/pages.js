@@ -12,8 +12,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const header = event.target.closest(".accordion-header");
     if (!header) return;
 
-    // Prevent clicks on action buttons from toggling the accordion
-    if (event.target.closest(".action-btn")) {
+    // Prevent clicks on action buttons and title links from toggling the accordion
+    if (event.target.closest(".action-btn") || event.target.closest(".page-title-link")) {
       return;
     }
 
