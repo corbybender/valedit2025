@@ -71,7 +71,7 @@ class EmailService {
    */
   async sendFormSubmissionNotification({
     to,
-    from = process.env.DEFAULT_FROM_EMAIL || "noreply@yourdomain.com",
+    from = process.env.SENDGRID_FROM_ADDRESS || process.env.DEFAULT_FROM_EMAIL || "noreply@yourdomain.com",
     form,
     submission,
     website,
@@ -136,7 +136,7 @@ class EmailService {
    */
   async sendAutoresponseEmail({
     to,
-    from = process.env.DEFAULT_FROM_EMAIL || "noreply@yourdomain.com",
+    from = process.env.SENDGRID_FROM_ADDRESS || process.env.DEFAULT_FROM_EMAIL || "noreply@yourdomain.com",
     form,
     submission,
     website,
