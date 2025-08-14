@@ -1,5 +1,5 @@
 const sql = require("mssql");
-const db = require("../../db");
+const db = require("../config/database");
 
 /**
  * Notification Service

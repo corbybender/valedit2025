@@ -1,4 +1,4 @@
-const db = require("../../db");
+const db = require("../config/database");
 const sql = require("mssql");
 
 // Ensure logger is available (it's set up globally in debug-logger.js)

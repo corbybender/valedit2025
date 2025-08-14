@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const userController = require("../controllers/userController");
 const { isAuthenticated, isAdmin } = require("../middleware/authentication");
-const db = require("../../db");
+const db = require("../config/database");
 const sql = require("mssql");
 const NotificationService = require("../services/notificationService");
 

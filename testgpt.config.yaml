@@ -1,0 +1,7 @@
+.js:
+  techs:
+    - jest
+    - supertest
+  instructions:
+    - Use supertest to send HTTP requests to the Express app.
+    - Test happy and error paths for all endpoints.

@@ -7,13 +7,14 @@
     "dev": "kill-port 3000 && node src/server.js",
     "dev:safe": "nodemon src/server.js",
     "kill-port": "node scripts/kill-port.js",
-    "test": "jest --testPathPattern=tests/"
+    "test": "jest"
   },
   "author": "Israt",
   "license": "ISC",
   "dependencies": {
     "@azure/msal-node": "^3.6.4",
     "@azure/storage-blob": "^12.28.0",
+    "@sendgrid/mail": "^8.1.5",
     "cheerio": "^1.1.2",
     "dotenv": "^17.2.1",
     "ejs": "^3.1.10",

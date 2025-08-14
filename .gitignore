@@ -1,5 +1,7 @@
-node modules
 node_modules
 .env
 login_code.txt
 *.log
+
+# Legacy files (moved for reference, not used in production)
+legacy/

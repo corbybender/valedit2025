@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 // Import the existing templates route logic
-const existingTemplatesRouter = require("../../../routes/templates");
+const existingTemplatesRouter = require("../../../legacy/routes_old/templates");
 
 // Use the existing router for now - this preserves all functionality
 router.use("/", existingTemplatesRouter);

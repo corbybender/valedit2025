@@ -28,7 +28,7 @@ const authRoutes = require("./routes/authRoutes");
 const mainRoutes = require("./routes/mainRoutes");
 const userRoutes = require("./routes/userRoutes");
 const websiteRoutes = require("./routes/websiteRoutes");
-const syncRoutes = require("../routes/sync.js");
+const syncRoutes = require("../legacy/routes_old/sync.js");
 
 // API Routes
 const pagesApiRoutes = require("./routes/api/pagesApiRoutes");
@@ -38,7 +38,7 @@ const websitesApiRoutes = require("./routes/api/websitesApiRoutes");
 const sharedContentApiRoutes = require("./routes/api/sharedContentApiRoutes");
 const notificationsApiRoutes = require("./routes/api/notificationsApiRoutes");
 const azureStorageApiRoutes = require("./routes/api/azureStorageApiRoutes");
-const analyticsRoutes = require("../routes/analytics");
+const analyticsRoutes = require("../legacy/routes_old/analytics");
 
 // Initialize Express app
 const app = express();
@@ -97,18 +97,18 @@ app.use(
 );
 
 // Legacy routes (for backward compatibility)
-const legacyWebsitesRoutes = require("../routes/websites");
-const legacyPagesRoutes = require("../routes/pages");
-const legacyContentRoutes = require("../routes/content");
-const legacyContentBlocksRoutes = require("../routes/contentBlocks");
-const legacyTemplatesRoutes = require("../routes/templates");
-const legacyUsersRoutes = require("../routes/users");
-const legacyNotificationsRoutes = require("../routes/notifications");
-const legacySharedContentRoutes = require("../routes/sharedContent");
-const legacyAzureStorageRoutes = require("../routes/AzureStorage");
-const logsRoutes = require("../routes/logs");
+const legacyWebsitesRoutes = require("../legacy/routes_old/websites");
+const legacyPagesRoutes = require("../legacy/routes_old/pages");
+const legacyContentRoutes = require("../legacy/routes_old/content");
+const legacyContentBlocksRoutes = require("../legacy/routes_old/contentBlocks");
+const legacyTemplatesRoutes = require("../legacy/routes_old/templates");
+const legacyUsersRoutes = require("../legacy/routes_old/users");
+const legacyNotificationsRoutes = require("../legacy/routes_old/notifications");
+const legacySharedContentRoutes = require("../legacy/routes_old/sharedContent");
+const legacyAzureStorageRoutes = require("../legacy/routes_old/AzureStorage");
+const logsRoutes = require("../legacy/routes_old/logs");
 // const frontendLogRoutes = require("../routes/frontendLog");
-const legacyDb = require("../db");
+const legacyDb = require("../legacy/db");
 
 // Mount legacy routes with database and authentication
 app.use(
@@ -181,7 +181,7 @@ const startServer = () => {
 
 // Log cleanup scheduler
 const startLogCleanupScheduler = () => {
-  const db = require("../db");
+  const db = require("../legacy/db");
 
   const cleanupInfoLogs = async () => {
     try {

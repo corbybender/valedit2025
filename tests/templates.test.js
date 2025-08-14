@@ -1,9 +1,9 @@
 const request = require("supertest");
 const express = require("express");
-const templatesRoute = require("../routes/templates");
-const db = require("../db");
+const templatesRoute = require("../legacy/routes_old/templates");
+const db = require("../src/config/database");
 
-jest.mock("../db");
+jest.mock("../src/config/database");
 const mockDb = {
   query: jest.fn(),
   request: jest.fn(() => mockDb),
@@ -16,7 +16,7 @@ describe("Templates Route", () => {
   beforeAll(() => {
     app = express();
     app.use(express.json());
-    app.use("/templates", templatesRoute(mockDb));
+    app.use("/templates", templatesRoute);
   });
 
   afterEach(() => {
@@ -24,4 +24,16 @@ describe("Templates Route", () => {
   });
 
   // Add specific tests for templates.js routes here
+  
+  test('should export templates route', () => {
+    expect(templatesRoute).toBeDefined();
+    expect(typeof templatesRoute).toBe('function');
+  });
+
+  test('should create express app with templates route', () => {
+    expect(app).toBeDefined();
+    expect(typeof app).toBe('function');
+  });
 });
+
+

@@ -1,4 +1,5 @@
 const msal = require("@azure/msal-node");
+const logger = require("../utils/logger");
 require("dotenv").config();
 
 const isAzureConfigured =

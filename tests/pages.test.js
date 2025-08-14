@@ -1,9 +1,9 @@
 const request = require("supertest");
 const express = require("express");
-const pagesRoute = require("../routes/pages");
-const db = require("../db");
+const pagesRoute = require("../legacy/routes_old/pages");
+const db = require("../src/config/database");
 
-jest.mock("../db");
+jest.mock("../src/config/database");
 const mockDb = {
   query: jest.fn(),
   request: jest.fn(() => mockDb),
@@ -16,7 +16,7 @@ describe("Pages Route", () => {
   beforeAll(() => {
     app = express();
     app.use(express.json());
-    app.use("/pages", pagesRoute(mockDb));
+    app.use("/pages", pagesRoute);
   });
 
   afterEach(() => {
@@ -24,4 +24,16 @@ describe("Pages Route", () => {
   });
 
   // Add specific tests for pages.js routes here
+  
+  test('should export pages route', () => {
+    expect(pagesRoute).toBeDefined();
+    expect(typeof pagesRoute).toBe('function');
+  });
+
+  test('should create express app with pages route', () => {
+    expect(app).toBeDefined();
+    expect(typeof app).toBe('function');
+  });
 });
+
+

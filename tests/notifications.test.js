@@ -1,9 +1,9 @@
 const request = require("supertest");
 const express = require("express");
-const notificationsRoute = require("../routes/notifications");
-const db = require("../db");
+const notificationsRoute = require("../legacy/routes_old/notifications");
+const db = require("../src/config/database");
 
-jest.mock("../db");
+jest.mock("../src/config/database");
 const mockDb = {
   query: jest.fn(),
   request: jest.fn(() => mockDb),
@@ -16,7 +16,7 @@ describe("Notifications Route", () => {
   beforeAll(() => {
     app = express();
     app.use(express.json());
-    app.use("/notifications", notificationsRoute(mockDb));
+    app.use("/notifications", notificationsRoute);
   });
 
   afterEach(() => {
@@ -24,4 +24,16 @@ describe("Notifications Route", () => {
   });
 
   // Add specific tests for notifications.js routes here
+  
+  test('should export notifications route', () => {
+    expect(notificationsRoute).toBeDefined();
+    expect(typeof notificationsRoute).toBe('function');
+  });
+
+  test('should create express app with notifications route', () => {
+    expect(app).toBeDefined();
+    expect(typeof app).toBe('function');
+  });
 });
+
+

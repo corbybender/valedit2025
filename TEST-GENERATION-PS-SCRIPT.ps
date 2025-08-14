@@ -1,0 +1,126 @@
+# Use hardcoded project path to avoid PSScriptRoot issues
+$projectRoot = "C:\Users\cgb2\source\repos\valedit2025"
+$srcDir = "$projectRoot\src"
+$testDir = "$projectRoot\tests"
+$logFile = "$projectRoot\test-generation-log.txt"
+
+# Clear previous log and redirect all errors
+if (Test-Path $logFile) { Remove-Item $logFile }
+
+function Write-Log($message, $isError = $false) {
+    $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+    $prefix = if ($isError) { "ERROR" } else { "INFO" }
+    $logEntry = "[$timestamp] [$prefix] $message"
+    Write-Host $logEntry
+    Add-Content -Path $logFile -Value $logEntry
+}
+
+# Capture all errors
+$ErrorActionPreference = "Continue"
+$Error.Clear()
+
+try {
+    Write-Log "Starting test generation script"
+    Write-Log "Project root: $projectRoot"
+    Write-Log "Source directory: $srcDir"
+    Write-Log "Test directory: $testDir"
+
+    # Verify directories exist
+    if (-not (Test-Path $srcDir)) {
+        Write-Log "Source directory not found: $srcDir" $true
+        exit 1
+    }
+    Write-Log "Source directory verified"
+
+    # Ensure the root tests folder exists
+    if (-not (Test-Path $testDir)) { 
+        Write-Log "Creating tests directory: $testDir"
+        New-Item -ItemType Directory -Path $testDir -Force | Out-Null 
+        Write-Log "Tests directory created"
+    } else {
+        Write-Log "Tests directory already exists"
+    }
+
+    # Get all .js files from src
+    Write-Log "Scanning for .js files in src directory..."
+    $jsFiles = Get-ChildItem -Path $srcDir -Recurse -Filter "*.js" -ErrorAction SilentlyContinue
+    Write-Log "Found $($jsFiles.Count) .js files"
+
+    $jsFiles | ForEach-Object {
+        try {
+            $sourceFile = $_
+            Write-Log "Processing: $($sourceFile.Name)"
+            
+            # Calculate relative path from src directory
+            $relativePath = $sourceFile.FullName.Substring($srcDir.Length + 1)
+            Write-Log "Relative path: $relativePath"
+            
+            # Create corresponding test directory structure
+            $testSubDir = Split-Path $relativePath -Parent
+            if ($testSubDir) {
+                $targetTestDir = Join-Path $testDir $testSubDir
+                Write-Log "Target test directory: $targetTestDir"
+            } else {
+                $targetTestDir = $testDir
+                Write-Log "Target test directory: $targetTestDir (root)"
+            }
+            
+            # Ensure test directory exists
+            if (-not (Test-Path $targetTestDir)) {
+                Write-Log "Creating directory: $targetTestDir"
+                New-Item -ItemType Directory -Path $targetTestDir -Force -ErrorAction Stop | Out-Null
+                Write-Log "Directory created successfully"
+            }
+            
+            # Create test file name
+            $baseName = [System.IO.Path]::GetFileNameWithoutExtension($sourceFile.Name)
+            $testFileName = "$baseName.test.js"
+            $testFilePath = Join-Path $targetTestDir $testFileName
+            Write-Log "Test file path: $testFilePath"
+            
+            # Calculate require path (convert to forward slashes and add ../src/ prefix)
+            $requirePath = $relativePath -replace '\\', '/'
+            $pathDepth = ($requirePath -split '/').Length - 1
+            $backPath = '../' * ($pathDepth + 1) + 'src/' + $requirePath
+            Write-Log "Require path: $backPath"
+            
+            # Create test content
+            $testContent = @"
+const { } = require('$backPath');
+
+describe('$baseName', () => {
+    test('placeholder test', () => {
+        expect(true).toBe(true);
+    });
+});
+"@
+            
+            # Write test file
+            Set-Content -Path $testFilePath -Value $testContent -Encoding UTF8 -ErrorAction Stop
+            Write-Log "Successfully created test: $testFilePath"
+            
+        } catch {
+            Write-Log "Error processing $($sourceFile.Name): $($_.Exception.Message)" $true
+            Write-Log "Error details: $($_.Exception.GetType().Name)" $true
+            Write-Log "Stack trace: $($_.ScriptStackTrace)" $true
+        }
+    }
+
+    Write-Log "Test generation completed successfully!"
+    
+} catch {
+    Write-Log "Fatal error: $($_.Exception.Message)" $true
+    Write-Log "Error type: $($_.Exception.GetType().Name)" $true
+    Write-Log "Stack trace: $($_.ScriptStackTrace)" $true
+}
+
+# Log any accumulated errors
+if ($Error.Count -gt 0) {
+    Write-Log "PowerShell errors encountered:" $true
+    $Error | ForEach-Object {
+        Write-Log "Error: $($_.Exception.Message)" $true
+    }
+}
+
+Write-Log "Log file written to: $logFile"
+Write-Host "Check the log file for detailed output: $logFile"

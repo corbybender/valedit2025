@@ -1,9 +1,9 @@
 const request = require("supertest");
 const express = require("express");
-const contentBlocksRoute = require("../routes/contentBlocks");
-const db = require("../db");
+const contentBlocksRoute = require("../legacy/routes_old/contentBlocks");
+const db = require("../src/config/database");
 
-jest.mock("../db");
+jest.mock("../src/config/database");
 const mockDb = {
   query: jest.fn(),
   request: jest.fn(() => mockDb),
@@ -16,7 +16,7 @@ describe("ContentBlocks Route", () => {
   beforeAll(() => {
     app = express();
     app.use(express.json());
-    app.use("/content-blocks", contentBlocksRoute(mockDb));
+    app.use("/content-blocks", contentBlocksRoute);
   });
 
   afterEach(() => {
@@ -24,4 +24,16 @@ describe("ContentBlocks Route", () => {
   });
 
   // Add specific tests for contentBlocks.js routes here
+  
+  test('should export contentBlocks route', () => {
+    expect(contentBlocksRoute).toBeDefined();
+    expect(typeof contentBlocksRoute).toBe('function');
+  });
+
+  test('should create express app with contentBlocks route', () => {
+    expect(app).toBeDefined();
+    expect(typeof app).toBe('function');
+  });
 });
+
+
