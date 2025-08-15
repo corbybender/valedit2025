@@ -1,0 +1,575 @@
+/* ==========================================
+   MODERN SLEEK MODAL STYLES
+   Optimized for responsiveness and dev tools
+   ========================================== */
+
+/* ==========================================
+   LEGACY OVERRIDES - Disable old styles
+   ========================================== */
+
+/* Override old modal width/height rules */
+.modal-content:not(.legacy-modal) {
+  width: 100% !important;
+  max-width: var(--modal-max-width) !important;
+  height: auto !important;
+  max-height: var(--modal-max-height) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Override buildpage modal styles */
+#editor-modal .modal-content,
+#image-picker-modal .modal-content,
+#new-shared-block-modal .modal-content {
+  width: 100% !important;
+  max-width: var(--modal-max-width) !important;
+  height: auto !important;
+  max-height: var(--modal-max-height) !important;
+  margin: 0 !important;
+}
+
+/* Override AzureStorage modal styles */
+#preview-modal .modal-content,
+#upload-modal .modal-content,
+#create-folder-modal .modal-content {
+  width: 100% !important;
+  max-width: var(--modal-max-width) !important;
+  height: auto !important;
+  max-height: var(--modal-max-height) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+:root {
+  --modal-backdrop-color: rgba(15, 23, 42, 0.75);
+  --modal-content-bg: #ffffff;
+  --modal-border-radius: 16px;
+  --modal-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 
+                  0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  --modal-max-width: min(95vw, 800px);
+  --modal-max-height: min(90vh, 600px);
+  --modal-padding: 20px;
+  --modal-header-height: 60px;
+}
+
+/* ==========================================
+   BASE MODAL STYLES
+   ========================================== */
+
+.modal,
+.modal-backdrop,
+#editor-modal,
+#preview-modal,
+#upload-modal,
+#image-picker-modal,
+#new-shared-block-modal,
+#blockModal {
+  position: fixed;
+  inset: 0;
+  z-index: 10001;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: var(--modal-backdrop-color);
+  backdrop-filter: blur(8px);
+  padding: 16px;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.modal.show,
+.modal-backdrop.active,
+#editor-modal.show,
+#preview-modal[style*="flex"],
+#upload-modal.show,
+#image-picker-modal.show,
+#new-shared-block-modal.show,
+#blockModal:not(.hidden) {
+  display: flex !important;
+  opacity: 1;
+}
+
+/* ==========================================
+   MODAL CONTENT CONTAINER
+   ========================================== */
+
+.modal-content,
+.image-picker-content {
+  background: var(--modal-content-bg);
+  border-radius: var(--modal-border-radius);
+  box-shadow: var(--modal-shadow);
+  max-width: var(--modal-max-width);
+  max-height: var(--modal-max-height);
+  width: 100%;
+  margin: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transform: scale(0.95) translateY(-10px);
+  transition: transform 0.2s ease-in-out;
+  position: relative;
+}
+
+.modal.show .modal-content,
+.modal-backdrop.active .modal-content,
+#editor-modal.show .modal-content,
+#preview-modal[style*="flex"] .modal-content,
+#upload-modal.show .modal-content,
+#image-picker-modal.show .modal-content,
+#new-shared-block-modal.show .modal-content,
+#blockModal:not(.hidden) .modal-content {
+  transform: scale(1) translateY(0);
+}
+
+/* ==========================================
+   MODAL HEADER
+   ========================================== */
+
+.modal-header,
+.modal-content > div:first-child:has(h2, h3, .close-button, #closeModalBtn) {
+  padding: var(--modal-padding);
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: var(--modal-header-height);
+  box-sizing: border-box;
+}
+
+.modal-header h2,
+.modal-header h3,
+.modal-content h2,
+.modal-content h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1e293b;
+  line-height: 1.2;
+}
+
+/* Close Button Styling */
+.close-button,
+#closeModalBtn,
+.modal-header .close,
+button[id*="close"]:not([class*="btn-"]) {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  color: #64748b;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.15s ease;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+}
+
+.close-button:hover,
+#closeModalBtn:hover,
+.modal-header .close:hover,
+button[id*="close"]:not([class*="btn-"]):hover {
+  background: #f1f5f9;
+  color: #1e293b;
+  transform: scale(1.05);
+}
+
+/* ==========================================
+   MODAL BODY
+   ========================================== */
+
+.modal-body,
+.modal-content > div:not(:first-child):not(:last-child),
+.modal-content .p-6.flex-grow.overflow-y-auto,
+.tab-content-container,
+.image-picker-browser {
+  flex: 1;
+  padding: var(--modal-padding);
+  overflow-y: auto;
+  min-height: 0;
+}
+
+/* Custom scrollbar for modal content */
+.modal-body::-webkit-scrollbar,
+.modal-content > div::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal-body::-webkit-scrollbar-track,
+.modal-content > div::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+
+.modal-body::-webkit-scrollbar-thumb,
+.modal-content > div::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover,
+.modal-content > div::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* ==========================================
+   FORM ELEMENTS IN MODALS
+   ========================================== */
+
+.modal-content input[type="text"],
+.modal-content input[type="email"],
+.modal-content input[type="search"],
+.modal-content textarea,
+.modal-content select {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  background: #ffffff;
+  box-sizing: border-box;
+}
+
+.modal-content input:focus,
+.modal-content textarea:focus,
+.modal-content select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.modal-content label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 6px;
+}
+
+.modal-content .form-group,
+.modal-content .mb-6 {
+  margin-bottom: 20px;
+}
+
+/* ==========================================
+   MODAL FOOTER/ACTIONS
+   ========================================== */
+
+.modal-actions,
+.modal-footer,
+.image-picker-footer {
+  padding: var(--modal-padding);
+  border-top: 1px solid #e2e8f0;
+  background: #f8fafc;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.modal-actions button,
+.modal-footer button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Primary buttons */
+.modal-actions button[id*="save"],
+.modal-actions button[id*="submit"],
+.modal-actions button.btn-primary {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: white;
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+}
+
+.modal-actions button[id*="save"]:hover,
+.modal-actions button[id*="submit"]:hover,
+.modal-actions button.btn-primary:hover {
+  background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+/* Secondary buttons */
+.modal-actions button[id*="cancel"],
+.modal-actions button.btn-secondary {
+  background: #f8fafc;
+  color: #64748b;
+  border: 1.5px solid #e2e8f0;
+}
+
+.modal-actions button[id*="cancel"]:hover,
+.modal-actions button.btn-secondary:hover {
+  background: #f1f5f9;
+  color: #475569;
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+}
+
+/* Success buttons */
+.modal-actions button[id*="select"] {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+}
+
+.modal-actions button[id*="select"]:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+/* ==========================================
+   TAB SYSTEM IN MODALS
+   ========================================== */
+
+.tab-button,
+.editor-tabs .tab-button {
+  padding: 12px 20px;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  font-weight: 500;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  border-radius: 8px 8px 0 0;
+}
+
+.tab-button:hover,
+.editor-tabs .tab-button:hover {
+  color: #374151;
+  background: #f8fafc;
+}
+
+.tab-button.active,
+.editor-tabs .tab-button.active {
+  color: #3b82f6;
+  background: #ffffff;
+  border-bottom-color: #3b82f6;
+  font-weight: 600;
+}
+
+.tab-content {
+  display: none;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.tab-content.active {
+  display: flex;
+}
+
+.tab-content textarea {
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  height: 300px;
+  resize: vertical;
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+}
+
+.tab-content textarea:focus {
+  background: #ffffff;
+  border-color: #3b82f6;
+}
+
+/* ==========================================
+   RESPONSIVE DESIGN
+   ========================================== */
+
+/* Large screens - keep modals reasonable sized */
+@media (min-width: 1200px) {
+  :root {
+    --modal-max-width: min(90vw, 900px);
+    --modal-max-height: min(85vh, 700px);
+  }
+}
+
+/* Tablet and small desktop */
+@media (max-width: 1024px) {
+  :root {
+    --modal-max-width: min(95vw, 700px);
+    --modal-max-height: min(90vh, 600px);
+    --modal-padding: 16px;
+  }
+}
+
+/* Mobile devices */
+@media (max-width: 768px) {
+  :root {
+    --modal-max-width: 100vw;
+    --modal-max-height: 100vh;
+    --modal-padding: 16px;
+    --modal-border-radius: 0px;
+  }
+  
+  .modal,
+  .modal-backdrop,
+  #editor-modal,
+  #preview-modal,
+  #upload-modal,
+  #image-picker-modal,
+  #new-shared-block-modal,
+  #blockModal {
+    padding: 0;
+  }
+  
+  .modal-content,
+  .image-picker-content {
+    border-radius: 0;
+    height: 100vh;
+    max-height: 100vh;
+  }
+  
+  .modal-actions {
+    flex-direction: column;
+  }
+  
+  .modal-actions button {
+    width: 100%;
+  }
+}
+
+/* When dev tools are open (narrow viewport) */
+@media (max-width: 1200px) and (max-height: 700px) {
+  :root {
+    --modal-max-width: min(98vw, 600px);
+    --modal-max-height: min(95vh, 500px);
+    --modal-padding: 12px;
+  }
+  
+  .modal-header {
+    min-height: 48px;
+  }
+  
+  .modal-header h2,
+  .modal-header h3 {
+    font-size: 1.1rem;
+  }
+  
+  .tab-content textarea {
+    height: 200px;
+  }
+}
+
+/* ==========================================
+   SPECIFIC MODAL OVERRIDES
+   ========================================== */
+
+/* Image picker modal - needs more width */
+#image-picker-modal .modal-content,
+.image-picker-content {
+  --modal-max-width: min(95vw, 1000px);
+}
+
+/* Preview modal - optimized for image viewing */
+#preview-modal .modal-content {
+  --modal-max-width: min(95vw, 900px);
+  --modal-max-height: min(90vh, 700px);
+}
+
+/* Editor modal - needs more height */
+#editor-modal .modal-content {
+  --modal-max-height: min(95vh, 800px);
+}
+
+/* New shared block modal - compact form */
+#new-shared-block-modal .modal-content {
+  --modal-max-width: min(95vw, 600px);
+}
+
+/* ==========================================
+   ANIMATION IMPROVEMENTS
+   ========================================== */
+
+/* Smooth backdrop fade */
+@keyframes modalBackdropFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Modal content slide up */
+@keyframes modalSlideUp {
+  from {
+    transform: scale(0.9) translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal.show,
+.modal-backdrop.active {
+  animation: modalBackdropFade 0.2s ease-out;
+}
+
+.modal.show .modal-content,
+.modal-backdrop.active .modal-content {
+  animation: modalSlideUp 0.2s ease-out;
+}
+
+/* ==========================================
+   ACCESSIBILITY IMPROVEMENTS
+   ========================================== */
+
+.modal-content:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+.modal-actions button:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --modal-backdrop-color: rgba(0, 0, 0, 0.9);
+  }
+  
+  .modal-content {
+    border: 2px solid #000000;
+  }
+  
+  .modal-header {
+    border-bottom: 2px solid #000000;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .modal,
+  .modal-backdrop,
+  .modal-content,
+  .modal-actions button {
+    transition: none;
+    animation: none;
+  }
+  
+  .modal-content {
+    transform: none;
+  }
+}

@@ -1,4 +1,5 @@
 const nodemailer = require("nodemailer");
+const { getEmailConfig } = require("../utils/settingsLoader");
 
 /**
  * Email Service
@@ -13,10 +14,11 @@ class EmailService {
   /**
    * Initialize the SMTP transporter with SendGrid configuration
    */
-  initializeTransporter() {
+  async initializeTransporter() {
     try {
-      // Check if SendGrid API key is configured
-      const sendGridApiKey = process.env.SENDGRID_API_KEY;
+      // Get SendGrid configuration from settings
+      const emailConfig = await getEmailConfig();
+      const sendGridApiKey = emailConfig.sendgridApiKey;
 
       // If no API key is provided, skip email service initialization
       if (!sendGridApiKey || sendGridApiKey.trim() === "") {
@@ -49,7 +51,7 @@ class EmailService {
             console.error("Email service initialization failed:", error);
             this.transporter = null; // Disable transporter on failure
           } else {
-            console.log("Email service initialized successfully");
+            console.log("Email service initialized successfully from database settings");
           }
         });
       }, 1000); // Short timeout to avoid blocking server startup
@@ -71,11 +73,16 @@ class EmailService {
    */
   async sendFormSubmissionNotification({
     to,
-    from = process.env.SENDGRID_FROM_ADDRESS || process.env.DEFAULT_FROM_EMAIL || "noreply@yourdomain.com",
+    from = null,
     form,
     submission,
     website,
   }) {
+    // Get from address from settings if not provided
+    if (!from) {
+      const emailConfig = await getEmailConfig();
+      from = emailConfig.fromAddress || process.env.SENDGRID_FROM_ADDRESS || process.env.DEFAULT_FROM_EMAIL || "noreply@yourdomain.com";
+    }
     try {
       if (!this.transporter) {
         throw new Error("Email transporter not initialized");
@@ -136,11 +143,16 @@ class EmailService {
    */
   async sendAutoresponseEmail({
     to,
-    from = process.env.SENDGRID_FROM_ADDRESS || process.env.DEFAULT_FROM_EMAIL || "noreply@yourdomain.com",
+    from = null,
     form,
     submission,
     website,
   }) {
+    // Get from address from settings if not provided
+    if (!from) {
+      const emailConfig = await getEmailConfig();
+      from = emailConfig.fromAddress || process.env.SENDGRID_FROM_ADDRESS || process.env.DEFAULT_FROM_EMAIL || "noreply@yourdomain.com";
+    }
     try {
       if (!this.transporter) {
         throw new Error("Email transporter not initialized");

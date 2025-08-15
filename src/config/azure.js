@@ -1,33 +1,58 @@
 const msal = require("@azure/msal-node");
 const logger = require("../utils/logger");
+const { getAzureConfig } = require("../utils/settingsLoader");
 require("dotenv").config();
 
-const isAzureConfigured =
-  process.env.AZURE_CLIENT_ID &&
-  process.env.AZURE_CLIENT_SECRET &&
-  process.env.AZURE_TENANT_ID;
-
 let confidentialClientApplication = null;
+let azureConfigPromise = null;
 
-if (isAzureConfigured) {
-  const config = {
-    auth: {
-      clientId: process.env.AZURE_CLIENT_ID,
-      authority: `https://login.microsoftonline.com/${process.env.AZURE_TENANT_ID}`,
-      clientSecret: process.env.AZURE_CLIENT_SECRET,
-    },
-  };
-  confidentialClientApplication = new msal.ConfidentialClientApplication(
-    config
-  );
-  logger.info("✅ Azure AD authentication configured.");
-} else {
-  console.warn(
-    "⚠️ Azure AD not configured. Only local authentication will be available."
-  );
-}
+const initializeAzure = async () => {
+  try {
+    const azureConfig = await getAzureConfig();
+    
+    const isAzureConfigured = 
+      azureConfig.clientId && 
+      azureConfig.clientSecret && 
+      azureConfig.tenantId;
+
+    if (isAzureConfigured) {
+      const config = {
+        auth: {
+          clientId: azureConfig.clientId,
+          authority: `https://login.microsoftonline.com/${azureConfig.tenantId}`,
+          clientSecret: azureConfig.clientSecret,
+        },
+      };
+      confidentialClientApplication = new msal.ConfidentialClientApplication(config);
+      logger.info("✅ Azure AD authentication configured from database settings.");
+      return true;
+    } else {
+      console.warn("⚠️ Azure AD not configured. Only local authentication will be available.");
+      return false;
+    }
+  } catch (error) {
+    console.error("Error initializing Azure configuration:", error);
+    return false;
+  }
+};
+
+// Initialize Azure config when explicitly called
+const getOrCreateInitPromise = () => {
+  if (!azureConfigPromise) {
+    azureConfigPromise = initializeAzure();
+  }
+  return azureConfigPromise;
+};
 
 module.exports = {
-  isAzureConfigured,
-  confidentialClientApplication,
+  get isAzureConfigured() {
+    return !!confidentialClientApplication;
+  },
+  get confidentialClientApplication() {
+    return confidentialClientApplication;
+  },
+  initializeAzure,
+  get azureConfigPromise() {
+    return getOrCreateInitPromise();
+  }
 };

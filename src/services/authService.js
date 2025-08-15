@@ -1,7 +1,4 @@
-const {
-  confidentialClientApplication,
-  isAzureConfigured,
-} = require("../config/azure");
+const azureConfig = require("../config/azure");
 const userService = require("./userService");
 const sql = require("mssql");
 const db = require("../config/database");
@@ -49,7 +46,7 @@ const authenticateLocal = async (username, password) => {
 };
 
 const getAzureAuthUrl = (req) => {
-  if (!isAzureConfigured || !confidentialClientApplication) {
+  if (!azureConfig.isAzureConfigured || !azureConfig.confidentialClientApplication) {
     throw new Error("Azure AD not configured");
   }
 
@@ -58,11 +55,11 @@ const getAzureAuthUrl = (req) => {
     redirectUri: `${getBaseURL(req)}/auth/callback`,
   };
 
-  return confidentialClientApplication.getAuthCodeUrl(authCodeUrlParameters);
+  return azureConfig.confidentialClientApplication.getAuthCodeUrl(authCodeUrlParameters);
 };
 
 const handleAzureCallback = async (req) => {
-  if (!isAzureConfigured || !confidentialClientApplication) {
+  if (!azureConfig.isAzureConfigured || !azureConfig.confidentialClientApplication) {
     throw new Error("Azure AD not configured");
   }
 
@@ -73,7 +70,7 @@ const handleAzureCallback = async (req) => {
   };
 
   try {
-    const response = await confidentialClientApplication.acquireTokenByCode(
+    const response = await azureConfig.confidentialClientApplication.acquireTokenByCode(
       tokenRequest
     );
     const userInfo = response.account;
@@ -126,5 +123,7 @@ module.exports = {
   authenticateLocal,
   getAzureAuthUrl,
   handleAzureCallback,
-  isAzureConfigured,
+  get isAzureConfigured() {
+    return azureConfig.isAzureConfigured;
+  },
 };

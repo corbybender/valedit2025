@@ -125,4 +125,13 @@ router.get("/tailwind-megamenu-sample", isAuthenticated, (req, res) => {
   });
 });
 
+router.get("/settings", isAuthenticated, isAdmin, (req, res) => {
+  res.render("pages/settings", {
+    user: req.session.userInfo,
+    currentWebsite: res.locals.currentWebsite,
+    pageTitle: "Settings",
+    isAdmin: res.locals.user?.isAdmin || false,
+  });
+});
+
 module.exports = router;

@@ -107,6 +107,17 @@
         Logs
       </span>
       <% } %>
+      <% if (locals.user && locals.user.isAdmin) { %>
+      <a href="/settings" class="nav-item">
+        <i class="fas fa-cog"></i>
+        Settings
+      </a>
+      <% } else { %>
+      <span class="nav-item disabled" title="Administrator access required">
+        <i class="fas fa-cog"></i>
+        Settings
+      </span>
+      <% } %>
     </div>
   </div>
 </nav>

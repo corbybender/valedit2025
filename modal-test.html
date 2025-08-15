@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modal Test - Modern Styles</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+    <link href="/public/css/modern-modals.css" rel="stylesheet" />
+    <style>
+        body { 
+            padding: 20px; 
+            background: #f3f4f6; 
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .test-btn {
+            margin: 10px;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            background: #3b82f6;
+            color: white;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .test-btn:hover {
+            background: #1d4ed8;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1 class="text-3xl font-bold mb-6">Modern Modal Test</h1>
+        <p class="text-gray-600 mb-8">Test the new sleek, responsive modals. Try resizing your browser window or opening dev tools.</p>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <button class="test-btn" onclick="showModal('test-modal-1')">
+                <i class="fas fa-edit mr-2"></i>Form Modal
+            </button>
+            <button class="test-btn" onclick="showModal('test-modal-2')">
+                <i class="fas fa-image mr-2"></i>Image Modal
+            </button>
+            <button class="test-btn" onclick="showModal('test-modal-3')">
+                <i class="fas fa-cog mr-2"></i>Settings Modal
+            </button>
+        </div>
+
+        <div class="mt-8">
+            <h2 class="text-xl font-semibold mb-4">Responsive Test Instructions:</h2>
+            <ul class="list-disc list-inside text-gray-700 space-y-2">
+                <li>Open any modal and resize your browser window</li>
+                <li>Open dev tools (F12) and verify modals still look good</li>
+                <li>Try on mobile viewport (DevTools device simulation)</li>
+                <li>Test backdrop clicking to close</li>
+                <li>Test ESC key to close</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Test Modal 1: Form Modal -->
+    <div id="test-modal-1" class="modal-backdrop">
+        <div class="modal-content">
+            <!-- Header -->
+            <div class="modal-header">
+                <h2>Edit Content Block</h2>
+                <button class="close-button" onclick="hideModal('test-modal-1')">&times;</button>
+            </div>
+            
+            <!-- Body -->
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <label for="title">Block Title</label>
+                        <input type="text" id="title" placeholder="Enter block title..." />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <textarea id="description" rows="3" placeholder="Enter description..."></textarea>
+                    </div>
+                    
+                    <!-- Tabs -->
+                    <div class="border-b border-gray-200">
+                        <nav class="-mb-px flex space-x-6">
+                            <button type="button" class="tab-button active" data-tab="html">HTML</button>
+                            <button type="button" class="tab-button" data-tab="css">CSS</button>
+                            <button type="button" class="tab-button" data-tab="js">JavaScript</button>
+                        </nav>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <div class="tab-content active">
+                            <textarea placeholder="<div>Your HTML here</div>" style="height: 200px;"></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Footer -->
+            <div class="modal-actions">
+                <button type="button" onclick="hideModal('test-modal-1')">Cancel</button>
+                <button type="button" id="save-btn" onclick="alert('Saved!'); hideModal('test-modal-1')">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Test Modal 2: Image Modal -->
+    <div id="test-modal-2" class="modal-backdrop">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Image Preview</h2>
+                <button class="close-button" onclick="hideModal('test-modal-2')">&times;</button>
+            </div>
+            
+            <div class="modal-body" style="text-align: center;">
+                <img src="https://via.placeholder.com/600x400/3b82f6/ffffff?text=Sample+Image" 
+                     alt="Sample" style="max-width: 100%; height: auto; border-radius: 8px; margin-bottom: 20px;" />
+                
+                <h3 style="margin-bottom: 10px;">sample-image.jpg</h3>
+                <p style="color: #64748b;">600 x 400 pixels • 45 KB</p>
+                
+                <div style="margin-top: 20px;">
+                    <input type="text" value="https://example.com/sample-image.jpg" readonly 
+                           style="width: 100%; margin-bottom: 10px;" />
+                </div>
+            </div>
+            
+            <div class="modal-actions">
+                <button onclick="hideModal('test-modal-2')">Close</button>
+                <button id="select-btn" onclick="alert('Selected!'); hideModal('test-modal-2')">Select Image</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Test Modal 3: Settings Modal -->
+    <div id="test-modal-3" class="modal-backdrop">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-cog mr-2"></i>Modal Settings</h2>
+                <button class="close-button" onclick="hideModal('test-modal-3')">&times;</button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Animation Speed</label>
+                    <select>
+                        <option>Fast (0.1s)</option>
+                        <option selected>Normal (0.2s)</option>
+                        <option>Slow (0.3s)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Backdrop Blur</label>
+                    <input type="range" min="0" max="10" value="8" />
+                </div>
+                
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" checked /> Close on backdrop click
+                    </label>
+                </div>
+                
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" checked /> Close on ESC key
+                    </label>
+                </div>
+                
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-6">
+                    <h4 class="font-semibold text-blue-800 mb-2">Responsive Features</h4>
+                    <ul class="text-sm text-blue-700 space-y-1">
+                        <li>✓ Scales down on mobile devices</li>
+                        <li>✓ Adapts when dev tools are open</li>
+                        <li>✓ Maximum 95vw width on any screen</li>
+                        <li>✓ Smooth animations and transitions</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="modal-actions">
+                <button onclick="hideModal('test-modal-3')">Cancel</button>
+                <button onclick="alert('Settings saved!'); hideModal('test-modal-3')">Save Settings</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/public/js/modern-modals.js"></script>
+    
+    <!-- Additional test script -->
+    <script>
+        // Add tab functionality for the test
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('tab-button')) {
+                e.preventDefault();
+                
+                // Remove active class from all tabs
+                const tabButtons = e.target.parentElement.querySelectorAll('.tab-button');
+                tabButtons.forEach(btn => btn.classList.remove('active'));
+                
+                // Add active class to clicked tab
+                e.target.classList.add('active');
+            }
+        });
+        
+        // Test modal at different viewport sizes
+        function testResponsiveness() {
+            console.log('Current viewport:', window.innerWidth + 'x' + window.innerHeight);
+            showModal('test-modal-1');
+        }
+        
+        // Log viewport changes for testing
+        window.addEventListener('resize', function() {
+            console.log('Viewport changed to:', window.innerWidth + 'x' + window.innerHeight);
+        });
+    </script>
+</body>
+</html>

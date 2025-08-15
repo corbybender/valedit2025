@@ -13,7 +13,7 @@ const morgan = require("morgan");
 
 // Configuration
 const appConfig = require("./config/app");
-const sessionMiddleware = require("./config/session");
+const { fallbackSession } = require("./config/session");
 
 // Middleware
 const currentWebsiteMiddleware = require("./middleware/currentWebsite");
@@ -39,6 +39,7 @@ const sharedContentApiRoutes = require("./routes/api/sharedContentApiRoutes");
 const notificationsApiRoutes = require("./routes/api/notificationsApiRoutes");
 const azureStorageApiRoutes = require("./routes/api/azureStorageApiRoutes");
 const analyticsRoutes = require("../legacy/routes_old/analytics");
+const settingsRoutes = require("./routes/settingsRoutes");
 
 // Initialize Express app
 const app = express();
@@ -58,7 +59,7 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(morgan("dev"));
 
 // Session management
-app.use(sessionMiddleware);
+app.use(fallbackSession);
 
 // Current website middleware (after session)
 app.use(currentWebsiteMiddleware);
@@ -87,6 +88,7 @@ app.use("/api/sharedcontent", sharedContentApiRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/notifications", notificationsApiRoutes);
 app.use("/api/analytics", isAuthenticated, analyticsRoutes);
+app.use("/api/settings", settingsRoutes);
 
 // Azure Storage routes (with authentication)
 app.use(
@@ -160,23 +162,32 @@ app.use(globalErrorHandler);
 // SERVER STARTUP
 // ================================================================
 
-const startServer = () => {
-  app.listen(appConfig.port, () => {
-    logger.info(`🚀 Server listening on port ${appConfig.port}`);
-    logger.info(`🌍 Environment: ${appConfig.nodeEnv}`);
-    logger.info(
-      `🔐 Azure AD Authentication: ${
-        process.env.AZURE_CLIENT_ID ? "Configured" : "Not configured"
-      }`
-    );
+const startServer = async () => {
+  try {
+    // Initialize Azure configuration first
+    const azureConfig = require("./config/azure");
+    await azureConfig.azureConfigPromise; // Wait for Azure initialization
+    
+    app.listen(appConfig.port, () => {
+      logger.info(`🚀 Server listening on port ${appConfig.port}`);
+      logger.info(`🌍 Environment: ${appConfig.nodeEnv}`);
+      logger.info(
+        `🔐 Azure AD Authentication: ${
+          azureConfig.isAzureConfigured ? "Configured" : "Not configured"
+        }`
+      );
 
-    if (appConfig.isDevelopment) {
-      logger.info(`📱 Local URL: http://localhost:${appConfig.port}`);
-    }
+      if (appConfig.isDevelopment) {
+        logger.info(`📱 Local URL: http://localhost:${appConfig.port}`);
+      }
 
-    // Start log cleanup scheduler
-    startLogCleanupScheduler();
-  });
+      // Start log cleanup scheduler
+      startLogCleanupScheduler();
+    });
+  } catch (error) {
+    console.error("Failed to start server:", error);
+    process.exit(1);
+  }
 };
 
 // Log cleanup scheduler
