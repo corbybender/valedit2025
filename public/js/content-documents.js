@@ -61,9 +61,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         <td>${new Date(file.lastModified).toLocaleString()}</td>
                         <td>${formatBytes(file.size)}</td>
                         <td class="actions">
-                            <button class="edit-btn" data-blob-name="${FOLDER_PREFIX}${
-            file.name
-          }">Edit</button>
                             <button class="replace-btn" data-blob-name="${FOLDER_PREFIX}${
             file.name
           }">Replace</button>
@@ -215,23 +212,6 @@ document.addEventListener("DOMContentLoaded", () => {
       elements.replaceModalFilenameSpan.textContent = blobName;
       elements.replaceBlobNameInput.value = blobName;
       elements.replaceForm.reset();
-    } else if (e.target.classList.contains("edit-btn")) {
-      elements.editModal.style.display = "block";
-      elements.modalFilenameSpan.textContent = blobName;
-      elements.editBlobNameInput.value = blobName;
-      elements.editTextArea.value = "Loading content...";
-      try {
-        const response = await fetch("/azure-storage/api/get-content", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ blobName }),
-        });
-        if (!response.ok) throw new Error("Failed to fetch content.");
-        elements.editTextArea.value = await response.text();
-        showStatus(elements.editStatus, "Content loaded.");
-      } catch (error) {
-        showStatus(elements.editStatus, error.message, true);
-      }
     }
   });
 

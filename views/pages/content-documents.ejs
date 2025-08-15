@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Documents - <%= process.env.APP_NAME || 'ValEdit' %></title>
+    <title>Document Browser - <%= process.env.APP_NAME || 'ValEdit' %></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
@@ -14,99 +14,242 @@
     <script src="/public/js/notifications.js"></script>
   </head>
   <body class="bg-gray-50">
+    <!-- Notification Container -->
+    <div
+      id="notificationContainer"
+      class="fixed top-4 right-4 z-50 space-y-2"
+    ></div>
+
     <!-- Tailwind Megamenu -->
     <%- include('../partials/tailwind-megamenu') %>
 
     <!-- Main Content -->
     <main class="w-full px-2 py-8">
       <div class="bg-white p-8 rounded-lg shadow-lg w-full">
-        <div class="flex justify-between items-center mb-8">
-          <div>
-            <h1 class="text-3xl font-bold text-gray-800">Documents</h1>
-            <p class="text-gray-600 mt-2">
-              Manage your website documents and downloadable files
-            </p>
+        <!-- Hidden field for website ID needed by JavaScript -->
+        <input
+          type="hidden"
+          id="websiteId"
+          value="<%= currentWebsiteID || '' %>"
+        />
+        <% if (typeof currentWebsiteID !== 'undefined' && currentWebsiteID) { %>
+        <!-- Debug: Website ID is <%= currentWebsiteID %> -->
+        <% } else { %>
+        <!-- Debug: Website ID is missing or null -->
+        <% } %>
+
+        <h1 class="text-3xl font-bold text-gray-800 mb-8">Document Browser</h1>
+
+        <!-- Library Selection Banner and Upload Button -->
+        <div class="mb-6 flex justify-between items-center gap-4">
+          <div
+            id="library-selection-banner"
+            class="bg-blue-50 border-l-4 border-blue-400 p-4 flex-1"
+          >
+            <div class="flex">
+              <div class="flex-shrink-0">
+                <i class="fas fa-info-circle text-blue-400"></i>
+              </div>
+              <div class="ml-3">
+                <p class="text-sm text-blue-700">
+                  <strong
+                    >Select a library folder below to enable document
+                    uploads.</strong
+                  >
+                  Navigate into a specific folder to upload documents to that
+                  location.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="flex-shrink-0">
+            <button
+              id="open-upload-modal-btn"
+              class="bg-gray-400 text-white font-bold py-2 px-4 rounded-lg cursor-not-allowed upload-disabled"
+              data-disabled="true"
+            >
+              <i class="fas fa-upload mr-2"></i>Upload Documents
+            </button>
           </div>
         </div>
 
-        <div class="azure-storage-container">
-          <section class="card">
-            <h2>Upload New Document</h2>
-            <form id="upload-form">
-              <input type="hidden" name="folder" value="docs" />
-              <div class="form-group">
-                <label for="file-input">Select File:</label>
-                <input type="file" id="file-input" name="file" required />
+        <section class="card">
+          <div id="breadcrumb-nav" class="breadcrumb"></div>
+          <div class="browser-controls">
+            <input
+              type="search"
+              id="search-box"
+              placeholder="Search files and folders..."
+              aria-label="Search current folder"
+            />
+            <div class="view-controls">
+              <div class="view-toggle">
+                <button
+                  id="thumbnail-view-btn"
+                  class="view-toggle-btn active"
+                  title="Thumbnail View"
+                >
+                  <i class="fas fa-th"></i>
+                </button>
+                <button
+                  id="list-view-btn"
+                  class="view-toggle-btn"
+                  title="List View"
+                >
+                  <i class="fas fa-list"></i>
+                </button>
               </div>
               <button
-                type="submit"
-                class="bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700"
+                id="create-folder-btn"
+                class="bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700"
+                title="Create New Folder"
               >
-                <i class="fas fa-upload mr-2"></i>Upload Document
-              </button>
-            </form>
-            <div id="upload-status" class="status-message"></div>
-          </section>
-
-          <section class="card">
-            <div class="flex justify-between items-center">
-              <h2>
-                <i class="fas fa-folder text-2xl text-gray-500 mr-2"></i>
-                /docs/
-              </h2>
-              <button id="refresh-button" title="Refresh List">
-                <i class="fas fa-sync-alt"></i>
+                <i class="fas fa-folder-plus mr-2"></i>Create Folder
               </button>
             </div>
-            <div class="table-container">
-              <table id="files-table">
-                <thead>
-                  <tr>
-                    <th>Filename</th>
-                    <th>Last Modified</th>
-                    <th>Size</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="files-list"></tbody>
-              </table>
-            </div>
-            <div id="files-status" class="status-message"></div>
-          </section>
-        </div>
+          </div>
+          <div id="file-browser-container"></div>
+          <div
+            class="load-more-container"
+            id="load-more-container"
+            style="display: none"
+          >
+            <button id="load-more-btn" class="button">
+              Load More Documents
+            </button>
+          </div>
+          <div id="browser-status" class="status-message"></div>
+        </section>
       </div>
     </main>
 
-    <div id="edit-modal" class="modal">
+    <div id="preview-modal" class="modal" style="display: none">
       <div class="modal-content">
-        <span class="close-button">&times;</span>
-        <h3>Edit File: <span id="modal-filename"></span></h3>
-        <form id="edit-form">
-          <input type="hidden" id="edit-blob-name" /><textarea
-            id="edit-textarea"
-          ></textarea
-          ><button type="submit">Save Changes</button>
-        </form>
-        <div id="edit-status" class="status-message"></div>
-      </div>
-    </div>
-    <div id="replace-modal" class="modal">
-      <div class="modal-content">
-        <span class="close-button">&times;</span>
-        <h3>Replace File: <span id="replace-modal-filename"></span></h3>
-        <form id="replace-form">
-          <input type="hidden" id="replace-blob-name" />
-          <div class="form-group">
-            <label for="replace-file-input">Select New File:</label
-            ><input type="file" id="replace-file-input" name="file" required />
+        <span class="close-button" id="preview-modal-close">&times;</span>
+        <div class="preview-container">
+          <div class="preview-details">
+            <h3 id="modal-filename"></h3>
+            <p><strong>File Size:</strong> <span id="modal-filesize"></span></p>
+            <label class="font-semibold mt-4 block">Document URL:</label>
+            <div class="url-container">
+              <input type="text" id="modal-document-url" readonly />
+              <button id="modal-copy-url-btn">
+                <i class="fas fa-copy"></i> Copy
+              </button>
+            </div>
+            <div class="modal-actions mt-4">
+              <button id="modal-delete-btn" class="delete-btn-modal">
+                <i class="fas fa-trash"></i> Delete Document
+              </button>
+            </div>
           </div>
-          <button type="submit">Upload and Replace</button>
-        </form>
-        <div id="replace-status" class="status-message"></div>
+        </div>
       </div>
     </div>
 
+    <!-- Create Folder Modal -->
+    <div id="create-folder-modal" class="modal" style="display: none">
+      <div class="modal-content">
+        <span class="close-button" id="create-folder-modal-close">&times;</span>
+        <h3 class="text-xl font-bold mb-4">Create New Folder</h3>
+        <form id="create-folder-form">
+          <div class="form-group mb-4">
+            <label
+              for="folder-name-input"
+              class="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Folder Name:
+            </label>
+            <input
+              type="text"
+              id="folder-name-input"
+              name="folderName"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              placeholder="Enter folder name"
+              required
+              maxlength="50"
+            />
+            <p class="text-sm text-gray-500 mt-1">
+              Folder will be created in:
+              <strong id="create-folder-path-display"></strong>
+            </p>
+          </div>
+          <div class="flex justify-end space-x-3">
+            <button
+              type="button"
+              id="create-folder-cancel-btn"
+              class="px-4 py-2 text-gray-600 bg-gray-200 rounded-md hover:bg-gray-300"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+            >
+              <i class="fas fa-folder-plus mr-2"></i>Create Folder
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Upload Modal -->
+    <div id="upload-modal" class="modal" style="display: none">
+      <div class="modal-content">
+        <span class="close-button" id="upload-modal-close">&times;</span>
+        <h3 class="text-xl font-bold mb-4">Upload Documents</h3>
+        <div class="mb-4">
+          <p class="text-sm text-gray-600">
+            Upload to:
+            <strong id="upload-path-display" class="text-indigo-600"></strong>
+          </p>
+        </div>
+        <form id="upload-form">
+          <input type="hidden" id="upload-folder-path" name="folderPath" />
+          <div class="form-group mb-4">
+            <label
+              for="file-input"
+              class="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Select Documents (multiple allowed):
+            </label>
+            <input
+              type="file"
+              id="file-input"
+              name="files"
+              multiple
+              required
+              accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+            <p class="text-sm text-gray-500 mt-1">
+              You can select multiple documents at once. Supported formats: PDF,
+              DOC, DOCX, XLS, XLSX, PPT, PPTX, TXT
+            </p>
+          </div>
+          <div class="flex justify-end space-x-3">
+            <button
+              type="button"
+              id="upload-cancel-btn"
+              class="px-4 py-2 text-gray-600 bg-gray-200 rounded-md hover:bg-gray-300"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              id="upload-button"
+              class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+            >
+              <i class="fas fa-upload mr-2"></i>Upload Documents
+            </button>
+          </div>
+        </form>
+        <div id="upload-status" class="status-message mt-4"></div>
+      </div>
+    </div>
+
+    <script src="/public/js/frontend-logger.js"></script>
     <script src="/public/js/dashboard.js"></script>
-    <script src="/public/js/content-documents.js"></script>
+    <script src="/public/js/azure-document-browser.js"></script>
   </body>
 </html>

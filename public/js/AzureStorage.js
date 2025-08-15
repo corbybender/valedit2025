@@ -47,7 +47,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const isDoc = prefix === "docs/";
         const row = tbody.insertRow();
         row.innerHTML = `
-                    <td><a href="${file.url}" target="_blank">${
+                    <td><a href="${
+                      file.url
+                    }" target="_blank" title="Click to open in a new window">${
           file.name
         }</a></td>
                     <td>${new Date(file.lastModified).toLocaleString()}</td>

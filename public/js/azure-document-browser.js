@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (createFolderModal) {
     createFolderModal.style.display = "none";
   }
-  const ROOT_PREFIX = "images/";
+  const ROOT_PREFIX = "docs/";
   let currentPath = "";
   let continuationToken = null;
   let isLoading = false;
@@ -31,11 +31,9 @@ document.addEventListener("DOMContentLoaded", () => {
     librarySelectionBanner: document.getElementById("library-selection-banner"),
     previewModal: document.getElementById("preview-modal"),
     previewModalClose: document.getElementById("preview-modal-close"),
-    modalImagePreview: document.getElementById("modal-image-preview"),
     modalFilename: document.getElementById("modal-filename"),
-    modalDimensions: document.getElementById("modal-dimensions"),
     modalFilesize: document.getElementById("modal-filesize"),
-    modalImageUrl: document.getElementById("modal-image-url"),
+    modalDocumentUrl: document.getElementById("modal-document-url"),
     modalCopyBtn: document.getElementById("modal-copy-url-btn"),
     modalDeleteBtn: document.getElementById("modal-delete-btn"),
     createFolderBtn: document.getElementById("create-folder-btn"),
@@ -70,17 +68,23 @@ document.addEventListener("DOMContentLoaded", () => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i];
   };
 
-  const getImageDimensions = (url) => {
-    return new Promise((resolve) => {
-      const img = new Image();
-      img.onload = () => {
-        resolve(`${img.width} × ${img.height}`);
-      };
-      img.onerror = () => {
-        resolve("Unknown");
-      };
-      img.src = url;
-    });
+  const getFileIcon = (filename) => {
+    const extension = filename.split(".").pop().toLowerCase();
+    const iconMap = {
+      pdf: "fas fa-file-pdf text-red-500",
+      doc: "fas fa-file-word text-blue-500",
+      docx: "fas fa-file-word text-blue-500",
+      xls: "fas fa-file-excel text-green-500",
+      xlsx: "fas fa-file-excel text-green-500",
+      ppt: "fas fa-file-powerpoint text-orange-500",
+      pptx: "fas fa-file-powerpoint text-orange-500",
+      txt: "fas fa-file-alt text-gray-500",
+      csv: "fas fa-file-csv text-green-500",
+      zip: "fas fa-file-archive text-purple-500",
+      rar: "fas fa-file-archive text-purple-500",
+      "7z": "fas fa-file-archive text-purple-500",
+    };
+    return iconMap[extension] || "fas fa-file text-gray-500";
   };
 
   const copyToClipboard = (text, button) => {
@@ -117,7 +121,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   const renderBrowserItems = (folders, files, append = false) => {
-    let folderContainer, imageGrid;
+    let folderContainer, documentGrid;
 
     if (!append) {
       elements.browserContainer.innerHTML = "";
@@ -126,12 +130,12 @@ document.addEventListener("DOMContentLoaded", () => {
         folderContainer.className = "browser-item-container";
         elements.browserContainer.appendChild(folderContainer);
       }
-      imageGrid = document.createElement("div");
-      imageGrid.className =
+      documentGrid = document.createElement("div");
+      documentGrid.className =
         currentViewMode === "thumbnail" ? "image-grid" : "image-list active";
-      elements.browserContainer.appendChild(imageGrid);
+      elements.browserContainer.appendChild(documentGrid);
     } else {
-      imageGrid = elements.browserContainer.querySelector(
+      documentGrid = elements.browserContainer.querySelector(
         ".image-grid, .image-list"
       );
       folderContainer = elements.browserContainer.querySelector(
@@ -161,13 +165,12 @@ document.addEventListener("DOMContentLoaded", () => {
       listHeader.className = "image-list-header";
       listHeader.innerHTML = `
         <div>Name</div>
-        <div></div>
-        <div>Dimensions</div>
+        <div>Type</div>
         <div>Size</div>
         <div>Date</div>
         <div>Actions</div>
       `;
-      imageGrid.appendChild(listHeader);
+      documentGrid.appendChild(listHeader);
     }
 
     // Render files
@@ -175,12 +178,13 @@ document.addEventListener("DOMContentLoaded", () => {
       files.forEach((file) => {
         const fileElement = document.createElement("div");
         fileElement.className = "image-card";
+        const iconClass = getFileIcon(file.name);
         fileElement.innerHTML = `
-          <div class="image-thumbnail">
-            <img src="${file.url}" alt="${file.name}" loading="lazy" />
+          <div class="image-thumbnail" style="display: flex; align-items: center; justify-content: center; min-height: 120px;">
+            <i class="${iconClass}" style="font-size: 3rem;"></i>
           </div>
           <div class="image-info">
-            <div class="filename" title="Click to preview image">${
+            <div class="filename" title="Click to open in a new window" style="cursor: pointer; color: #3b82f6; text-decoration: underline;">${
               file.name
             }</div>
             <div class="filesize">${formatBytes(file.size)}</div>
@@ -188,30 +192,24 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
 
         fileElement.addEventListener("click", () => {
-          openPreviewModal(file);
+          window.open(file.url, "_blank");
         });
 
-        imageGrid.appendChild(fileElement);
+        documentGrid.appendChild(fileElement);
       });
     } else {
-      // List view - render asynchronously to get dimensions
-      files.forEach(async (file) => {
+      // List view
+      files.forEach((file) => {
         const fileElement = document.createElement("div");
         fileElement.className = "image-list-item";
-
-        // Get dimensions asynchronously
-        const dimensions = await getImageDimensions(file.url);
+        const iconClass = getFileIcon(file.name);
+        const extension = file.name.split(".").pop().toUpperCase();
 
         fileElement.innerHTML = `
-          <div class="image-list-name" title="Click to preview image">${
-            file.name
-          }</div>
-          <div class="image-list-thumbnail">
-            <img src="${file.url}" alt="${
-          file.name
-        }" loading="lazy" class="list-thumbnail" />
+          <div class="image-list-name" title="Click to open in a new window" style="cursor: pointer; color: #3b82f6; text-decoration: underline;">
+            <i class="${iconClass}" style="margin-right: 8px;"></i>${file.name}
           </div>
-          <div class="image-list-dimensions">${dimensions}</div>
+          <div class="image-list-dimensions">${extension}</div>
           <div class="image-list-size">${formatBytes(file.size)}</div>
           <div class="image-list-date">${new Date(
             file.lastModified
@@ -224,9 +222,15 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
 
         // Add event listeners
+        const nameDiv = fileElement.querySelector(".image-list-name");
         const copyBtn = fileElement.querySelector(".image-list-copy-btn");
         const viewBtn = fileElement.querySelector(".image-list-view-btn");
         const deleteBtn = fileElement.querySelector(".image-list-delete-btn");
+
+        nameDiv.addEventListener("click", (e) => {
+          e.stopPropagation();
+          window.open(file.url, "_blank");
+        });
 
         copyBtn.addEventListener("click", (e) => {
           e.stopPropagation();
@@ -235,25 +239,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
         viewBtn.addEventListener("click", (e) => {
           e.stopPropagation();
-          openPreviewModal(file);
+          window.open(file.url, "_blank");
         });
 
         deleteBtn.addEventListener("click", (e) => {
           e.stopPropagation();
           if (confirm(`Are you sure you want to delete "${file.name}"?`)) {
-            deleteImage(file);
+            deleteDocument(file);
           }
         });
 
-        imageGrid.appendChild(fileElement);
+        documentGrid.appendChild(fileElement);
       });
     }
 
     // Show empty message if no content
     if (
       elements.browserContainer.innerHTML === "" ||
-      (imageGrid &&
-        imageGrid.childElementCount === 0 &&
+      (documentGrid &&
+        documentGrid.childElementCount === 0 &&
         (!folderContainer || folderContainer.childElementCount === 0))
     ) {
       elements.browserContainer.innerHTML =
@@ -265,18 +269,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!elements.previewModal) return;
 
     currentModalFile = file;
-    elements.modalImagePreview.src = file.url;
     elements.modalFilename.textContent = file.name;
     elements.modalFilesize.textContent = formatBytes(file.size);
-    elements.modalImageUrl.value = file.url;
-    elements.modalDimensions.textContent = "Calculating...";
-
-    // Calculate image dimensions
-    const img = new Image();
-    img.onload = function () {
-      elements.modalDimensions.textContent = `${this.width} × ${this.height}`;
-    };
-    img.src = file.url;
+    elements.modalDocumentUrl.value = file.url;
 
     elements.previewModal.style.display = "block";
   };
@@ -358,7 +353,7 @@ document.addEventListener("DOMContentLoaded", () => {
       showStatus(elements.browserStatus, error.message, true);
     } finally {
       isLoading = false;
-      elements.loadMoreBtn.innerHTML = "Load More Images";
+      elements.loadMoreBtn.innerHTML = "Load More Documents";
     }
   };
 
@@ -440,7 +435,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Copy URL button
   if (elements.modalCopyBtn) {
     elements.modalCopyBtn.addEventListener("click", function () {
-      copyToClipboard(elements.modalImageUrl.value, this);
+      copyToClipboard(elements.modalDocumentUrl.value, this);
     });
   }
 
@@ -451,7 +446,7 @@ document.addEventListener("DOMContentLoaded", () => {
         currentModalFile &&
         confirm(`Are you sure you want to delete "${currentModalFile.name}"?`)
       ) {
-        deleteImage(currentModalFile);
+        deleteDocument(currentModalFile);
       }
     });
   }
@@ -668,6 +663,10 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       const formData = new FormData();
+      console.log(
+        "🔍 [DEBUG] Client Upload - Sending folder path:",
+        elements.uploadFolderPathInput.value
+      );
       formData.append("folderPath", elements.uploadFolderPathInput.value);
       formData.append("websiteId", websiteId);
 
@@ -714,12 +713,12 @@ document.addEventListener("DOMContentLoaded", () => {
     } finally {
       elements.uploadButton.disabled = false;
       elements.uploadButton.innerHTML =
-        '<i class="fas fa-upload mr-2"></i>Upload Images';
+        '<i class="fas fa-upload mr-2"></i>Upload Documents';
     }
   };
 
-  // Delete image function
-  const deleteImage = async (file) => {
+  // Delete document function
+  const deleteDocument = async (file) => {
     try {
       const fullPath = `${currentPath}${file.name}`;
       const filename = file.name;
@@ -737,22 +736,26 @@ document.addEventListener("DOMContentLoaded", () => {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.message || "Failed to delete image");
+        throw new Error(result.message || "Failed to delete document");
       }
 
       // Show success notification
-      showNotification(`Image "${filename}" deleted successfully!`, "success", {
-        title: "Image Deleted",
-        category: "storage",
-        relatedEntityType: "file",
-        relatedEntityID: filename,
-      });
+      showNotification(
+        `Document "${filename}" deleted successfully!`,
+        "success",
+        {
+          title: "Document Deleted",
+          category: "storage",
+          relatedEntityType: "file",
+          relatedEntityID: filename,
+        }
+      );
 
       // Close modal and refresh
       elements.previewModal.style.display = "none";
       browse(currentPath);
     } catch (error) {
-      console.error("Error deleting image:", error);
+      console.error("Error deleting document:", error);
       showNotification(
         `Failed to delete "${file.name}": ${error.message}`,
         "error",
