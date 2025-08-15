@@ -24,6 +24,71 @@ document.addEventListener("DOMContentLoaded", () => {
       el.className = "status-message";
     }, 5000);
   };
+
+  // Dynamically load compressorjs for image compression
+  const loadCompressor = () => {
+    return new Promise((resolve, reject) => {
+      if (window.Compressor) {
+        resolve();
+        return;
+      }
+      const script = document.createElement("script");
+      script.src =
+        "https://cdnjs.cloudflare.com/ajax/libs/compressorjs/1.2.1/compressor.min.js";
+      script.onload = resolve;
+      script.onerror = reject;
+      document.head.appendChild(script);
+    });
+  };
+
+  // Compress image with compressorjs
+  const compressImage = (file) => {
+    return new Promise((resolve, reject) => {
+      // Skip compression for SVG files
+      if (file.type === "image/svg+xml") {
+        resolve(file);
+        return;
+      }
+
+      const originalSize = file.size;
+
+      new Compressor(file, {
+        quality: 0.5,
+        maxWidth: 1600,
+        maxHeight: 900,
+        convertSize: 0, // Compress all non-SVG images
+        success(result) {
+          const compressedFile = new File([result], file.name, {
+            type: result.type,
+          });
+          const compressedSize = compressedFile.size;
+          const reduction = (
+            ((originalSize - compressedSize) / originalSize) *
+            100
+          ).toFixed(1);
+
+          // Show compression result to user
+          if (reduction > 0) {
+            showBanner(
+              `Compressed ${file.name}: ${formatBytes(
+                originalSize
+              )} → ${formatBytes(compressedSize)} (${reduction}% reduction)`,
+              false
+            );
+          }
+
+          resolve(compressedFile);
+        },
+        error(err) {
+          showBanner(
+            `Compression failed for ${file.name}, using original file`,
+            true
+          );
+          resolve(file); // Fallback to original
+        },
+      });
+    });
+  };
   const formatBytes = (bytes, d = 2) =>
     !+bytes
       ? "0 Bytes"
@@ -83,9 +148,21 @@ document.addEventListener("DOMContentLoaded", () => {
       const files =
         elements.uploadForm.querySelector("input[type='file']").files;
 
-      // Append each file to the FormData object
+      // Check if we need to load compressorjs
+      const needsCompressor = Array.from(files).some(
+        (file) =>
+          file.type !== "image/svg+xml" &&
+          !file.name.toLowerCase().endsWith(".svg")
+      );
+
+      if (needsCompressor) {
+        await loadCompressor();
+      }
+
+      // Process each file: compress if needed, otherwise use original
       for (const file of files) {
-        formData.append("files", file);
+        const processedFile = await compressImage(file);
+        formData.append("files", processedFile);
       }
 
       const response = await fetch("/azure-storage/api/upload", {
@@ -138,7 +215,23 @@ document.addEventListener("DOMContentLoaded", () => {
     const fileInput = document.getElementById("replace-file-input");
     if (!fileInput.files[0])
       return showStatus(elements.replaceStatus, "Please select a file.", true);
-    const formData = new FormData(elements.replaceForm);
+
+    const blobName = elements.replaceBlobNameInput.value;
+    let file = fileInput.files[0];
+
+    // Skip compression for SVG files
+    if (
+      file.type !== "image/svg+xml" &&
+      !file.name.toLowerCase().endsWith(".svg")
+    ) {
+      // Ensure compressor is loaded
+      await loadCompressor();
+      file = await compressImage(file);
+    }
+
+    const formData = new FormData();
+    formData.append("blobName", blobName);
+    formData.append("file", file);
     showStatus(elements.replaceStatus, "Replacing file...");
     try {
       const response = await fetch("/azure-storage/api/replace", {
